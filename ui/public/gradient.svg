@@ -1,0 +1,36 @@
+<svg width="2596" height="2600" viewBox="0 200 2596 2600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none slice">
+  <g filter="url(#filter0_f)">
+    <rect x="2143" y="455" width="1690" height="1690" rx="710.009" transform="rotate(90 2143 455)" fill="#4E93FF" opacity="0.65" />
+  </g>
+  <g filter="url(#filter1_f)">
+    <rect x="2126" y="474.675" width="1655.58" height="1653.6" rx="710.009" transform="rotate(90 2126 474.675)" fill="#639CF2" opacity="0.65" />
+  </g>
+  <g filter="url(#filter_common_f)">
+    <rect x="2018" y="582.866" width="1439.21" height="1437.8" rx="710.009" transform="rotate(90 2018 582.866)" fill="#D5FDB9"/>
+    <rect x="2057" y="576.304" width="1452.32" height="1515.8" rx="710.009" transform="rotate(90 2057 576.304)" fill="#E4F9FF"/>
+    <rect x="2018" y="582.866" width="1439.21" height="1437.8" rx="710.009" transform="rotate(90 2018 582.866)" fill="#FF7EEA" opacity="0.65" />
+  </g>
+  <g filter="url(#filter5_f)">
+    <rect x="1858" y="766.034" width="1084.79" height="1117.93" rx="483.146" transform="rotate(90 1858 766.034)" fill="#F3001D"/>
+  </g>
+  <g filter="url(#filter6_f)">
+    <rect x="1779" y="698.622" width="1178.25" height="962.391" rx="481.196" transform="rotate(90 1779 698.622)" fill="#F38300"/>
+  </g>
+  <defs>
+    <filter id="filter0_f" x="0.074" y="2.074" width="2595.85" height="2595.85" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="140"/>
+    </filter>
+    <filter id="filter1_f" x="250.311" y="252.587" width="2097.78" height="2099.76" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="60"/>
+    </filter>
+    <filter id="filter_common_f" x="393" y="428" width="1812" height="1748" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="58"/>
+    </filter>
+    <filter id="filter5_f" x="443.964" y="469.927" width="1710.14" height="1677" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="115"/>
+    </filter>
+    <filter id="filter6_f" x="520.502" y="402.515" width="1554.6" height="1770.46" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="115"/>
+    </filter>
+  </defs>
+</svg>
