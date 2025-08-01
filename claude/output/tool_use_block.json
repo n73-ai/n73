@@ -1,0 +1,42 @@
+{
+  "content": [
+    {
+      "id": "toolu_01CQYp5vmTMR4xhutCeEJ688",
+      "name": "TodoWrite",
+      "input": {
+        "todos": [
+          {
+            "id": "1",
+            "content": "Set up project structure for Todo App",
+            "status": "pending",
+            "priority": "high"
+          },
+          {
+            "id": "2",
+            "content": "Create TodoList component",
+            "status": "pending",
+            "priority": "high"
+          },
+          {
+            "id": "3",
+            "content": "Implement Add Todo functionality",
+            "status": "pending",
+            "priority": "high"
+          },
+          {
+            "id": "4",
+            "content": "Add Todo item features (complete, delete, edit)",
+            "status": "pending",
+            "priority": "medium"
+          },
+          {
+            "id": "5",
+            "content": "Implement local storage persistence",
+            "status": "pending",
+            "priority": "medium"
+          }
+        ]
+      }
+    }
+  ]
+}

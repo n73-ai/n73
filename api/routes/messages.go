@@ -8,4 +8,5 @@ import (
 
 func MessagesRoutes(app *fiber.App) {
   app.Post("/webhook/messages/:projectID/:metadataID", handlers.WebhookMessage)
+  app.Get("/messages/:projectID", handlers.GetMessagesByProjectID)
 }

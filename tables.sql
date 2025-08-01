@@ -19,7 +19,7 @@ CREATE TABLE messages (
 
 CREATE TABLE metadata (
     id VARCHAR(255) PRIMARY KEY NOT NULL,
-    session_id VARCHAR(255) DEFAULT '',
+    project_id VARCHAR(255) DEFAULT NOT NULL,
     model VARCHAR(255) NOT NULL,
     duration INTEGER DEFAULT 0,
     is_error BOOLEAN DEFAULT false,

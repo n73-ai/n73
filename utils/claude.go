@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
+	//"os"
+	//"path/filepath"
 )
 
 func CreateClaudeProject(prompt, model, webhookURL string) error {
-	workDir := filepath.Join(os.Getenv("ROOT_PATH"), "ai-project")
+	//workDir := filepath.Join(os.Getenv("ROOT_PATH"), "ai-project")
+	workDir := "/home/agust/ai-project"
 	payload := map[string]string{
 		"work_dir":    workDir,
 		"prompt":      prompt,

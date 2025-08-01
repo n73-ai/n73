@@ -26,7 +26,9 @@ go run cmd/main.go
 ```
 
 # todo
-- [ ] new project
+- [x] new project
+- [ ] edit tables.sql(remove session_id and add project_id)
+- [ ] GetMetadataByProjectID() how to show nice?
 - [ ] resume project
 - [ ] list messages nice styles
     - [ ] thinking...
@@ -59,3 +61,4 @@ go run cmd/main.go
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```
 
 Build me a simple todo app.
+Build me a Hello World app with big and bold letters in red
