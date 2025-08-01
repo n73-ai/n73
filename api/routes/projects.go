@@ -6,6 +6,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func ProjectRoutes(app *fiber.App) {
+func ProjectsRoutes(app *fiber.App) {
 	app.Post("/projects", handlers.CreateProject)
 }

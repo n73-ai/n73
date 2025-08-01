@@ -1,8 +1,10 @@
 package api
 
 import (
+	"ai-zustack/api/handlers"
 	"ai-zustack/api/routes"
 
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -19,7 +21,16 @@ func RunServer() *fiber.App {
 		AllowCredentials: false,
 	}))
 
-	routes.ProjectRoutes(app)
+	app.Use("/feed/chat", func(c *fiber.Ctx) error {
+		if websocket.IsWebSocketUpgrade(c) {
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
+	})
+	go handlers.RunHub()
+
+	routes.ProjectsRoutes(app)
+	routes.MessagesRoutes(app)
 
 	return app
 }

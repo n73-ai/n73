@@ -52,11 +52,10 @@ go run cmd/main.go
     - [ ] backend cloudflare tunnel
 
 # Links and docs
-```
-https://docs.anthropic.com/en/docs/claude-code/sdk
-```
-```
-https://console.anthropic.com/cost
-```
+(https://docs.anthropic.com/en/docs/claude-code/sdk)
+(https://docs.anthropic.com/en/docs/about-claude/models/overview)
+(https://console.anthropic.com/cost)
 
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```
+
+Build me a simple todo app.
