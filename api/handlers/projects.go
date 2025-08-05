@@ -32,10 +32,9 @@ func CreateProject(c *fiber.Ctx) error {
 	projectID := uuid.NewString()
 	projectName := "Full-Stack-App"
 	model := "claude-3-5-haiku-20241022"
-	metadataID := uuid.NewString()
 	messageID := uuid.NewString()
 
-	webhookURL := fmt.Sprintf("http://0.0.0.0:%s/webhook/messages/%s/%s", os.Getenv("PORT"), projectID, metadataID)
+	webhookURL := fmt.Sprintf("http://0.0.0.0:%s/webhook/messages/%s/%s", os.Getenv("PORT"), projectID, model)
 
 	err = utils.CreateClaudeProject(payload.Prompt, model, webhookURL)
 	if err != nil {
@@ -51,14 +50,7 @@ func CreateProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = database.CreateMetadata(metadataID, model)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	err = database.CreateMessage(messageID, projectID, metadataID, "user", payload.Prompt)
+	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, model, 0, false, 0.0)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),

@@ -5,18 +5,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	//"os"
 	//"path/filepath"
 )
 
 func CreateClaudeProject(prompt, model, webhookURL string) error {
+  apiKey := os.Getenv("ANTHROPIC_API_KEY")
 	//workDir := filepath.Join(os.Getenv("ROOT_PATH"), "ai-project")
-	workDir := "/home/agust/ai-project"
+	workDir := "/home/agust/work/ai/ai-projects/p2"
 	payload := map[string]string{
 		"work_dir":    workDir,
 		"prompt":      prompt,
 		"model":       model,
 		"webhook_url": webhookURL,
+		"api_key": apiKey,
 	}
 
 	jsonData, err := json.Marshal(payload)

@@ -4,25 +4,21 @@ CREATE TABLE projects (
     session_id VARCHAR(255) DEFAULT '',
     status VARCHAR(255) DEFAULT '',
     name TEXT NOT NULL,
+    domain VARCHAR(255) DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE messages (
     id VARCHAR(255) PRIMARY KEY NOT NULL,
     project_id VARCHAR(255) NOT NULL,
-    metadata_id VARCHAR(255) NOT NULL,
-    role TEXT CHECK (role IN ('user', 'assistant')) NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
+    role TEXT CHECK (role IN ('user', 'assistant', 'metadata')) NOT NULL,
+    content TEXT DEFAULT '',
 
-CREATE TABLE metadata (
-    id VARCHAR(255) PRIMARY KEY NOT NULL,
-    project_id VARCHAR(255) DEFAULT NOT NULL,
-    model VARCHAR(255) NOT NULL,
+    model VARCHAR(255) DEFAULT '',
     duration INTEGER DEFAULT 0,
     is_error BOOLEAN DEFAULT false,
     total_cost_usd NUMERIC(10, 6) DEFAULT 0,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

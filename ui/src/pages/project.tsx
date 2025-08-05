@@ -25,7 +25,7 @@ export default function Project() {
               <div className="flex-1">
                 <iframe
                   className="w-full h-full block"
-                  src="https://ui.shadcn.com/"
+                  src=""
                 />
               </div>
             </div>

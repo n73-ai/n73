@@ -4,7 +4,11 @@
 
 ⚠️ **This project is under active development. It's not yet production-ready.**
 
-# How to use
+# How to use (dev)
+- Install claude code
+```bash
+npm install -g @anthropic-ai/claude-code
+```
 - Run the db with docker for local development
 ```bash
 docker run --name my-postgres \
@@ -26,32 +30,6 @@ go run cmd/main.go
 ```
 
 # todo
-- [x] new project
-- [ ] edit tables.sql(remove session_id and add project_id)
-- [ ] GetMetadataByProjectID() how to show nice?
-- [ ] resume project
-- [ ] list messages nice styles
-    - [ ] thinking...
-    - [ ] readme
-    - [ ] Zustack {response}
-- [ ] list projects on /
-- [ ] better system_prompt
-- [ ] make base tamplate(react, typescript, tailwindcss)
-- [ ] npm run build -> if error button(try to fix)
-    - [ ] new 
-    - [ ] resume 
-- [ ] push to github
-    - [ ] new 
-    - [ ] resume 
-- [ ] deploy to cloudflare
-- [ ] when deploy update domain and show on preview
-    - [ ] new 
-    - [ ] resume 
-- [ ] login
-- [ ] signup(close on prod)
-- [ ] deploy beta
-    - [ ] ui cloudflare
-    - [ ] backend cloudflare tunnel
 
 # Links and docs
 (https://docs.anthropic.com/en/docs/claude-code/sdk)
@@ -59,6 +37,3 @@ go run cmd/main.go
 (https://console.anthropic.com/cost)
 
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```
-
-Build me a simple todo app.
-Build me a Hello World app with big and bold letters in red

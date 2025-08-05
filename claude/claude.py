@@ -1,3 +1,4 @@
+import os
 from claude_code_sdk import query, ClaudeCodeOptions
 import requests
 import asyncio
@@ -8,7 +9,8 @@ async def post_json(url, json_data):
     response = await loop.run_in_executor(None, lambda: requests.post(url, json=json_data))
     return response
 
-async def NewProject(prompt: str, model: str, workDir: str, target_url: str):
+async def NewProject(prompt: str, model: str, workDir: str, target_url: str, api_key: str):
+    # os.environ["ANTHROPIC_API_KEY"] = api_key
     options = ClaudeCodeOptions(
             max_turns=10,
             model=model,

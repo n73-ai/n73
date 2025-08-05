@@ -24,11 +24,11 @@ def validate_fields(data, required_fields):
 @app.route("/claude/new", methods=["POST"])
 def new_endpoint():
     data = request.get_json()
-    valid, error = validate_fields(data, ["prompt", "model", "work_dir", "webhook_url"])
+    valid, error = validate_fields(data, ["prompt", "model", "work_dir", "webhook_url", "api_key"])
     if not valid:
         return jsonify({"error": error}), 400
 
-    start_background_task(NewProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"])
+    start_background_task(NewProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["api_key"])
     return jsonify({"status": "processing"}), 200
 
 @app.route("/claude/resume", methods=["POST"])

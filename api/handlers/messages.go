@@ -21,7 +21,7 @@ func GetMessagesByProjectID(c *fiber.Ctx) error {
 
 func WebhookMessage(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
-	metadataID := c.Params("metadataID")
+	model := c.Params("model")
 
 	payload := struct {
 		Type         string  `json:"type"`
@@ -41,7 +41,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 	switch payload.Type {
 	case "text":
 	  id := uuid.NewString()
-		err := database.CreateMessage(id, projectID, metadataID, "assistant", payload.Text)
+		err := database.CreateMessage(id, projectID, "assistant", payload.Text, model, 0, false, 0.0)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
@@ -49,13 +49,26 @@ func WebhookMessage(c *fiber.Ctx) error {
 		}
     SendToUser("user_id", id)
 	case "result":
-		err := database.UpdateMetadata(payload.SessionID, payload.Duration, payload.TotalCostUsd, metadataID, payload.IsError)
+	  id := uuid.NewString()
+		err := database.CreateMessage(id, projectID, "metadata", "", model, payload.Duration, payload.IsError, payload.TotalCostUsd)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
 		err = database.UpdateProjectSessionID(projectID, payload.SessionID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+    var status string
+    if payload.IsError {
+      status = "AI-Error"
+    } else {
+      status = "Ready"
+    }
+		err = database.UpdateProjectStatus(projectID, status)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
