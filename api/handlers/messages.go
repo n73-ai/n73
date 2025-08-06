@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"ai-zustack/database"
+	"ai-zustack/utils"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -56,12 +57,14 @@ func WebhookMessage(c *fiber.Ctx) error {
 				"error": err.Error(),
 			})
 		}
+
 		err = database.UpdateProjectSessionID(projectID, payload.SessionID)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
+
     var status string
     if payload.IsError {
       status = "AI-Error"
@@ -74,7 +77,15 @@ func WebhookMessage(c *fiber.Ctx) error {
 				"error": err.Error(),
 			})
 		}
+
+    // name, path string
+    err = utils.Push(path, project.Name)
+    if err != nil {
+
+    }
+
     SendToUser("user_id", "done")
+
 	default:
 		log.Println("Unknown type:", payload.Type)
 	}

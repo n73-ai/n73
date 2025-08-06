@@ -36,7 +36,9 @@ func CreateProject(c *fiber.Ctx) error {
 
 	webhookURL := fmt.Sprintf("http://0.0.0.0:%s/webhook/messages/%s/%s", os.Getenv("PORT"), projectID, model)
 
-	err = utils.CreateClaudeProject(payload.Prompt, model, webhookURL)
+  path := os.Getenv("ROOT_PATH") + "/" + "projects" + "/" + projectID
+
+	err = utils.CreateClaudeProject(payload.Prompt, model, webhookURL, path)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),

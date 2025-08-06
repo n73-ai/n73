@@ -30,10 +30,18 @@ go run cmd/main.go
 ```
 
 # todo
+- [ ] login
+- [ ] fix claude api timeout error
 
 # Links and docs
 (https://docs.anthropic.com/en/docs/claude-code/sdk)
 (https://docs.anthropic.com/en/docs/about-claude/models/overview)
 (https://console.anthropic.com/cost)
+
+# Dependencies
+- gh cli `https://cli.github.com/`
+- wrangler cli `https://developers.cloudflare.com/workers/wrangler/install-and-update/`
+- Docker (install like in the dotfiles) `https://github.com/agustfricke/dotfiles`
+- Go (install like in the dotfiles) `https://github.com/agustfricke/dotfiles`
 
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```

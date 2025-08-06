@@ -11,14 +11,11 @@ CREATE TABLE projects (
 CREATE TABLE messages (
     id VARCHAR(255) PRIMARY KEY NOT NULL,
     project_id VARCHAR(255) NOT NULL,
-
     role TEXT CHECK (role IN ('user', 'assistant', 'metadata')) NOT NULL,
     content TEXT DEFAULT '',
-
     model VARCHAR(255) DEFAULT '',
     duration INTEGER DEFAULT 0,
     is_error BOOLEAN DEFAULT false,
     total_cost_usd NUMERIC(10, 6) DEFAULT 0,
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

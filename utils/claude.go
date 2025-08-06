@@ -10,12 +10,12 @@ import (
 	//"path/filepath"
 )
 
-func CreateClaudeProject(prompt, model, webhookURL string) error {
+func CreateClaudeProject(prompt, model, webhookURL, path string) error {
   apiKey := os.Getenv("ANTHROPIC_API_KEY")
-	//workDir := filepath.Join(os.Getenv("ROOT_PATH"), "ai-project")
-	workDir := "/home/agust/work/ai/ai-projects/p2"
+	// workDir := filepath.Join(os.Getenv("ROOT_PATH"), "ai-project")
+	// workDir := "/home/agust/work/ai/ai-projects/p2"
 	payload := map[string]string{
-		"work_dir":    workDir,
+		"work_dir":    path,
 		"prompt":      prompt,
 		"model":       model,
 		"webhook_url": webhookURL,
