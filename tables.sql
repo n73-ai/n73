@@ -2,10 +2,8 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
   id VARCHAR(255) PRIMARY KEY NOT NULL,
   email VARCHAR(55) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
   active BOOL DEFAULT TRUE,
-  token INT NOT NULL,
-  verified   BOOL DEFAULT FALSE,
+  role TEXT CHECK (role IN ('user', 'admin')) NOT NULL,
   balance FLOAT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -15,6 +13,7 @@ CREATE TABLE projects (
     user_id VARCHAR(255) NOT NULL,
     session_id VARCHAR(255) DEFAULT '',
     status VARCHAR(255) DEFAULT '',
+    cf_project_ready BOOLEAN DEFAULT false,
     name TEXT NOT NULL,
     domain VARCHAR(255) DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

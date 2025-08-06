@@ -16,7 +16,9 @@ func main() {
 		"DB_HOST",
 		"DB_NAME",
 		"DB_PORT",
-    "ANTHROPIC_API_KEY",
+		"ANTHROPIC_API_KEY",
+		"PORT",
+		"EMAIL_SECRET_KEY",
 	}
 	if err := utils.CheckRequiredEnv(required); err != nil {
 		fmt.Printf("Environment error: %v.", err)

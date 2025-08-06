@@ -29,10 +29,6 @@ source .env
 go run cmd/main.go
 ```
 
-# todo
-- [ ] login
-- [ ] fix claude api timeout error
-
 # Links and docs
 (https://docs.anthropic.com/en/docs/claude-code/sdk)
 (https://docs.anthropic.com/en/docs/about-claude/models/overview)

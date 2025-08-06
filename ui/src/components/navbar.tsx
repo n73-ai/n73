@@ -26,18 +26,6 @@ export default function Navbar() {
             <ZustackLogo size={40} />
             <span>AI Zustack</span>
           </Link>
-          {isAuth && (
-            <div className="hidden md:flex gap-2 items-center">
-              <Button
-                onClick={() => navigate("/some")}
-                variant={
-                  location.pathname.includes("/some") ? "secondary" : "outline"
-                }
-              >
-                Some
-              </Button>
-            </div>
-          )}
         </div>
         {isAuth ? (
           <DropdownMenu>
@@ -68,9 +56,14 @@ export default function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button variant="secondary" onClick={() => navigate("/login")}>
-            Sign In
-          </Button>
+          <div className="flex gap-[10px]">
+            <Button variant="secondary" onClick={() => navigate("/login")}>
+              Sign In
+            </Button>
+            <Button variant="default" onClick={() => navigate("/signup")}>
+              Get Started
+            </Button>
+          </div>
         )}
       </div>
     </nav>

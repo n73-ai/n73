@@ -5,15 +5,15 @@ import (
 )
 
 type Message struct {
-	ID         string `json:"id"`
-	ProjectID  string `json:"project_id"`
-	Role       string `json:"role"`
-	Content    string `json:"content"`
+	ID           string  `json:"id"`
+	ProjectID    string  `json:"project_id"`
+	Role         string  `json:"role"`
+	Content      string  `json:"content"`
 	Model        string  `json:"model"`
 	Duration     int     `json:"duration"`
 	IsError      bool    `json:"is_error"`
 	TotalCostUsd float64 `json:"total_cost_usd"`
-	CreatedAt  string `json:"created_at"`
+	CreatedAt    string  `json:"created_at"`
 }
 
 func GetMessagesByProjectID(projectID string) ([]Message, error) {
@@ -38,13 +38,12 @@ func GetMessagesByProjectID(projectID string) ([]Message, error) {
 	return messages, nil
 }
 
-
 func CreateMessage(id, projectID, role, content, model string, duration int, isError bool, totalCostUsd float64) error {
 	_, err := DB.Exec(`
 		INSERT INTO messages 
     (id, project_id, role, content, model, duration, is_error, total_cost_usd) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, 
-    id, projectID, role, content, model, duration, isError, totalCostUsd)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		id, projectID, role, content, model, duration, isError, totalCostUsd)
 	if err != nil {
 		return err
 	}

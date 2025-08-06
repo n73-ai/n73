@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"ai-zustack/database"
-	"ai-zustack/utils"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,13 +10,13 @@ import (
 
 func GetMessagesByProjectID(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
-  messages, err := database.GetMessagesByProjectID(projectID)
-  if err != nil {
+	messages, err := database.GetMessagesByProjectID(projectID)
+	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
-  return c.JSON(messages)
+	}
+	return c.JSON(messages)
 }
 
 func WebhookMessage(c *fiber.Ctx) error {
@@ -41,16 +40,16 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 	switch payload.Type {
 	case "text":
-	  id := uuid.NewString()
+		id := uuid.NewString()
 		err := database.CreateMessage(id, projectID, "assistant", payload.Text, model, 0, false, 0.0)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
-    SendToUser("user_id", id)
+		SendToUser("user_id", id)
 	case "result":
-	  id := uuid.NewString()
+		id := uuid.NewString()
 		err := database.CreateMessage(id, projectID, "metadata", "", model, payload.Duration, payload.IsError, payload.TotalCostUsd)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
@@ -65,12 +64,13 @@ func WebhookMessage(c *fiber.Ctx) error {
 			})
 		}
 
-    var status string
-    if payload.IsError {
-      status = "AI-Error"
-    } else {
-      status = "Ready"
-    }
+		var status string
+		if payload.IsError {
+			status = "AI-Error"
+		} else {
+			status = "Ready"
+		}
+
 		err = database.UpdateProjectStatus(projectID, status)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
@@ -78,13 +78,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 			})
 		}
 
-    // name, path string
-    err = utils.Push(path, project.Name)
-    if err != nil {
-
-    }
-
-    SendToUser("user_id", "done")
+		SendToUser("user_id", "done")
 
 	default:
 		log.Println("Unknown type:", payload.Type)
@@ -92,4 +86,3 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 	return c.SendStatus(200)
 }
-

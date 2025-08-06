@@ -7,6 +7,6 @@ import (
 )
 
 func MessagesRoutes(app *fiber.App) {
-  app.Post("/webhook/messages/:projectID/:model", handlers.WebhookMessage)
-  app.Get("/messages/:projectID", handlers.GetMessagesByProjectID)
+	app.Post("/webhook/messages/:projectID/:model", handlers.WebhookMessage)
+	app.Get("/messages/:projectID", handlers.GetMessagesByProjectID)
 }

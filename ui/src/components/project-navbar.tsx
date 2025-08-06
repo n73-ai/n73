@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   ChevronLeft,
-  Settings,
   User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import Settings from "./settings";
 
 export default function ProjectNavbar() {
   return (
@@ -24,9 +24,7 @@ export default function ProjectNavbar() {
             <ChevronLeft />
           </Button>
           </Link>
-          <Button variant="outline" className="flex gap-[5px]">
             <Settings />
-          </Button>
         </div>
         <div className="flex gap-[10px]">
           <DropdownMenu>

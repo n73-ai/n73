@@ -11,7 +11,7 @@ import (
 )
 
 func CreateClaudeProject(prompt, model, webhookURL, path string) error {
-  apiKey := os.Getenv("ANTHROPIC_API_KEY")
+	apiKey := os.Getenv("ANTHROPIC_API_KEY")
 	// workDir := filepath.Join(os.Getenv("ROOT_PATH"), "ai-project")
 	// workDir := "/home/agust/work/ai/ai-projects/p2"
 	payload := map[string]string{
@@ -19,7 +19,7 @@ func CreateClaudeProject(prompt, model, webhookURL, path string) error {
 		"prompt":      prompt,
 		"model":       model,
 		"webhook_url": webhookURL,
-		"api_key": apiKey,
+		"api_key":     apiKey,
 	}
 
 	jsonData, err := json.Marshal(payload)

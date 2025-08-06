@@ -1,19 +1,12 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ]; then
-    echo "Error usage: $0 <repo-name> <project-path>"
-    exit 1
+if [ -z "$1" ]; then
+  echo "Error ./cf-create.sh <name>"
+  exit 1
 fi
 
-NAME=$1
-PROJECT_PATH=$2
+PROJECT_PATH=$1
 
-cd "$PROJECT_PATH" || exit
-
-if [ ! -d .git ]; then
-    git init
-    git add .
-    git commit -m "Initial commit"
-fi
-
-gh repo create "$NAME" --public --source=. --remote=origin --push
+git -C $PROJECT_PATH add $PROJECT_PATH
+git -C $PROJECT_PATH commit -m "commit & deploy from ai zustack"
+git -C $PROJECT_PATH push 

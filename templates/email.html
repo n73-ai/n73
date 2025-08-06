@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 40px 0;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 50px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        text-align: left;
+      }
+
+      h3 {
+        font-size: 28px;
+        color: #000000;
+        margin-bottom: 30px;
+      }
+
+      h2 {
+        font-size: 36px;
+        font-weight: normal;
+        margin-bottom: 20px;
+        color: #444;
+      }
+
+      .code {
+        display: inline-block;
+        font-size: 40px;
+        font-weight: bold;
+        letter-spacing: 8px;
+        padding: 18px 28px;
+        background-color: #eeeeee;
+        border-radius: 10px;
+        color: #000000;
+        margin-top: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h3>Zustack</h3>
+      <h2>Your verification code is:</h2>
+      <div class="code">{{ .Token }}</div>
+      <p>Token valid for 15 minutes.</p>
+    </div>
+  </body>
+</html>

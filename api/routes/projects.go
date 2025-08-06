@@ -7,5 +7,6 @@ import (
 )
 
 func ProjectsRoutes(app *fiber.App) {
+	app.Post("/projects/deploy", handlers.DeployProject)
 	app.Post("/projects", handlers.CreateProject)
 }
