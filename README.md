@@ -9,7 +9,6 @@
 - "Edit the Hello World text, i want the color to be red"
 
 ## todos & tests
-
 - [ ] add better system prompt
 - [ ] imprube basic ui
 - [ ] CI/CD docs

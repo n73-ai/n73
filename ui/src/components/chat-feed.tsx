@@ -27,7 +27,7 @@ const models = [
   { name: "Claude Sonnet 3.5 v2", apiName: "claude-3-5-sonnet-20241022" },
   { name: "Claude Sonnet 3.5", apiName: "claude-3-5-sonnet-20240620" },
   { name: "Claude Haiku 3.5", apiName: "claude-3-5-haiku-20241022" },
-  { name: "Claude Haiku 3", apiName: "claude-3-haiku-20240307" }
+  { name: "Claude Haiku 3", apiName: "claude-3-haiku-20240307" },
 ];
 
 export default function ChatFeed({ pStatus }: { pStatus: string }) {
@@ -38,14 +38,11 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
   const [prompt, setPrompt] = useState("");
   const [buildError, setBuildError] = useState(false);
   const [buildErrorMessage, setBuildErrorMessage] = useState(true);
-  const [selectedModel, setSelectedModel] = useState(models[0]); 
+  const [selectedModel, setSelectedModel] = useState(models[0]);
 
-  const handleModelSelect = (model: typeof models[0]) => {
+  const handleModelSelect = (model: (typeof models)[0]) => {
     setSelectedModel(model);
   };
-
-  // hard code
-  const [email, setEmail] = useState("hej@agustfricke.com");
 
   // get the messages
   const { data, isLoading, isError } = useQuery<Message[]>({
@@ -128,7 +125,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
       if (!isMounted) return;
 
       const websocketURL = import.meta.env.VITE_BACKEND_URL;
-      const socket = new WebSocket(`${websocketURL}/feed/chat?email=${email}`);
+      const socket = new WebSocket(`${websocketURL}/feed/chat?id=${projectID}`);
 
       if (
         socketRef.current?.readyState === WebSocket.OPEN ||
@@ -182,7 +179,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
       clearTimeout(timeoutRef.current!);
       socketRef.current?.close();
     };
-  }, [email]);
+  }, [projectID]);
 
   return (
     <div className="flex flex-col h-full">
@@ -273,25 +270,27 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
             className="resize-none"
           />
           <div className="flex justify-end gap-[5px]">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex gap-[5px]">
-                    {selectedModel.name}
-                    <ChevronDown />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {models.map((model) => (
-                    <DropdownMenuItem
-                      key={model.apiName}
-                      onClick={() => handleModelSelect(model)}
-                      className={selectedModel.apiName === model.apiName ? "bg-accent" : ""}
-                    >
-                      {model.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex gap-[5px]">
+                  {selectedModel.name}
+                  <ChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {models.map((model) => (
+                  <DropdownMenuItem
+                    key={model.apiName}
+                    onClick={() => handleModelSelect(model)}
+                    className={
+                      selectedModel.apiName === model.apiName ? "bg-accent" : ""
+                    }
+                  >
+                    {model.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button type="submit" variant="outline">
               <span>Send</span>
               {resumeProjectMutation.isPending ? <Spinner /> : <Send />}

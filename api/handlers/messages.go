@@ -64,7 +64,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 				"error": err.Error(),
 			})
 		}
-		SendToUser("hej@agustfricke.com", id)
+		SendToUser(projectID, id)
 
 	case "result":
 		id := uuid.NewString()
@@ -82,7 +82,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 			})
 		}
 
-		SendToUser("hej@agustfricke.com", id)
+		SendToUser(projectID, id)
 
 		err = database.UpdateProjectStatus(projectID, "Deploying")
 		if err != nil {
@@ -91,7 +91,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 			})
 		}
 
-		SendToUser("hej@agustfricke.com", "deploy-start")
+		SendToUser(projectID, "deploy-start")
 
 		project, err := database.GetProjectByID(projectID)
 		if err != nil {
@@ -104,7 +104,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 		err = utils.NpmRunBuild(projectPath)
 		if err != nil {
 			wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
-			SendToUser("hej@agustfricke.com", wsFormatError)
+			SendToUser(projectID, wsFormatError)
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
@@ -130,7 +130,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 					"error": err.Error(),
 				})
 			}
-			SendToUser("hej@agustfricke.com", "deploy-done")
+			SendToUser(projectID, "deploy-done")
 		} else {
 			err = utils.FistDeployment(project.Name, projectPath)
 			if err != nil {
@@ -174,7 +174,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 				})
 			}
 
-			SendToUser("hej@agustfricke.com", "deploy-done")
+			SendToUser(projectID, "deploy-done")
 		}
 	default:
 		log.Println("Unknown type:", payload.Type)
