@@ -11,4 +11,4 @@ PROJECT_PATH=$2 # ./dist
 cd $PROJECT_PATH
 npm i
 npm run build 
-wrangler pages deploy "$PROJECT_PATH/dist" --project-name=$NAME
+wrangler pages deploy "$PROJECT_PATH/dist" --project-name=$NAME --branch=main

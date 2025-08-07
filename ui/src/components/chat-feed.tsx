@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Info, Send } from "lucide-react";
+import { AlertCircleIcon, ChevronDown, Info, Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import ZustackLogo from "./zustack-logo";
@@ -15,11 +15,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronLeft, User } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function ChatFeed({ pStatus }: { pStatus: string }) {
   const { projectID } = useParams();
@@ -27,6 +25,8 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
+  const [buildError, setBuildError] = useState(false);
+  const [buildErrorMessage, setBuildErrorMessage] = useState(true);
   // hard code
   const [email, setEmail] = useState("hej@agustfricke.com");
 
@@ -130,9 +130,14 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
 
       socket.onmessage = (event) => {
         if (event.data !== "") {
-          console.log("event.data", event.data);
-          console.log("event", event);
-          getMessageByIDMutation.mutate(event.data);
+          if (event.data.includes("build-error")) {
+            setBuildError(true);
+            const cleanedErrMsg = event.data.replace("build-error: ", "");
+            setBuildErrorMessage(cleanedErrMsg);
+            console.log("hay un error de build");
+          } else {
+            getMessageByIDMutation.mutate(event.data);
+          }
         }
       };
 
@@ -208,6 +213,32 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
             Thinking...
           </div>
         )}
+
+        {buildError && (
+          <Alert
+            className="my-[20px] flex justify-between items-center"
+            variant="destructive"
+          >
+            <div className="flex gap-[5px] items-center">
+              <AlertCircleIcon />
+              <AlertTitle>
+                An error occurred while compiling the code.
+              </AlertTitle>
+            </div>
+            <AlertDescription>
+              <Button
+                onClick={() => {
+                  setPrompt(`Fix this build error: ${buildErrorMessage}`);
+                  resumeProjectMutation.mutate();
+                }}
+                variant="outline"
+              >
+                Try to fix
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
       <div>

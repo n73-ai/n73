@@ -16,17 +16,23 @@ type Project struct {
 	CreatedAt      string `json:"created_at"`
 }
 
+func UpdateProjectDomain(projectID, domain string) error {
+	_, err := DB.Exec(`
+		UPDATE projects SET domain = $1 WHERE id = $2;`,
+		domain, projectID)
+	return err
+}
+
 func UpdateProjectCFProjectReady(projectID string, cf_project_ready bool) error {
 	_, err := DB.Exec(`
 		UPDATE projects SET cf_project_ready = $1 WHERE id = $2;`,
 		cf_project_ready, projectID)
-
 	return err
 }
 
 func GetProjectsByUserID(userID string) ([]Project, error) {
 	var projects []Project
-	rows, err := DB.Query(`SELECT id, name, domain
+	rows, err := DB.Query(`SELECT id, name, domain, status
   FROM projects WHERE user_id = $1 ORDER BY created_at DESC;`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
@@ -35,7 +41,7 @@ func GetProjectsByUserID(userID string) ([]Project, error) {
 
 	for rows.Next() {
 		var p Project
-		if err := rows.Scan(&p.ID, &p.Name, &p.Domain); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Domain, &p.Status); err != nil {
 			return nil, fmt.Errorf("error: %v", err)
 		}
 		projects = append(projects, p)

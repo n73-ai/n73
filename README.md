@@ -4,7 +4,8 @@ Build a hello world with a dark background and bold letters
 Edit the Hello World text, i want the color to be red
 
 ## todos & tests
-- [x] [x] deploy project
+- [ ] fix: loading and deploy state
+- [ ] fix: clean
 - [x] [ ] auth workflow
 - [ ] [ ] select model from prompt
 - [ ] add better system prompt
@@ -54,6 +55,7 @@ go run cmd/main.go
 ## Project status:
 Building(ai output ongoing)
 Ready(finish ai output, npm run build success so is ready to deploy)
+Error
 Deployed(successfull deployment)
 Deploying(doing the deploy)
 

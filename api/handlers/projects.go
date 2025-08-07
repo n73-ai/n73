@@ -16,7 +16,7 @@ func DeployProject(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
 	project, err := database.GetProjectByID(projectID)
 	if err != nil {
-    fmt.Println("0")
+		fmt.Println("0")
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -25,18 +25,18 @@ func DeployProject(c *fiber.Ctx) error {
 	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
 
 	if project.CFProjectReady {
-    // push code to gh
+		// push code to gh
 		err = utils.PushGH(projectPath)
 		if err != nil {
-      fmt.Println("222")
+			fmt.Println("222")
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
-    // push code to cf
+		// push code to cf
 		err = utils.PushCF(project.Name, projectPath)
 		if err != nil {
-      fmt.Println("333")
+			fmt.Println("333")
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
@@ -44,36 +44,36 @@ func DeployProject(c *fiber.Ctx) error {
 		return c.SendStatus(200)
 	}
 
-  // creates new github repo & push the remote repository
+	// creates new github repo & push the remote repository
 	err = utils.CreatePushGH(project.Name, projectPath)
 	if err != nil {
-    fmt.Println("453")
+		fmt.Println("453")
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-  // creates new cf page
+	// creates new cf page
 	err = utils.CreateCFPage(project.Name)
 	if err != nil {
-    fmt.Println("1")
+		fmt.Println("1")
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-  err = database.UpdateProjectCFProjectReady(projectID, true)
-  if err != nil {
-    fmt.Println("2")
+	err = database.UpdateProjectCFProjectReady(projectID, true)
+	if err != nil {
+		fmt.Println("2")
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
+	}
 
-  // push the code under ./dist to cf pages
+	// push the code under ./dist to cf pages
 	err = utils.PushCF(project.Name, projectPath)
 	if err != nil {
-      fmt.Println("34")
+		fmt.Println("34")
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -83,14 +83,14 @@ func DeployProject(c *fiber.Ctx) error {
 }
 
 func GetUserProjects(c *fiber.Ctx) error {
-  userID := "42069"
-  projects, err := database.GetProjectsByUserID(userID)
-  if err != nil {
+	userID := "42069"
+	projects, err := database.GetProjectsByUserID(userID)
+	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
-  return c.JSON(projects)
+	}
+	return c.JSON(projects)
 }
 
 func ResumeProject(c *fiber.Ctx) error {
@@ -113,12 +113,11 @@ func ResumeProject(c *fiber.Ctx) error {
 
 	err = database.UpdateProjectStatus(projectID, "Building")
 	if err != nil {
-    fmt.Println("err: ", err.Error())
+		fmt.Println("err: ", err.Error())
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-
 
 	project, err := database.GetProjectByID(projectID)
 	if err != nil {
@@ -134,15 +133,15 @@ func ResumeProject(c *fiber.Ctx) error {
 	webhookURL := fmt.Sprintf("http://0.0.0.0:%s/webhook/messages/%s/%s", os.Getenv("PORT"), projectID, model)
 
 	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
-  if _, err := os.Stat(projectPath); os.IsNotExist(err) {
+	if _, err := os.Stat(projectPath); os.IsNotExist(err) {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "project directory does not exist.",
 		})
-  } else if err != nil {
+	} else if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
+	}
 
 	err = utils.ResumeClaudeProject(payload.Prompt, model, webhookURL, projectPath, project.SessionID)
 	if err != nil {
@@ -158,7 +157,7 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-  return c.SendStatus(200)
+	return c.SendStatus(200)
 }
 
 func GetProjectByID(c *fiber.Ctx) error {
@@ -172,11 +171,10 @@ func GetProjectByID(c *fiber.Ctx) error {
 	return c.JSON(project)
 }
 
-
 func CreateProject(c *fiber.Ctx) error {
 	payload := struct {
 		Prompt string `json:"prompt"`
-		Name string `json:"name"`
+		Name   string `json:"name"`
 	}{}
 	err := c.BodyParser(&payload)
 	if err != nil {
@@ -205,8 +203,8 @@ func CreateProject(c *fiber.Ctx) error {
 
 	// !hard coded
 	userID := "42069"
-  model := "claude-3-5-haiku-20241022"
-  // end!
+	model := "claude-3-5-haiku-20241022"
+	// end!
 
 	projectID := uuid.NewString()
 	messageID := uuid.NewString()

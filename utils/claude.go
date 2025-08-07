@@ -14,7 +14,7 @@ func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID string) erro
 		"prompt":      prompt,
 		"model":       model,
 		"webhook_url": webhookURL,
-		"session_id": sessionID,
+		"session_id":  sessionID,
 	}
 
 	jsonData, err := json.Marshal(payload)

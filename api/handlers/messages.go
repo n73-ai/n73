@@ -2,22 +2,26 @@ package handlers
 
 import (
 	"ai-zustack/database"
+	"ai-zustack/utils"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
 func GetMessageByID(c *fiber.Ctx) error {
-  messageID := c.Params("messageID")
-  message, err := database.GetMessageByID(messageID)
-  if err != nil {
+	messageID := c.Params("messageID")
+	message, err := database.GetMessageByID(messageID)
+	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
-  return c.JSON(message)
+	}
+	return c.JSON(message)
 }
 
 func GetMessagesByProjectID(c *fiber.Ctx) error {
@@ -61,39 +65,122 @@ func WebhookMessage(c *fiber.Ctx) error {
 			})
 		}
 		SendToUser("hej@agustfricke.com", id)
+
 	case "result":
 		id := uuid.NewString()
 		err := database.CreateMessage(id, projectID, "metadata", "", model, payload.Duration, payload.IsError, payload.TotalCostUsd)
 		if err != nil {
+			fmt.Println(err.Error())
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
 
+		// imprube? just update if the project.session_id == ""
 		err = database.UpdateProjectSessionID(projectID, payload.SessionID)
 		if err != nil {
-      fmt.Println("err: ", err.Error())
+			fmt.Println(err.Error())
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
 
-		var status string
-		if payload.IsError {
-			status = "AI-Error"
-		} else {
-			status = "Ready"
-		}
-
-		err = database.UpdateProjectStatus(projectID, status)
+		project, err := database.GetProjectByID(projectID)
 		if err != nil {
-      fmt.Println("err: ", err.Error())
+			fmt.Println(err.Error())
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
 
+		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
+		// try npm run build to see if the ai left any errors on the codebase
+		err = utils.NpmRunBuild(projectPath)
+		if err != nil {
+			fmt.Println(err.Error())
+			wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
+			SendToUser("hej@agustfricke.com", wsFormatError)
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		// if is NOT the first deployment just push the code
+		if project.CFProjectReady {
+      fmt.Println("is not the first deployment")
+			err = utils.Push(project.Name, projectPath)
+			if err != nil {
+				fmt.Println("utils.push", err.Error())
+				updateProjectError := database.UpdateProjectStatus(projectID, "Failed deployment")
+				if updateProjectError != nil {
+					fmt.Println(updateProjectError.Error())
+					return c.Status(500).JSON(fiber.Map{
+						"error": err.Error(),
+					})
+				}
+				return c.Status(500).JSON(fiber.Map{
+					"error": err.Error(),
+				})
+			}
+			// if deploy is success
+			err = database.UpdateProjectStatus(projectID, "Deployed")
+			if err != nil {
+				fmt.Println(err.Error())
+				return c.Status(500).JSON(fiber.Map{
+					"error": err.Error(),
+				})
+			}
+			SendToUser("hej@agustfricke.com", id)
+		} else {
+		// if is the first deployment do this:
+    fmt.Println("why is keep going with the logic??")
+		err = utils.FistDeployment(project.Name, projectPath)
+		if err != nil {
+			fmt.Println("first-deploy", err.Error())
+			updateProjectError := database.UpdateProjectStatus(projectID, "Failed deployment")
+			if updateProjectError != nil {
+				fmt.Println(updateProjectError.Error())
+				return c.Status(500).JSON(fiber.Map{
+					"error": err.Error(),
+				})
+			}
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		err = database.UpdateProjectCFProjectReady(projectID, true)
+		if err != nil {
+			fmt.Println("2")
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		// if deploy is success
+		err = database.UpdateProjectStatus(projectID, "Deployed")
+		if err != nil {
+			fmt.Println(err.Error())
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		slug := strings.ToLower(strings.ReplaceAll(project.Name, " ", "-"))
+		domain := fmt.Sprintf("https://%s.pages.dev", slug)
+		err = database.UpdateProjectDomain(projectID, domain)
+		if err != nil {
+			fmt.Println(err.Error())
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		// here should be the projectid instead of the user email address
 		SendToUser("hej@agustfricke.com", id)
+
+    }
+
 
 	default:
 		log.Println("Unknown type:", payload.Type)

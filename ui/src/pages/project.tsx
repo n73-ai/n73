@@ -29,6 +29,8 @@ export default function Project() {
     },
   });
 
+  console.log(data)
+
   return (
     <div className="h-screen flex flex-col">
       <ProjectNavbar />
@@ -39,13 +41,17 @@ export default function Project() {
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel>
-            {data.status == "Deployed" ? (
+            {data?.status == "Deployed" ? (
               <div className="flex flex-col h-full">
                 <div className="flex-1">
-                  <iframe
-                    className="w-full h-full block"
-                    src="https://1c366a91.super-cool-app.pages.dev/"
-                  />
+                  {data?.domain == "" ? (
+                    <p>
+                      The project is deployed but not domain name was found,
+                      contact support
+                    </p>
+                  ) : (
+                    <iframe className="w-full h-full block" src={data.domain} />
+                  )}
                 </div>
               </div>
             ) : (
