@@ -2,13 +2,14 @@ package routes
 
 import (
 	"ai-zustack/api/handlers"
+	"ai-zustack/api/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func ProjectsRoutes(app *fiber.App) {
-	app.Get("/projects/user", handlers.GetUserProjects)
-	app.Post("/projects/resume/:projectID", handlers.ResumeProject)
-	app.Get("/projects/:projectID", handlers.GetProjectByID)
-	app.Post("/projects", handlers.CreateProject)
+	app.Get("/projects/user", middleware.User, handlers.GetUserProjects)
+	app.Post("/projects/resume/:projectID", middleware.User, handlers.ResumeProject)
+	app.Get("/projects/:projectID", middleware.User, handlers.GetProjectByID)
+	app.Post("/projects", middleware.User, handlers.CreateProject)
 }

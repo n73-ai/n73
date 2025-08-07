@@ -14,7 +14,7 @@ CREATE TABLE projects (
     session_id VARCHAR(255) DEFAULT '',
     status VARCHAR(255) DEFAULT '',
     cf_project_ready BOOLEAN DEFAULT false,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     domain VARCHAR(255) DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

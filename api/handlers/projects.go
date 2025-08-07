@@ -13,9 +13,10 @@ import (
 )
 
 func GetUserProjects(c *fiber.Ctx) error {
-	userID := "42069"
-	projects, err := database.GetProjectsByUserID(userID)
+  user := c.Locals("user").(*database.User)
+	projects, err := database.GetProjectsByUserID(user.ID)
 	if err != nil {
+    fmt.Println("oo")
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -27,6 +28,7 @@ func ResumeProject(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
 	payload := struct {
 		Prompt string `json:"prompt"`
+		Model  string `json:"model"`
 	}{}
 	err := c.BodyParser(&payload)
 	if err != nil {
@@ -38,6 +40,29 @@ func ResumeProject(c *fiber.Ctx) error {
 	if payload.Prompt == "" {
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Prompt can't be empty.",
+		})
+	}
+
+	if payload.Model == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "The model is required.",
+		})
+	}
+
+	validModels := map[string]bool{
+		"claude-opus-4-1-20250805":   true,
+		"claude-opus-4-20250514":     true,
+		"claude-sonnet-4-20250514":   true,
+		"claude-3-7-sonnet-20250219": true,
+		"claude-3-5-sonnet-20241022": true,
+		"claude-3-5-sonnet-20240620": true,
+		"claude-3-5-haiku-20241022":  true,
+		"claude-3-haiku-20240307":    true,
+	}
+
+	if !validModels[payload.Model] {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid model. Please select a valid Claude model.",
 		})
 	}
 
@@ -56,10 +81,9 @@ func ResumeProject(c *fiber.Ctx) error {
 	}
 
 	// hard coded
-	model := "claude-3-5-haiku-20241022"
 	messageID := uuid.NewString()
 
-	webhookURL := fmt.Sprintf("http://0.0.0.0:%s/webhook/messages/%s/%s", os.Getenv("PORT"), projectID, model)
+	webhookURL := fmt.Sprintf("http://0.0.0.0:%s/webhook/messages/%s/%s", os.Getenv("PORT"), projectID, payload.Model)
 
 	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 	if _, err := os.Stat(projectPath); os.IsNotExist(err) {
@@ -72,14 +96,14 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = utils.ResumeClaudeProject(payload.Prompt, model, webhookURL, projectPath, project.SessionID)
+	err = utils.ResumeClaudeProject(payload.Prompt, payload.Model, webhookURL, projectPath, project.SessionID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, model, 0, false, 0.0)
+	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -104,6 +128,7 @@ func CreateProject(c *fiber.Ctx) error {
 	payload := struct {
 		Prompt string `json:"prompt"`
 		Name   string `json:"name"`
+		Model  string `json:"model"`
 	}{}
 	err := c.BodyParser(&payload)
 	if err != nil {
@@ -130,14 +155,36 @@ func CreateProject(c *fiber.Ctx) error {
 		})
 	}
 
+	if payload.Model == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "The model is required.",
+		})
+	}
+
+	validModels := map[string]bool{
+		"claude-opus-4-1-20250805":   true,
+		"claude-opus-4-20250514":     true,
+		"claude-sonnet-4-20250514":   true,
+		"claude-3-7-sonnet-20250219": true,
+		"claude-3-5-sonnet-20241022": true,
+		"claude-3-5-sonnet-20240620": true,
+		"claude-3-5-haiku-20241022":  true,
+		"claude-3-haiku-20240307":    true,
+	}
+
+	if !validModels[payload.Model] {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid model. Please select a valid Claude model.",
+		})
+	}
+
 	// !hard coded
 	userID := "42069"
-	model := "claude-3-5-haiku-20241022"
 
 	projectID := uuid.NewString()
 	messageID := uuid.NewString()
 
-	webhookURL := fmt.Sprintf("http://0.0.0.0:%s/webhook/messages/%s/%s", os.Getenv("PORT"), projectID, model)
+	webhookURL := fmt.Sprintf("http://0.0.0.0:%s/webhook/messages/%s/%s", os.Getenv("PORT"), projectID, payload.Model)
 
 	baseProjectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", "base-project")
 	newProjectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
@@ -147,7 +194,7 @@ func CreateProject(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = utils.CreateClaudeProject(payload.Prompt, model, webhookURL, newProjectPath)
+	err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, newProjectPath)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -161,7 +208,7 @@ func CreateProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, model, 0, false, 0.0)
+	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),

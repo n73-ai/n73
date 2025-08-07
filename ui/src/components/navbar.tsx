@@ -1,18 +1,20 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { CircleUser, LogOut, User } from "lucide-react";
+import { User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth";
 import ZustackLogo from "./zustack-logo";
+import toast from "react-hot-toast";
 
 export default function Navbar() {
-  const { isAuth, logout } = useAuthStore();
+  const { isAuth, logout, email } = useAuthStore();
   const navigate = useNavigate();
 
   return (
@@ -29,30 +31,24 @@ export default function Navbar() {
         </div>
         {isAuth ? (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
+            <DropdownMenuTrigger>
+              <Button variant="outline" className="flex gap-[5px]">
+                <User />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <Link to="/profile">
-                <DropdownMenuItem className="flex gap-2">
-                  <User className="h-4 w-4 text-zinc-300" />
-                  Profile
-                </DropdownMenuItem>
-              </Link>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>{email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => {
-                  logout();
-                  navigate("/");
-                }}
-                className="flex gap-2"
-              >
-                <LogOut className="w-4 h-4 text-zinc-300" />
-                Logout
-              </DropdownMenuItem>
+              onClick={() => toast.error("This page do not exist, yet!")}
+              >Profile</DropdownMenuItem>
+              <DropdownMenuItem
+              onClick={() => toast.error("This page do not exist, yet!")}
+              >Billing</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+              onClick={() => logout()}
+              >Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (

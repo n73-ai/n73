@@ -8,5 +8,5 @@ import (
 
 func UsersRoutes(app *fiber.App) {
 	app.Post("/users/auth/link", handlers.AuthLink)
-	app.Get("/users/auth/verify/:tokenString", handlers.VerifyAuthLink)
+	app.Post("/users/auth/verify/:tokenString", handlers.VerifyAuthLink)
 }

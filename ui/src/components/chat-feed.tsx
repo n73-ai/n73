@@ -19,6 +19,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+const models = [
+  { name: "Claude Opus 4.1", apiName: "claude-opus-4-1-20250805" },
+  { name: "Claude Opus 4", apiName: "claude-opus-4-20250514" },
+  { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
+  { name: "Claude Sonnet 3.7", apiName: "claude-3-7-sonnet-20250219" },
+  { name: "Claude Sonnet 3.5 v2", apiName: "claude-3-5-sonnet-20241022" },
+  { name: "Claude Sonnet 3.5", apiName: "claude-3-5-sonnet-20240620" },
+  { name: "Claude Haiku 3.5", apiName: "claude-3-5-haiku-20241022" },
+  { name: "Claude Haiku 3", apiName: "claude-3-haiku-20240307" }
+];
+
 export default function ChatFeed({ pStatus }: { pStatus: string }) {
   const { projectID } = useParams();
   const socketRef = useRef<WebSocket | null>(null);
@@ -27,6 +38,11 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
   const [prompt, setPrompt] = useState("");
   const [buildError, setBuildError] = useState(false);
   const [buildErrorMessage, setBuildErrorMessage] = useState(true);
+  const [selectedModel, setSelectedModel] = useState(models[0]); 
+
+  const handleModelSelect = (model: typeof models[0]) => {
+    setSelectedModel(model);
+  };
 
   // hard code
   const [email, setEmail] = useState("hej@agustfricke.com");
@@ -38,7 +54,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
   });
 
   const resumeProjectMutation = useMutation({
-    mutationFn: () => resumeProject(prompt, projectID!),
+    mutationFn: () => resumeProject(prompt, selectedModel.apiName, projectID!),
     onSuccess: async () => {
       setPrompt("");
       await queryClient.invalidateQueries({ queryKey: ["project"] });
@@ -257,21 +273,25 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
             className="resize-none"
           />
           <div className="flex justify-end gap-[5px]">
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Button variant="outline" className="flex gap-[5px]">
-                  Claude Opus 4.1
-                  <ChevronDown />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Claude Opus 4.1</DropdownMenuItem>
-                <DropdownMenuItem>Claude Opus 4</DropdownMenuItem>
-                <DropdownMenuItem>Claude Sonnet 4</DropdownMenuItem>
-                <DropdownMenuItem>Claude Sonnet 3.7</DropdownMenuItem>
-                <DropdownMenuItem>Claude Haiku 3.5</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex gap-[5px]">
+                    {selectedModel.name}
+                    <ChevronDown />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {models.map((model) => (
+                    <DropdownMenuItem
+                      key={model.apiName}
+                      onClick={() => handleModelSelect(model)}
+                      className={selectedModel.apiName === model.apiName ? "bg-accent" : ""}
+                    >
+                      {model.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             <Button type="submit" variant="outline">
               <span>Send</span>
               {resumeProjectMutation.isPending ? <Spinner /> : <Send />}

@@ -10,14 +10,17 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-      <Route path="signup" element={<Auth />} />
-      <Route path="login" element={<Auth />} />
+        <Route path="signup" element={<Auth />} />
+        <Route path="login" element={<Auth />} />
+
         <Route path="/" element={<Layout />}>
           <Route index element={<Landing />} />
         </Route>
-        <Route path="/project/:projectID" element={<Project />} />
+
         <Route element={<PrivateRoute />}>
+          <Route path="/project/:projectID" element={<Project />} />
         </Route>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

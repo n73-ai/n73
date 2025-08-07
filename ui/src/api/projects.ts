@@ -5,9 +5,14 @@ export const getUserProjects = async () => {
   return response.data;
 };
 
-export const resumeProject = async (prompt: string, projectID: string) => {
+export const resumeProject = async (
+  prompt: string,
+  model: string,
+  projectID: string
+) => {
   const response = await authAxios.post(`/projects/resume/${projectID}`, {
     prompt,
+    model,
   });
   return response.data;
 };
@@ -17,10 +22,15 @@ export const getProjectByID = async (projectID: string) => {
   return response.data;
 };
 
-export const createProject = async (prompt: string, name: string) => {
+export const createProject = async (
+  prompt: string,
+  name: string,
+  model: string
+) => {
   const response = await authAxios.post(`/projects`, {
     name,
     prompt,
+    model,
   });
   return response.data;
 };

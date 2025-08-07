@@ -11,7 +11,7 @@ export default function Projects() {
   });
 
   return (
-    <div className="py-[200px]">
+    <div className="py-[100px]">
       <h1
         className="scroll-m-20 text-start 
       text-3xl font-bold tracking-tight text-balance pb-[20px]"

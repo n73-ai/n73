@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import ZustackLogo from "@/components/zustack-logo";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { authLink, authVerify } from "@/api/users";
 import toast from "react-hot-toast";
@@ -17,6 +17,7 @@ export default function Auth() {
   const [step, setStep] = useState(0);
   const location = useLocation();
   const { setAuthState } = useAuthStore();
+  const navigate = useNavigate();
 
   const authLinkMutation = useMutation({
     mutationFn: () => authLink(email),
@@ -32,6 +33,7 @@ export default function Auth() {
     mutationFn: () => authVerify(otp),
     onSuccess: (response) => {
       setAuthState(response.token, response.exp, response.email, true);
+      navigate("/")
     },
     onError: (error: ErrorResponse) => {
       toast.error(error.response.data.error || "An unexpected error occurred.");
@@ -60,7 +62,7 @@ export default function Auth() {
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-full max-w-sm gap-4 px-[5px]">
-          <div className="grid gap-[20px]">
+          <div className="grid">
             {location.pathname === "/login" && (
               <h3 className="text-3xl font-semibold tracking-tight">Log in</h3>
             )}
@@ -115,12 +117,37 @@ export default function Auth() {
             </form>
           )}
 
+          {location.pathname === "/login" && (
+            <div className="flex justify-center gap-1 text-center items-center">
+              <p>Don't have an account?</p>
+              <Button onClick={() => navigate("/signup")} variant={"link"}>
+                Sign up
+              </Button>
+            </div>
+          )}
+
+          {location.pathname === "/signup" && (
+            <div className="flex justify-center gap-1 text-center items-center">
+              <p>Have an account?</p>
+              <Button onClick={() => navigate("/login")} variant={"link"}>
+                Log in
+              </Button>
+            </div>
+          )}
+
           {step === 1 && (
             <div className="flex justify-center gap-1 text-center items-center">
               <p>Didn't receive the code?</p>
               <Button variant={"link"}>Send Again</Button>
             </div>
           )}
+
+          <div className="flex justify-center gap-1 text-center items-center">
+            <p>Go back</p>
+            <Button onClick={() => navigate("/")} variant={"link"}>
+              Home
+            </Button>
+          </div>
         </div>
       </div>
       <div

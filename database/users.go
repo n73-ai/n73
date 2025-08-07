@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 )
@@ -12,6 +13,20 @@ type User struct {
 	Role      string  `json:"role"`
 	Balance   float64 `json:"balance"`
 	CreatedAt string  `json:"created_at"`
+}
+
+func GetUserByEmail(email string) (User, error) {
+	var u User
+	row := DB.QueryRow(`SELECT id, email, active, role, balance, created_at 
+  FROM users WHERE email = $1`, email)
+	if err := row.Scan(&u.ID, &u.Email, &u.Active, &u.Role, 
+  &u.Balance, &u.CreatedAt); err != nil {
+		if err == sql.ErrNoRows {
+			return u, fmt.Errorf("No user found with the email: %s.", email)
+		}
+		return u, fmt.Errorf("An unexpected error occurred: %v.", err)
+	}
+	return u, nil
 }
 
 func UserExists(email string) (bool, error) {
@@ -28,7 +43,7 @@ func CreateUser(email, id string) error {
 	_, err := DB.Exec(`
 		INSERT INTO users
 		(id, email, active, role, balance) 
-		VALUES (?, ?, ?, ?, ?)`,
+		VALUES ($1, $2, $3, $4, $5)`,
 		id, email, true, "user", 0.0)
 
 	if err != nil {

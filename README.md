@@ -9,9 +9,7 @@
 - "Edit the Hello World text, i want the color to be red"
 
 ## todos & tests
-- [ ] project name must be unique
-- [x] [ ] auth workflow
-- [ ] [ ] select model from pr
+
 - [ ] add better system prompt
 - [ ] imprube basic ui
 - [ ] CI/CD docs
