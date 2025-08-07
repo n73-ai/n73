@@ -122,6 +122,10 @@
   }
 }
 
+html {
+  color-scheme: dark;
+}
+
 div.spinner {
   position: relative;
   width: 33px;
