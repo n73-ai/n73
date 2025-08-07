@@ -27,6 +27,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
   const [prompt, setPrompt] = useState("");
   const [buildError, setBuildError] = useState(false);
   const [buildErrorMessage, setBuildErrorMessage] = useState(true);
+
   // hard code
   const [email, setEmail] = useState("hej@agustfricke.com");
 
@@ -130,14 +131,22 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
 
       socket.onmessage = (event) => {
         if (event.data !== "") {
+          if (event.data.includes("deploy-start")) {
+            queryClient.invalidateQueries({ queryKey: ["project"] });
+            return
+          }
+          if (event.data.includes("deploy-done")) {
+            queryClient.invalidateQueries({ queryKey: ["project"] });
+            return 
+          }
           if (event.data.includes("build-error")) {
             setBuildError(true);
             const cleanedErrMsg = event.data.replace("build-error: ", "");
             setBuildErrorMessage(cleanedErrMsg);
             console.log("hay un error de build");
-          } else {
-            getMessageByIDMutation.mutate(event.data);
-          }
+            return
+          } 
+          getMessageByIDMutation.mutate(event.data);
         }
       };
 
@@ -174,7 +183,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
             {m.role === "user" ? (
               <>
                 <div className="flex justify-end py-[30px]">
-                  <div className="bg-secondary/60 px-[15px] py-[10px] rounded-md">
+                  <div className="bg-secondary/60 w-[75%] px-[15px] py-[10px] rounded-md">
                     <p>{m.content}</p>
                   </div>
                 </div>

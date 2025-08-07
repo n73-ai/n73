@@ -3,8 +3,10 @@
 Build a hello world with a dark background and bold letters
 Edit the Hello World text, i want the color to be red
 
+Create a website with a basic Hero section that says 'Kitesurf AI', with a dark background and indigo text.
+
+
 ## todos & tests
-- [ ] fix: loading and deploy state
 - [ ] fix: clean
 - [x] [ ] auth workflow
 - [ ] [ ] select model from prompt
@@ -63,6 +65,5 @@ Deploying(doing the deploy)
 - build solo con react, typescript, tailwindcss y shadcn
 - solo menciona lo que estas haciendo dentro del projecto
 - solo edita los archivos dentro del react project
-
 
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```

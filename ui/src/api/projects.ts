@@ -1,10 +1,5 @@
 import { authAxios } from "@/lib/axios-instance";
 
-export const deployProject = async (projectID: string) => {
-  const response = await authAxios.post(`/projects/deploy/${projectID}`);
-  return response.data;
-};
-
 export const getUserProjects = async () => {
   const response = await authAxios.get(`/projects/user`);
   return response.data;

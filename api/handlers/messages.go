@@ -85,6 +85,18 @@ func WebhookMessage(c *fiber.Ctx) error {
 			})
 		}
 
+    // send here so the metadata is updated in real time
+		SendToUser("hej@agustfricke.com", id)
+
+    err = database.UpdateProjectStatus(projectID, "Deploying")
+    if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+    }
+
+		SendToUser("hej@agustfricke.com", "deploy-start")
+
 		project, err := database.GetProjectByID(projectID)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -105,6 +117,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 			})
 		}
 
+
 		// if is NOT the first deployment just push the code
 		if project.CFProjectReady {
       fmt.Println("is not the first deployment")
@@ -122,6 +135,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 					"error": err.Error(),
 				})
 			}
+
 			// if deploy is success
 			err = database.UpdateProjectStatus(projectID, "Deployed")
 			if err != nil {
@@ -130,10 +144,9 @@ func WebhookMessage(c *fiber.Ctx) error {
 					"error": err.Error(),
 				})
 			}
-			SendToUser("hej@agustfricke.com", id)
+		  SendToUser("hej@agustfricke.com", "deploy-done")
 		} else {
 		// if is the first deployment do this:
-    fmt.Println("why is keep going with the logic??")
 		err = utils.FistDeployment(project.Name, projectPath)
 		if err != nil {
 			fmt.Println("first-deploy", err.Error())
@@ -167,7 +180,13 @@ func WebhookMessage(c *fiber.Ctx) error {
 		}
 
 		slug := strings.ToLower(strings.ReplaceAll(project.Name, " ", "-"))
-		domain := fmt.Sprintf("https://%s.pages.dev", slug)
+    domain, err := utils.GetProjectDomainFallback(slug)
+    if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+    }
+
 		err = database.UpdateProjectDomain(projectID, domain)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -177,7 +196,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 		}
 
 		// here should be the projectid instead of the user email address
-		SendToUser("hej@agustfricke.com", id)
+		SendToUser("hej@agustfricke.com", "deploy-done")
 
     }
 
