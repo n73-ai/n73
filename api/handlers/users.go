@@ -3,10 +3,12 @@ package handlers
 import (
 	"ai-zustack/database"
 	"ai-zustack/utils"
+	"fmt"
 	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
 
@@ -27,7 +29,7 @@ func VerifyAuthLink(c *fiber.Ctx) error {
 		})
 	}
 
-	email := claims["email"]
+	email := fmt.Sprint(claims["email"])
 	if email == "" {
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Missing email claim.",
@@ -63,7 +65,7 @@ func VerifyAuthLink(c *fiber.Ctx) error {
 		})
 	}
 
-	token, err = utils.GenerateJWT(email, secondsToByValid)
+	signToken, err := utils.GenerateJWT(email, secondsToByValid)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -71,7 +73,7 @@ func VerifyAuthLink(c *fiber.Ctx) error {
 	}
 
 	return c.Status(200).JSON(fiber.Map{
-		"token": token,
+		"token": signToken,
 		"exp":   exp,
 		"email": email,
 	})
@@ -102,20 +104,20 @@ func AuthLink(c *fiber.Ctx) error {
 
 	secondsToByValid := 60 * 15 // 15 min valid
 
-  token, err := utils.GenerateJWT(payload.Email, secondsToByValid)
+	token, err := utils.GenerateJWT(payload.Email, secondsToByValid)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-  // token string, email string, subject string
+	// token string, email string, subject string
 	err = utils.SendEmail(token, payload.Email, "Welcome to AI Zustack")
-  if err != nil {
-    return c.Status(500).JSON(fiber.Map{
-      "error": err.Error(),
-    })
-  }
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	return c.SendStatus(200)
 }

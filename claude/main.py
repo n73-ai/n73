@@ -34,11 +34,11 @@ def new_endpoint():
 @app.route("/claude/resume", methods=["POST"])
 def resume_endpoint():
     data = request.get_json()
-    valid, error = validate_fields(data, ["prompt", "model", "work_dir", "target_url", "session_id"])
+    valid, error = validate_fields(data, ["prompt", "model", "work_dir", "webhook_url", "session_id"])
     if not valid:
         return jsonify({"error": error}), 400
 
-    start_background_task(ResumeProject, data["prompt"], data["model"], data["work_dir"], data["target_url"], data["session_id"])
+    start_background_task(ResumeProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["session_id"])
     return jsonify({"status": "processing"}), 200
 
 if __name__ == "__main__":

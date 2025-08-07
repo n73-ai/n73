@@ -5,8 +5,10 @@ go 1.22.5
 require (
 	github.com/gofiber/contrib/websocket v1.3.4
 	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
+	golang.org/x/crypto v0.31.0
 )
 
 require (

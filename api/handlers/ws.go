@@ -9,7 +9,7 @@ import (
 type Client struct {
 	isClosing bool
 	mu        sync.Mutex
-	UserID    string
+	Email     string
 }
 
 type RegisterPayload struct {
@@ -22,9 +22,9 @@ var register = make(chan *RegisterPayload)
 var broadcast = make(chan string)
 var unregister = make(chan *websocket.Conn)
 
-func SendToUser(userID string, msg string) {
+func SendToUser(email string, msg string) {
 	for conn, client := range clients {
-		if client.UserID == userID {
+		if client.Email == email {
 			client.mu.Lock()
 			defer client.mu.Unlock()
 			if client.isClosing {
@@ -69,9 +69,9 @@ func RunHub() {
 }
 
 func FeedChat(c *websocket.Conn) {
-	userID := c.Query("user_id")
+	email := c.Query("email")
 
-	client := &Client{UserID: userID}
+	client := &Client{Email: email}
 	register <- &RegisterPayload{Conn: c, Client: client}
 
 	defer func() {

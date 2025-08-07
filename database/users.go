@@ -3,9 +3,6 @@ package database
 import (
 	"fmt"
 	"strings"
-
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {

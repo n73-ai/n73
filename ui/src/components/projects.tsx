@@ -1,3 +1,4 @@
+import { getUserProjects } from "@/api/projects";
 import {
   Card,
   CardAction,
@@ -5,30 +6,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-
-const data = [
-  {
-    id: "69",
-    status: "building",
-    name: "hello-world",
-  },
-  {
-    id: "420",
-    status: "deployed",
-    name: "lovably-recreated-spark",
-  },
-];
+import Spinner from "./spinner";
 
 export default function Projects() {
+  const { data, isLoading, isError } = useQuery<any>({
+    queryKey: ["user-projects"],
+    queryFn: () => getUserProjects(),
+  });
+
   return (
-    <div className="pt-[200px]">
-      <h1 className="scroll-m-20 text-start 
-      text-3xl font-bold tracking-tight text-balance pb-[20px]">
+    <div className="py-[200px]">
+      <h1
+        className="scroll-m-20 text-start 
+      text-3xl font-bold tracking-tight text-balance pb-[20px]"
+      >
         Your Projects
       </h1>
+      {isLoading && <Spinner />}
+      {isError && <p>An unexpected error occurred.</p>}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-[15px]">
-        {data?.map((p) => (
+        {data?.map((p: any) => (
           <Link to={`/project/${p.id}`}>
             <Card className="@container/card hover:border hover:border-zinc-700 transition-all duration-200 ease-in-out">
               <CardHeader>

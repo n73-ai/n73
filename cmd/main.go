@@ -19,6 +19,7 @@ func main() {
 		"ANTHROPIC_API_KEY",
 		"PORT",
 		"EMAIL_SECRET_KEY",
+		"ROOT_PATH",
 	}
 	if err := utils.CheckRequiredEnv(required); err != nil {
 		fmt.Printf("Environment error: %v.", err)

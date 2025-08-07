@@ -15,8 +15,8 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Landing />} />
         </Route>
+        <Route path="/project/:projectID" element={<Project />} />
         <Route element={<PrivateRoute />}>
-          <Route path="/project/:projectID" element={<Project />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 )
 
@@ -14,6 +15,21 @@ type Message struct {
 	IsError      bool    `json:"is_error"`
 	TotalCostUsd float64 `json:"total_cost_usd"`
 	CreatedAt    string  `json:"created_at"`
+}
+
+func GetMessageByID(id string) (Message, error) {
+	var m Message
+	row := DB.QueryRow(`SELECT id, role, content, model, duration,
+        is_error, total_cost_usd FROM messages WHERE id = $1`, id)
+
+	if err := row.Scan(&m.ID, &m.Role, &m.Content, &m.Model,
+		&m.Duration, &m.IsError, &m.TotalCostUsd); err != nil {
+		if err == sql.ErrNoRows {
+			return m, fmt.Errorf("No message found with the id: %s", id)
+		}
+		return m, fmt.Errorf("An unexpected error occurred: %v", err)
+	}
+	return m, nil
 }
 
 func GetMessagesByProjectID(projectID string) ([]Message, error) {

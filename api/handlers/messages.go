@@ -2,11 +2,23 @@ package handlers
 
 import (
 	"ai-zustack/database"
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
+
+func GetMessageByID(c *fiber.Ctx) error {
+  messageID := c.Params("messageID")
+  message, err := database.GetMessageByID(messageID)
+  if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+  }
+  return c.JSON(message)
+}
 
 func GetMessagesByProjectID(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
@@ -31,6 +43,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 		TotalCostUsd float64 `json:"total_cost_usd"`
 		SessionID    string  `json:"session_id"`
 	}{}
+
 	err := c.BodyParser(&payload)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -47,7 +60,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 				"error": err.Error(),
 			})
 		}
-		SendToUser("user_id", id)
+		SendToUser("hej@agustfricke.com", id)
 	case "result":
 		id := uuid.NewString()
 		err := database.CreateMessage(id, projectID, "metadata", "", model, payload.Duration, payload.IsError, payload.TotalCostUsd)
@@ -59,6 +72,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		err = database.UpdateProjectSessionID(projectID, payload.SessionID)
 		if err != nil {
+      fmt.Println("err: ", err.Error())
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
@@ -73,12 +87,13 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		err = database.UpdateProjectStatus(projectID, status)
 		if err != nil {
+      fmt.Println("err: ", err.Error())
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
 
-		SendToUser("user_id", "done")
+		SendToUser("hej@agustfricke.com", id)
 
 	default:
 		log.Println("Unknown type:", payload.Type)

@@ -9,29 +9,23 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import Spinner from "@/components/spinner";
 import { Button } from "@/components/ui/button";
+import { getProjectByID } from "@/api/projects";
 
 export default function Project() {
   const { projectID } = useParams();
 
-  /*
   const { data, isLoading, isError } = useQuery({
     queryKey: ["project", projectID],
-    queryFn: () => getProjectByID(),
+    queryFn: () => getProjectByID(projectID),
   });
-    Building(se esta creando el project)
-    Ready(se termino de crear el project y esta listo para hacer un deploy)
-    Deployed(hizo un deploy correcto)
-    Deploying(esta haciendo el deploy)
-  */
 
   return (
     <div className="h-screen flex flex-col">
       <ProjectNavbar />
-
       <div className="flex-1 min-h-0">
         <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={30}>
-            <ChatFeed />
+          <ResizablePanel defaultSize={40}>
+            <ChatFeed pStatus={data?.status} />
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel>

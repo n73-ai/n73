@@ -5,18 +5,27 @@ import { Input } from "@/components/ui/input";
 import ZustackLogo from "@/components/zustack-logo";
 import type { ErrorResponse } from "@/lib/types";
 import { useMutation } from "@tanstack/react-query";
-import { Send } from "lucide-react";
+import { ChevronDown, Send } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Projects from "@/components/projects";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Landing() {
   const [prompt, setPrompt] = useState("");
+  const [name, setName] = useState("");
   const navigate = useNavigate();
 
   const createProjectMut = useMutation({
-    mutationFn: () => createProject(prompt),
+    mutationFn: () => createProject(prompt, name),
     onSuccess: (response) => {
       navigate(`/project/${response.project_id}`);
     },
@@ -45,16 +54,40 @@ export default function Landing() {
           <p className="leading-7">
             Create apps and websites by chatting with AI
           </p>
-          <form onSubmit={handleCreateProject} className="flex gap-[5px]">
-            <Input
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Ask AI Zustack to build..."
-            />
-            <Button type="submit" variant="outline">
-              <span>Create</span>
-              {createProjectMut.isPending ? <Spinner /> : <Send />}
-            </Button>
+          <form onSubmit={handleCreateProject}>
+            <div className="flex flex-col gap-[10px]">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Name your project"
+              />
+              <Input
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Ask Zustack to build something cool"
+              />
+            </div>
+            <div className="flex justify-end gap-[10px] pt-[10px]">
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Button variant="outline" className="flex gap-[5px]">
+                    Claude Opus 4.1
+                    <ChevronDown />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>Claude Opus 4.1</DropdownMenuItem>
+                  <DropdownMenuItem>Claude Opus 4</DropdownMenuItem>
+                  <DropdownMenuItem>Claude Sonnet 4</DropdownMenuItem>
+                  <DropdownMenuItem>Claude Sonnet 3.7</DropdownMenuItem>
+                  <DropdownMenuItem>Claude Haiku 3.5</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button type="submit" variant="outline">
+                <span>Create</span>
+                {createProjectMut.isPending ? <Spinner /> : <Send />}
+              </Button>
+            </div>
           </form>
         </div>
       </div>

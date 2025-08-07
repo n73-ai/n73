@@ -1,5 +1,15 @@
 # AI Zustack
 
+Build a hello world with a dark background and bold letters
+Edit the Hello World text, i want the color to be red
+
+## todos & tests
+- [x] [ ] deploy project
+
+- [x] [ ] auth workflow
+
+- [ ] [ ] select model from prompt
+
 ## Build, Preview, and Ship with AI.
 
 ⚠️ **This project is under active development. It's not yet production-ready.**
@@ -39,5 +49,17 @@ go run cmd/main.go
 - wrangler cli `https://developers.cloudflare.com/workers/wrangler/install-and-update/`
 - Docker (install like in the dotfiles) `https://github.com/agustfricke/dotfiles`
 - Go (install like in the dotfiles) `https://github.com/agustfricke/dotfiles`
+
+## Project status:
+Building(ai output ongoing)
+Ready(finish ai output, npm run build success so is ready to deploy)
+Deployed(successfull deployment)
+Deploying(doing the deploy)
+
+## system prompt edit: 
+- build solo con react, typescript, tailwindcss y shadcn
+- solo menciona lo que estas haciendo dentro del projecto
+- solo edita los archivos dentro del react project
+
 
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```

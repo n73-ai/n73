@@ -31,6 +31,7 @@ func RunServer() *fiber.App {
 
 	routes.ProjectsRoutes(app)
 	routes.MessagesRoutes(app)
+	routes.WebsocketRoutes(app)
 	routes.UsersRoutes(app)
 
 	return app
