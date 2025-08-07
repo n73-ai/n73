@@ -6,10 +6,12 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import Spinner from "@/components/spinner";
 import { Button } from "@/components/ui/button";
-import { getProjectByID } from "@/api/projects";
+import { deployProject, getProjectByID } from "@/api/projects";
+import type { ErrorResponse } from "@/lib/types";
+import toast from "react-hot-toast";
 
 export default function Project() {
   const { projectID } = useParams();
@@ -17,6 +19,14 @@ export default function Project() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["project", projectID],
     queryFn: () => getProjectByID(projectID),
+  });
+
+  const deployProjectMutation = useMutation({
+    mutationFn: () => deployProject(projectID),
+    onSuccess: () => {},
+    onError: (error: ErrorResponse) => {
+      toast.error(error.response.data.error || "An unexpected error occurred.");
+    },
   });
 
   return (
@@ -29,25 +39,38 @@ export default function Project() {
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel>
-            {false && (
-              <div className="flex justify-center items-center min-h-screen">
-                <h5 className="text-xl text-muted-foreground">Building</h5>
-                <Spinner />
+            {data.status == "Deployed" ? (
+              <div className="flex flex-col h-full">
+                <div className="flex-1">
+                  <iframe
+                    className="w-full h-full block"
+                    src="https://1c366a91.super-cool-app.pages.dev/"
+                  />
+                </div>
               </div>
+            ) : (
+              <>
+                {deployProjectMutation.isPending && (
+                  <div className="flex justify-center items-center min-h-screen">
+                    <h5 className="text-xl text-muted-foreground">Building</h5>
+                    <Spinner />
+                  </div>
+                )}
+
+                {!deployProjectMutation.isPending && (
+                  <div className="flex justify-center items-center min-h-screen">
+                    <Button
+                      onClick={() => {
+                        deployProjectMutation.mutate();
+                      }}
+                      variant="outline"
+                    >
+                      Deploy Project
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
-
-            <div className="flex justify-center items-center min-h-screen">
-              <Button variant="outline">
-                Deploy Project 
-              </Button>
-            </div>
-
-            <div className="flex flex-col h-full">
-              <div className="flex-1">
-                <iframe className="w-full h-full block" src="" />
-              </div>
-            </div>
-
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

@@ -8,4 +8,7 @@ fi
 NAME=$1
 PROJECT_PATH=$2 # ./dist
 
-wrangler pages deploy $PROJECT_PATH --project-name=$NAME
+cd $PROJECT_PATH
+npm i
+npm run build 
+wrangler pages deploy "$PROJECT_PATH/dist" --project-name=$NAME

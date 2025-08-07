@@ -4,11 +4,12 @@ Build a hello world with a dark background and bold letters
 Edit the Hello World text, i want the color to be red
 
 ## todos & tests
-- [x] [ ] deploy project
-
+- [x] [x] deploy project
 - [x] [ ] auth workflow
-
 - [ ] [ ] select model from prompt
+- [ ] add better system prompt
+- [ ] imprube basic ui
+- [ ] CI/CD docs
 
 ## Build, Preview, and Ship with AI.
 

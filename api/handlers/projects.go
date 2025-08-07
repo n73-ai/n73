@@ -12,6 +12,76 @@ import (
 	"github.com/google/uuid"
 )
 
+func DeployProject(c *fiber.Ctx) error {
+	projectID := c.Params("projectID")
+	project, err := database.GetProjectByID(projectID)
+	if err != nil {
+    fmt.Println("0")
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
+
+	if project.CFProjectReady {
+    // push code to gh
+		err = utils.PushGH(projectPath)
+		if err != nil {
+      fmt.Println("222")
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+    // push code to cf
+		err = utils.PushCF(project.Name, projectPath)
+		if err != nil {
+      fmt.Println("333")
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+		return c.SendStatus(200)
+	}
+
+  // creates new github repo & push the remote repository
+	err = utils.CreatePushGH(project.Name, projectPath)
+	if err != nil {
+    fmt.Println("453")
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+  // creates new cf page
+	err = utils.CreateCFPage(project.Name)
+	if err != nil {
+    fmt.Println("1")
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+  err = database.UpdateProjectCFProjectReady(projectID, true)
+  if err != nil {
+    fmt.Println("2")
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+  }
+
+  // push the code under ./dist to cf pages
+	err = utils.PushCF(project.Name, projectPath)
+	if err != nil {
+      fmt.Println("34")
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.SendStatus(200)
+}
+
 func GetUserProjects(c *fiber.Ctx) error {
   userID := "42069"
   projects, err := database.GetProjectsByUserID(userID)
@@ -102,56 +172,6 @@ func GetProjectByID(c *fiber.Ctx) error {
 	return c.JSON(project)
 }
 
-func DeployProject(c *fiber.Ctx) error {
-	projectID := c.Params("projectID")
-	project, err := database.GetProjectByID(projectID)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
-
-	if project.CFProjectReady {
-		err = utils.PushGH(projectPath)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-		err = utils.PushCF(project.Name, projectPath)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-		return c.SendStatus(200)
-	}
-
-	err = utils.CreatePushGH(project.Name, projectPath)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	err = utils.CreateCFPage(project.Name)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	err = utils.PushCF(project.Name, projectPath)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.SendStatus(200)
-}
 
 func CreateProject(c *fiber.Ctx) error {
 	payload := struct {

@@ -16,6 +16,14 @@ type Project struct {
 	CreatedAt      string `json:"created_at"`
 }
 
+func UpdateProjectCFProjectReady(projectID string, cf_project_ready bool) error {
+	_, err := DB.Exec(`
+		UPDATE projects SET cf_project_ready = $1 WHERE id = $2;`,
+		cf_project_ready, projectID)
+
+	return err
+}
+
 func GetProjectsByUserID(userID string) ([]Project, error) {
 	var projects []Project
 	rows, err := DB.Query(`SELECT id, name, domain
