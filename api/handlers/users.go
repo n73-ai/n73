@@ -38,7 +38,7 @@ func VerifyAuthLink(c *fiber.Ctx) error {
 
 	exists, err := database.UserExists(email)
 
-	secondsToByValid := 60 * 60 * 24 // 24 hours valid
+	secondsToByValid := 60 * 60 * 24 
 	expDuration := time.Duration(secondsToByValid) * time.Second
 	now := time.Now().UTC()
 	exp := now.Add(expDuration).Unix()
@@ -102,7 +102,7 @@ func AuthLink(c *fiber.Ctx) error {
 		})
 	}
 
-	secondsToByValid := 60 * 15 // 15 min valid
+	secondsToByValid := 60 * 15 
 
 	token, err := utils.GenerateJWT(payload.Email, secondsToByValid)
 	if err != nil {
@@ -111,7 +111,6 @@ func AuthLink(c *fiber.Ctx) error {
 		})
 	}
 
-	// token string, email string, subject string
 	err = utils.SendEmail(token, payload.Email, "Welcome to AI Zustack")
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{

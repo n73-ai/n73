@@ -1,11 +1,5 @@
 import { getUserProjects } from "@/api/projects";
-import {
-  Card,
-  CardAction,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Spinner from "./spinner";
@@ -26,6 +20,16 @@ export default function Projects() {
       </h1>
       {isLoading && <Spinner />}
       {isError && <p>An unexpected error occurred.</p>}
+      {!data && !isLoading && !isError && (
+        <div className="border p-[20px] px-[25px] rounded-md">
+          <h1
+            className="text-center
+            tracking-tight text-balance text-muted-foreground"
+          >
+            You don't have any projects... yet!
+          </h1>
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-[15px]">
         {data?.map((p: any) => (
           <Link to={`/project/${p.id}`}>

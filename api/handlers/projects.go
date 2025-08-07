@@ -12,76 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func DeployProject(c *fiber.Ctx) error {
-	projectID := c.Params("projectID")
-	project, err := database.GetProjectByID(projectID)
-	if err != nil {
-		fmt.Println("0")
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
-
-	if project.CFProjectReady {
-		// push code to gh
-		err = utils.PushGH(projectPath)
-		if err != nil {
-			fmt.Println("222")
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-		// push code to cf
-		err = utils.PushCF(project.Name, projectPath)
-		if err != nil {
-			fmt.Println("333")
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-		return c.SendStatus(200)
-	}
-
-	// creates new github repo & push the remote repository
-	err = utils.CreatePushGH(project.Name, projectPath)
-	if err != nil {
-		fmt.Println("453")
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	// creates new cf page
-	err = utils.CreateCFPage(project.Name)
-	if err != nil {
-		fmt.Println("1")
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	err = database.UpdateProjectCFProjectReady(projectID, true)
-	if err != nil {
-		fmt.Println("2")
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	// push the code under ./dist to cf pages
-	err = utils.PushCF(project.Name, projectPath)
-	if err != nil {
-		fmt.Println("34")
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.SendStatus(200)
-}
-
 func GetUserProjects(c *fiber.Ctx) error {
 	userID := "42069"
 	projects, err := database.GetProjectsByUserID(userID)
@@ -113,7 +43,6 @@ func ResumeProject(c *fiber.Ctx) error {
 
 	err = database.UpdateProjectStatus(projectID, "Building")
 	if err != nil {
-		fmt.Println("err: ", err.Error())
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -135,7 +64,7 @@ func ResumeProject(c *fiber.Ctx) error {
 	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 	if _, err := os.Stat(projectPath); os.IsNotExist(err) {
 		return c.Status(500).JSON(fiber.Map{
-			"error": "project directory does not exist.",
+			"error": "Project directory does not exist.",
 		})
 	} else if err != nil {
 		return c.Status(500).JSON(fiber.Map{
@@ -204,7 +133,6 @@ func CreateProject(c *fiber.Ctx) error {
 	// !hard coded
 	userID := "42069"
 	model := "claude-3-5-haiku-20241022"
-	// end!
 
 	projectID := uuid.NewString()
 	messageID := uuid.NewString()

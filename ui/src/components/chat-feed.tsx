@@ -34,11 +34,11 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
   // get the messages
   const { data, isLoading, isError } = useQuery<Message[]>({
     queryKey: ["messages"],
-    queryFn: () => getMessagesByProjectID(projectID),
+    queryFn: () => getMessagesByProjectID(projectID!),
   });
 
   const resumeProjectMutation = useMutation({
-    mutationFn: () => resumeProject(prompt, projectID),
+    mutationFn: () => resumeProject(prompt, projectID!),
     onSuccess: async () => {
       setPrompt("");
       await queryClient.invalidateQueries({ queryKey: ["project"] });
@@ -65,7 +65,6 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
     resumeProjectMutation.mutate();
   };
 
-  // add the new message to the data array
   const getMessageByIDMutation = useMutation({
     mutationFn: (messageID: string) => getMessageByID(messageID),
     onSuccess: async (response) => {
@@ -97,10 +96,9 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
     scrollToBottom();
   }, [data, pStatus]);
 
-  // Auto-scroll inicial cuando se cargan los datos
   useEffect(() => {
     if (data && !isLoading) {
-      setTimeout(scrollToBottom, 100); // Pequeño delay para asegurar que el DOM esté actualizado
+      setTimeout(scrollToBottom, 100);
     }
   }, [isLoading, data]);
 
@@ -126,26 +124,25 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
       socketRef.current = socket;
 
       socket.onopen = () => {
-        //console.log("connected");
+        console.log("connected");
       };
 
       socket.onmessage = (event) => {
         if (event.data !== "") {
           if (event.data.includes("deploy-start")) {
             queryClient.invalidateQueries({ queryKey: ["project"] });
-            return
+            return;
           }
           if (event.data.includes("deploy-done")) {
             queryClient.invalidateQueries({ queryKey: ["project"] });
-            return 
+            return;
           }
           if (event.data.includes("build-error")) {
             setBuildError(true);
             const cleanedErrMsg = event.data.replace("build-error: ", "");
             setBuildErrorMessage(cleanedErrMsg);
-            console.log("hay un error de build");
-            return
-          } 
+            return;
+          }
           getMessageByIDMutation.mutate(event.data);
         }
       };
@@ -175,9 +172,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-[10px]">
         {isLoading && <Spinner />}
-
         {isError && <p>An unexpected error occurred.</p>}
-
         {data?.map((m: Message, i: number) => (
           <div key={i}>
             {m.role === "user" ? (

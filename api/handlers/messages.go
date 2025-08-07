@@ -70,46 +70,39 @@ func WebhookMessage(c *fiber.Ctx) error {
 		id := uuid.NewString()
 		err := database.CreateMessage(id, projectID, "metadata", "", model, payload.Duration, payload.IsError, payload.TotalCostUsd)
 		if err != nil {
-			fmt.Println(err.Error())
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
 
-		// imprube? just update if the project.session_id == ""
 		err = database.UpdateProjectSessionID(projectID, payload.SessionID)
 		if err != nil {
-			fmt.Println(err.Error())
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
 
-    // send here so the metadata is updated in real time
 		SendToUser("hej@agustfricke.com", id)
 
-    err = database.UpdateProjectStatus(projectID, "Deploying")
-    if err != nil {
+		err = database.UpdateProjectStatus(projectID, "Deploying")
+		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
-    }
+		}
 
 		SendToUser("hej@agustfricke.com", "deploy-start")
 
 		project, err := database.GetProjectByID(projectID)
 		if err != nil {
-			fmt.Println(err.Error())
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
 		}
 
 		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
-		// try npm run build to see if the ai left any errors on the codebase
 		err = utils.NpmRunBuild(projectPath)
 		if err != nil {
-			fmt.Println(err.Error())
 			wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
 			SendToUser("hej@agustfricke.com", wsFormatError)
 			return c.Status(500).JSON(fiber.Map{
@@ -117,16 +110,11 @@ func WebhookMessage(c *fiber.Ctx) error {
 			})
 		}
 
-
-		// if is NOT the first deployment just push the code
 		if project.CFProjectReady {
-      fmt.Println("is not the first deployment")
 			err = utils.Push(project.Name, projectPath)
 			if err != nil {
-				fmt.Println("utils.push", err.Error())
 				updateProjectError := database.UpdateProjectStatus(projectID, "Failed deployment")
 				if updateProjectError != nil {
-					fmt.Println(updateProjectError.Error())
 					return c.Status(500).JSON(fiber.Map{
 						"error": err.Error(),
 					})
@@ -136,74 +124,60 @@ func WebhookMessage(c *fiber.Ctx) error {
 				})
 			}
 
-			// if deploy is success
 			err = database.UpdateProjectStatus(projectID, "Deployed")
 			if err != nil {
-				fmt.Println(err.Error())
 				return c.Status(500).JSON(fiber.Map{
 					"error": err.Error(),
 				})
 			}
-		  SendToUser("hej@agustfricke.com", "deploy-done")
+			SendToUser("hej@agustfricke.com", "deploy-done")
 		} else {
-		// if is the first deployment do this:
-		err = utils.FistDeployment(project.Name, projectPath)
-		if err != nil {
-			fmt.Println("first-deploy", err.Error())
-			updateProjectError := database.UpdateProjectStatus(projectID, "Failed deployment")
-			if updateProjectError != nil {
-				fmt.Println(updateProjectError.Error())
+			err = utils.FistDeployment(project.Name, projectPath)
+			if err != nil {
+				updateProjectError := database.UpdateProjectStatus(projectID, "Failed deployment")
+				if updateProjectError != nil {
+					return c.Status(500).JSON(fiber.Map{
+						"error": err.Error(),
+					})
+				}
 				return c.Status(500).JSON(fiber.Map{
 					"error": err.Error(),
 				})
 			}
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+
+			err = database.UpdateProjectCFProjectReady(projectID, true)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{
+					"error": err.Error(),
+				})
+			}
+
+			err = database.UpdateProjectStatus(projectID, "Deployed")
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{
+					"error": err.Error(),
+				})
+			}
+
+			slug := strings.ToLower(strings.ReplaceAll(project.Name, " ", "-"))
+			domain, err := utils.GetProjectDomainFallback(slug)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{
+					"error": err.Error(),
+				})
+			}
+
+			err = database.UpdateProjectDomain(projectID, domain)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{
+					"error": err.Error(),
+				})
+			}
+
+			SendToUser("hej@agustfricke.com", "deploy-done")
 		}
-
-		err = database.UpdateProjectCFProjectReady(projectID, true)
-		if err != nil {
-			fmt.Println("2")
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-
-		// if deploy is success
-		err = database.UpdateProjectStatus(projectID, "Deployed")
-		if err != nil {
-			fmt.Println(err.Error())
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-
-		slug := strings.ToLower(strings.ReplaceAll(project.Name, " ", "-"))
-    domain, err := utils.GetProjectDomainFallback(slug)
-    if err != nil {
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-    }
-
-		err = database.UpdateProjectDomain(projectID, domain)
-		if err != nil {
-			fmt.Println(err.Error())
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-
-		// here should be the projectid instead of the user email address
-		SendToUser("hej@agustfricke.com", "deploy-done")
-
-    }
-
-
 	default:
 		log.Println("Unknown type:", payload.Type)
 	}
-
 	return c.SendStatus(200)
 }

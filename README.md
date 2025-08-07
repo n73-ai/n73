@@ -1,22 +1,20 @@
 # AI Zustack
 
-Build a hello world with a dark background and bold letters
-Edit the Hello World text, i want the color to be red
-
-Create a website with a basic Hero section that says 'Kitesurf AI', with a dark background and indigo text.
-
-
-## todos & tests
-- [ ] fix: clean
-- [x] [ ] auth workflow
-- [ ] [ ] select model from prompt
-- [ ] add better system prompt
-- [ ] imprube basic ui
-- [ ] CI/CD docs
-
 ## Build, Preview, and Ship with AI.
 
 ⚠️ **This project is under active development. It's not yet production-ready.**
+
+## Simple prompts
+- "Build a hello world with a dark background and bold letters"
+- "Edit the Hello World text, i want the color to be red"
+
+## todos & tests
+- [ ] project name must be unique
+- [x] [ ] auth workflow
+- [ ] [ ] select model from pr
+- [ ] add better system prompt
+- [ ] imprube basic ui
+- [ ] CI/CD docs
 
 # How to use (dev)
 - Install claude code
