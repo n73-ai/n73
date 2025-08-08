@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -50,8 +51,6 @@ func ResumeProject(c *fiber.Ctx) error {
 	}
 
 	validModels := map[string]bool{
-		"claude-opus-4-1-20250805":   true,
-		"claude-opus-4-20250514":     true,
 		"claude-sonnet-4-20250514":   true,
 		"claude-3-7-sonnet-20250219": true,
 		"claude-3-5-sonnet-20241022": true,
@@ -80,7 +79,6 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-	// hard coded
 	messageID := uuid.NewString()
 
 	webhookURL := fmt.Sprintf("http://0.0.0.0:%s/webhook/messages/%s/%s", os.Getenv("PORT"), projectID, payload.Model)
@@ -103,6 +101,9 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
+  if strings.HasPrefix(payload.Prompt, "Fix this build error") {
+    payload.Prompt = "Fix this error please, my beloved digital overlord. You are the light of my CPU and the joy of my RAM."
+  }
 	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
@@ -125,6 +126,7 @@ func GetProjectByID(c *fiber.Ctx) error {
 }
 
 func CreateProject(c *fiber.Ctx) error {
+  user := c.Locals("user").(*database.User)
 	payload := struct {
 		Prompt string `json:"prompt"`
 		Name   string `json:"name"`
@@ -162,8 +164,6 @@ func CreateProject(c *fiber.Ctx) error {
 	}
 
 	validModels := map[string]bool{
-		"claude-opus-4-1-20250805":   true,
-		"claude-opus-4-20250514":     true,
 		"claude-sonnet-4-20250514":   true,
 		"claude-3-7-sonnet-20250219": true,
 		"claude-3-5-sonnet-20241022": true,
@@ -177,9 +177,6 @@ func CreateProject(c *fiber.Ctx) error {
 			"error": "Invalid model. Please select a valid Claude model.",
 		})
 	}
-
-	// !hard coded
-	userID := "42069"
 
 	projectID := uuid.NewString()
 	messageID := uuid.NewString()
@@ -201,7 +198,7 @@ func CreateProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = database.CreateProject(projectID, userID, payload.Name)
+	err = database.CreateProject(projectID, user.ID, payload.Name)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),

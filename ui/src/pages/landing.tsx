@@ -17,10 +17,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth";
+import { useModelStore } from "@/store/models";
 
 const models = [
-  { name: "Claude Opus 4.1", apiName: "claude-opus-4-1-20250805" },
-  { name: "Claude Opus 4", apiName: "claude-opus-4-20250514" },
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
   { name: "Claude Sonnet 3.7", apiName: "claude-3-7-sonnet-20250219" },
   { name: "Claude Sonnet 3.5 v2", apiName: "claude-3-5-sonnet-20241022" },
@@ -32,8 +31,14 @@ const models = [
 export default function Landing() {
   const [prompt, setPrompt] = useState("");
   const [name, setName] = useState("");
-  const [selectedModel, setSelectedModel] = useState(models[0]);
   const navigate = useNavigate();
+  const { model, setModel } = useModelStore();
+
+  const handleModelSelect = (modelObj: (typeof models)[0]) => {
+    setModel(modelObj.apiName); 
+  };
+
+  const selectedModel = models.find(m => m.apiName === model) || models[0];
 
   const { isAuth } = useAuthStore();
 
@@ -68,9 +73,6 @@ export default function Landing() {
     createProjectMut.mutate();
   };
 
-  const handleModelSelect = (model: (typeof models)[0]) => {
-    setSelectedModel(model);
-  };
 
   return (
     <section className="container mx-auto px-[10px] 2xl:px-[200px]">

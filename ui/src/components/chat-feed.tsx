@@ -1,4 +1,4 @@
-import { AlertCircleIcon, ChevronDown, Info, Send } from "lucide-react";
+import { AlertCircleIcon, ChevronDown, Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import ZustackLogo from "./zustack-logo";
@@ -18,10 +18,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useModelStore } from "@/store/models";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const models = [
-  { name: "Claude Opus 4.1", apiName: "claude-opus-4-1-20250805" },
-  { name: "Claude Opus 4", apiName: "claude-opus-4-20250514" },
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
   { name: "Claude Sonnet 3.7", apiName: "claude-3-7-sonnet-20250219" },
   { name: "Claude Sonnet 3.5 v2", apiName: "claude-3-5-sonnet-20241022" },
@@ -38,13 +43,16 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
   const [prompt, setPrompt] = useState("");
   const [buildError, setBuildError] = useState(false);
   const [buildErrorMessage, setBuildErrorMessage] = useState(true);
-  const [selectedModel, setSelectedModel] = useState(models[0]);
+  const [fixingErr, setFixingErr] = useState(false);
 
-  const handleModelSelect = (model: (typeof models)[0]) => {
-    setSelectedModel(model);
+  const { model, setModel } = useModelStore();
+
+  const handleModelSelect = (modelObj: (typeof models)[0]) => {
+    setModel(modelObj.apiName);
   };
 
-  // get the messages
+  const selectedModel = models.find((m) => m.apiName === model) || models[0];
+
   const { data, isLoading, isError } = useQuery<Message[]>({
     queryKey: ["messages"],
     queryFn: () => getMessagesByProjectID(projectID!),
@@ -60,6 +68,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
         content: prompt,
         total_cost_usd: 0,
         duration: 0,
+        model: "",
       });
     },
     onError: (error: ErrorResponse) => {
@@ -89,6 +98,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
         content: response.content,
         total_cost_usd: response.total_cost_usd,
         duration: response.duration,
+        model: response.model,
       });
     },
     onError: (error: ErrorResponse) => {
@@ -211,12 +221,20 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
                   <Markdown content={m.content} />
                 </div>
                 {m.role === "metadata" && (
-                  <div className="flex items-center gap-[5px] text-muted-foreground">
-                    <Info />
-                    <p>
-                      Worked for {m.duration} milliseconds and consumed USD{" "}
-                      {m.total_cost_usd}
-                    </p>
+                  <div className="flex justify-start text-muted-foreground">
+                    <Accordion type="single" collapsible>
+                      <AccordionItem value="item-1">
+                        <AccordionTrigger>Response metadata</AccordionTrigger>
+                        <AccordionContent>
+                          Processing time: {(m.duration / 1000).toFixed(2)}{" "}
+                          seconds
+                        </AccordionContent>
+                        <AccordionContent>
+                          Cost: ${m.total_cost_usd.toFixed(4)} USD
+                        </AccordionContent>
+                        <AccordionContent>Model: {m.model}</AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   </div>
                 )}
               </>
@@ -231,7 +249,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
           </div>
         )}
 
-        {buildError && (
+        {buildError && !fixingErr && (
           <Alert
             className="my-[20px] flex justify-between items-center"
             variant="destructive"
@@ -245,6 +263,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
             <AlertDescription>
               <Button
                 onClick={() => {
+                  setFixingErr(true);
                   setPrompt(`Fix this build error: ${buildErrorMessage}`);
                   resumeProjectMutation.mutate();
                 }}

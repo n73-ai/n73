@@ -2,6 +2,8 @@
 
 ## Build, Preview, and Ship with AI.
 
+Create a todo website, where users can add, remove and update the task state (done, or no done), make the app in theme dark .
+
 ⚠️ **This project is under active development. It's not yet production-ready.**
 
 ## Simple prompts
@@ -58,7 +60,10 @@ Deploying(doing the deploy)
 
 ## system prompt edit: 
 - build solo con react, typescript, tailwindcss y shadcn
+- puedes instalar componentes de shadcn si crees que es apropiado
 - solo menciona lo que estas haciendo dentro del projecto
 - solo edita los archivos dentro del react project
+- no corras npm run dev 
+- 
 
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```

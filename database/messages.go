@@ -20,10 +20,10 @@ type Message struct {
 func GetMessageByID(id string) (Message, error) {
 	var m Message
 	row := DB.QueryRow(`SELECT id, role, content, model, duration,
-        is_error, total_cost_usd FROM messages WHERE id = $1`, id)
+        is_error, total_cost_usd, model FROM messages WHERE id = $1`, id)
 
 	if err := row.Scan(&m.ID, &m.Role, &m.Content, &m.Model,
-		&m.Duration, &m.IsError, &m.TotalCostUsd); err != nil {
+		&m.Duration, &m.IsError, &m.TotalCostUsd, &m.Model); err != nil {
 		if err == sql.ErrNoRows {
 			return m, fmt.Errorf("No message found with the id: %s", id)
 		}
@@ -34,7 +34,7 @@ func GetMessageByID(id string) (Message, error) {
 
 func GetMessagesByProjectID(projectID string) ([]Message, error) {
 	var messages []Message
-	rows, err := DB.Query(`SELECT id, role, content, duration, total_cost_usd 
+	rows, err := DB.Query(`SELECT id, role, content, duration, total_cost_usd, model
   FROM messages WHERE project_id = $1;`, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
@@ -43,7 +43,7 @@ func GetMessagesByProjectID(projectID string) ([]Message, error) {
 
 	for rows.Next() {
 		var m Message
-		if err := rows.Scan(&m.ID, &m.Role, &m.Content, &m.Duration, &m.TotalCostUsd); err != nil {
+		if err := rows.Scan(&m.ID, &m.Role, &m.Content, &m.Duration, &m.TotalCostUsd, &m.Model); err != nil {
 			return nil, fmt.Errorf("error: %v", err)
 		}
 		messages = append(messages, m)

@@ -11,4 +11,5 @@ export type Message = {
   content: string;
   duration: number 
   total_cost_usd: number
+  model: string;
 }
