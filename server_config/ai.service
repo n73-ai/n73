@@ -12,6 +12,7 @@ Environment=EMAIL_SECRET=your_secret_email_pass
 Environment=PORT=42069
 Environment=ROOT_PATH=/path/to/project
 Environment=SECRET_KEY=long-string
+Environment=ADMIN_JWT_TOKEN=sign_admin_token
 
 Type=simple
 Restart=always

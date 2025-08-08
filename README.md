@@ -8,16 +8,12 @@
 - "Build a hello world with a dark background and bold letters"
 - "Edit the Hello World text, i want the color to be red"
 
-## todos & tests
-- test python server with jwt must be admin
-- fix bad spinner color at login 
-- [ ] if error at resume, create project or webhook set correr state for the ui.
-
-new bash env with admin token in webhook url:
-export ADMIN_JWT_TOKEN
-1. run go server and export in other terminal the jwt
-2. run main.py cli
-3. check if it works
+## todos 
+- [ ] test in remote server via 8080
+- [ ] systemd for python server?
+- [ ] if error at resume, create project or webhook set correct state for the ui.
+- [ ] container for ai projects
+- [ ] better docs
 
 # How to use (dev)
 - Install claude code
@@ -46,6 +42,14 @@ source .env
 - Run the go server
 ```bash
 go run cmd/main.go
+```
+
+export the env for python server
+```bash
+export ADMIN_JWT_TOKEN=sign_admin_token
+```
+```bash
+python3 main.py
 ```
 
 - Make admin user
