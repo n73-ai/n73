@@ -11,7 +11,6 @@ Create a todo website, where users can add, remove and update the task state (do
 - "Edit the Hello World text, i want the color to be red"
 
 ## todos & tests
-- [ ] add better system prompt
 - [ ] imprube basic ui
 - [ ] CI/CD docs
 
@@ -58,12 +57,5 @@ Error
 Deployed(successfull deployment)
 Deploying(doing the deploy)
 
-## system prompt edit: 
-- build solo con react, typescript, tailwindcss y shadcn
-- puedes instalar componentes de shadcn si crees que es apropiado
-- solo menciona lo que estas haciendo dentro del projecto
-- solo edita los archivos dentro del react project
-- no corras npm run dev 
-- 
-
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```
+
