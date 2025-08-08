@@ -60,101 +60,143 @@ export default function Auth() {
 
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
-      <div className="flex items-center justify-center py-12">
-        <div className="mx-auto grid w-full max-w-sm gap-4 px-[5px]">
-          <div className="grid">
+      <div className="relative flex items-center justify-center px-6 py-12 min-h-screen lg:min-h-auto">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 text-center lg:text-left">
             {location.pathname === "/login" && (
-              <h3 className="text-3xl font-semibold tracking-tight">Log in</h3>
+              <h1 className="text-3xl font-semibold tracking-tight">Log in</h1>
+            )}
+            {location.pathname === "/signup" && (
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Create your account
+              </h1>
+            )}
+            <p className="text-muted-foreground mt-2">
+              {location.pathname === "/login" 
+                ? "Welcome back! Please sign in to your account"
+                : "Get started by creating your account"
+              }
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {step === 0 && (
+              <form onSubmit={handleSubmitAuthLink} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email address
+                  </Label>
+                  <Input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    required
+                    className=""
+                  />
+                </div>
+                <Button type="submit" variant="default" className="w-full" disabled={authLinkMutation.isPending}>
+                  {authLinkMutation.isPending ? (
+                    <Spinner />
+                  ) : (
+                    <>
+                      {location.pathname === "/login" ? "Log in" : "Create account"}
+                    </>
+                  )}
+                </Button>
+              </form>
             )}
 
-            {location.pathname === "/signup" && (
-              <h3 className="text-3xl font-semibold tracking-tight">
-                Create your account
-              </h3>
+            {step === 1 && (
+              <form onSubmit={handleSubmitAuthVerify} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="otp" className="text-sm font-medium">
+                    Verification Code
+                  </Label>
+                  <Input
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    id="otp"
+                    type="text"
+                    placeholder="Enter one time password"
+                    required
+                    className=""
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Code sent to {email}
+                  </p>
+                </div>
+                <Button type="submit" variant="default" className="w-full" disabled={authVerifyMutation.isPending}>
+                  {authVerifyMutation.isPending ? (
+                    <Spinner />
+                  ) : (
+                    "Verify Code"
+                  )}
+                </Button>
+              </form>
             )}
           </div>
 
-          {step === 0 && (
-            <form onSubmit={handleSubmitAuthLink} className="grid">
-              <div className="grid gap-[10px]">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  id="email"
-                  type="email"
-                  placeholder="Email"
-                  required
-                />
-                <Button type="submit" variant="default">
-                  {location.pathname === "/login" && <span>Log in</span>}
-                  {location.pathname === "/signup" && (
-                    <span>Create account</span>
-                  )}
-                  {authLinkMutation.isPending && <Spinner />}
+          <div className="mt-8 space-y-4">
+            {location.pathname === "/login" && step === 0 && (
+              <div className="text-center">
+                <span className="text-sm text-muted-foreground">Don't have an account? </span>
+                <Button onClick={() => navigate("/signup")} variant="link" className="p-0 h-auto font-medium">
+                  Sign up
                 </Button>
               </div>
-            </form>
-          )}
+            )}
 
-          {step === 1 && (
-            <form onSubmit={handleSubmitAuthVerify} className="grid">
-              <div className="grid gap-2">
-                <Label htmlFor="otp">One time password</Label>
-                <Input
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  id="otp"
-                  type="text"
-                  placeholder="One time password"
-                  required
-                />
-                <Button type="submit" variant="default">
-                  {authVerifyMutation.isPending && <Spinner />}
-                  <span>Submit</span>
+            {location.pathname === "/signup" && step === 0 && (
+              <div className="text-center">
+                <span className="text-sm text-muted-foreground">Already have an account? </span>
+                <Button onClick={() => navigate("/login")} variant="link" className="p-0 h-auto font-medium">
+                  Log in
                 </Button>
               </div>
-            </form>
-          )}
+            )}
 
-          {location.pathname === "/login" && (
-            <div className="flex justify-center gap-1 text-center items-center">
-              <p>Don't have an account?</p>
-              <Button onClick={() => navigate("/signup")} variant={"link"}>
-                Sign up
-              </Button>
+            {step === 1 && (
+              <div className="space-y-3">
+                <div className="text-center">
+                  <span className="text-sm text-muted-foreground">Didn't receive the code? </span>
+                  <Button 
+                    onClick={() => authLinkMutation.mutate()} 
+                    variant="link" 
+                    className="p-0 h-auto font-medium"
+                    disabled={authLinkMutation.isPending}
+                  >
+                    {authLinkMutation.isPending ? "Sending..." : "Send again"}
+                  </Button>
+                </div>
+                
+                <div className="text-center">
+                  <span className="text-sm text-muted-foreground">Wrong email? </span>
+                  <Button 
+                    onClick={() => setStep(0)} 
+                    variant="link" 
+                    className="p-0 h-auto font-medium"
+                  >
+                    Go back
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="pt-4 border-t border-border">
+              <div className="text-center">
+                <Button onClick={() => navigate("/")} variant="ghost" className="text-sm text-muted-foreground">
+                  ← Back to Home
+                </Button>
+              </div>
             </div>
-          )}
-
-          {location.pathname === "/signup" && (
-            <div className="flex justify-center gap-1 text-center items-center">
-              <p>Have an account?</p>
-              <Button onClick={() => navigate("/login")} variant={"link"}>
-                Log in
-              </Button>
-            </div>
-          )}
-
-          {step === 1 && (
-            <div className="flex justify-center gap-1 text-center items-center">
-              <p>Didn't receive the code?</p>
-              <Button variant={"link"}>Send Again</Button>
-            </div>
-          )}
-
-          <div className="flex justify-center gap-1 text-center items-center">
-            <p>Go back</p>
-            <Button onClick={() => navigate("/")} variant={"link"}>
-              Home
-            </Button>
           </div>
         </div>
       </div>
-      <div
-        className="hidden lg:flex flex-1 min-h-screen items-center 
-        justify-center border-l border-dashed border-zinc-700"
-      >
-        <ZustackLogo size={300} />
+      
+      <div className="hidden lg:flex flex-1 min-h-screen items-center justify-center border-l border-dashed border-zinc-700">
+        <ZustackLogo size={400} />
       </div>
     </div>
   );

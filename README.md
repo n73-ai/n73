@@ -2,8 +2,6 @@
 
 ## Build, Preview, and Ship with AI.
 
-Create a todo website, where users can add, remove and update the task state (done, or no done), make the app in theme dark .
-
 ⚠️ **This project is under active development. It's not yet production-ready.**
 
 ## Simple prompts
@@ -11,7 +9,6 @@ Create a todo website, where users can add, remove and update the task state (do
 - "Edit the Hello World text, i want the color to be red"
 
 ## todos & tests
-- [ ] imprube basic ui
 - [ ] CI/CD docs
 
 # How to use (dev)
@@ -58,4 +55,3 @@ Deployed(successfull deployment)
 Deploying(doing the deploy)
 
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```
-
