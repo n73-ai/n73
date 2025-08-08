@@ -96,7 +96,7 @@ export default function Auth() {
                     className=""
                   />
                 </div>
-                <Button type="submit" variant="default" className="w-full" disabled={authLinkMutation.isPending}>
+               <Button type="submit" variant="secondary" className="w-full" disabled={authLinkMutation.isPending}>
                   {authLinkMutation.isPending ? (
                     <Spinner />
                   ) : (
@@ -127,7 +127,7 @@ export default function Auth() {
                     Code sent to {email}
                   </p>
                 </div>
-                <Button type="submit" variant="default" className="w-full" disabled={authVerifyMutation.isPending}>
+                <Button type="submit" variant="secondary" className="w-full" disabled={authVerifyMutation.isPending}>
                   {authVerifyMutation.isPending ? (
                     <Spinner />
                   ) : (

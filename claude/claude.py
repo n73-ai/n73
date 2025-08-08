@@ -1,14 +1,39 @@
+import os
 from claude_code_sdk import query, ClaudeCodeOptions
 import requests
 import asyncio
 from system_prompt import SYSTEM_PROMPT
 
 async def post_json(url, json_data):
+    token = os.getenv('ADMIN_JWT_TOKEN')
+    if not token:
+        raise ValueError("JWT token must be provided via --jwt-token parameter or JWT_TOKEN environment variable")
+    
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    
     loop = asyncio.get_running_loop()
-    response = await loop.run_in_executor(None, lambda: requests.post(url, json=json_data))
-    return response
+    
+    try:
+        response = await loop.run_in_executor(
+            None, 
+            lambda: requests.post(url, json=json_data, headers=headers, timeout=30)
+        )
+        
+        if response.status_code == 401:
+            raise ValueError("Invalid or expired JWT token")
+        elif not response.ok:
+            raise requests.RequestException(f"Request failed with status {response.status_code}: {response.text}")
+        
+        return response
+    
+    except requests.RequestException as e:
+        raise Exception(f"HTTP request failed: {e}")
 
-async def NewProject(prompt: str, model: str, workDir: str, target_url: str, api_key: str):
+
+async def NewProject(prompt: str, model: str, workDir: str, target_url: str):
     options = ClaudeCodeOptions(
             max_turns=10,
             model=model,

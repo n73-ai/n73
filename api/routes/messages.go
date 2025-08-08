@@ -9,6 +9,6 @@ import (
 
 func MessagesRoutes(app *fiber.App) {
 	app.Post("/messages/solo/:messageID", middleware.User, handlers.GetMessageByID)
-	app.Post("/webhook/messages/:projectID/:model", handlers.WebhookMessage)
+	app.Post("/webhook/messages/:projectID/:model", middleware.Admin, handlers.WebhookMessage)
 	app.Get("/messages/:projectID", middleware.User, handlers.GetMessagesByProjectID)
 }

@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// payload.Prompt, payload.Model, webhookURL, projectPath, project.SessionID
 func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID string) error {
 	payload := map[string]string{
 		"work_dir":    path,

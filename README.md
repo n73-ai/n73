@@ -9,7 +9,15 @@
 - "Edit the Hello World text, i want the color to be red"
 
 ## todos & tests
-- [ ]
+- test python server with jwt must be admin
+- fix bad spinner color at login 
+- [ ] if error at resume, create project or webhook set correr state for the ui.
+
+new bash env with admin token in webhook url:
+export ADMIN_JWT_TOKEN
+1. run go server and export in other terminal the jwt
+2. run main.py cli
+3. check if it works
 
 # How to use (dev)
 - Install claude code
@@ -27,6 +35,10 @@ docker run --name my-postgres \
 docker ps -a
 docker exec -it my-postgres psql -U postgres -d mydb
 ```
+- Config .env.local on react
+```bash
+vim ui/.env.local
+```
 - Export env
 ```bash
 source .env
@@ -34,6 +46,11 @@ source .env
 - Run the go server
 ```bash
 go run cmd/main.go
+```
+
+- Make admin user
+```bash
+UPDATE users SET role = 'admin' WHERE email = 'hej@agustfricke.com';
 ```
 
 # Dependencies
@@ -158,6 +175,12 @@ git clone git@github.com:zustack/ai.git
 ```
 
 - Edit .env file with correct values(db and port)
+
+- Config .env.local on react
+```bash
+vim ui/.env.local
+```
+- Config the postgres db and add credentials to .env
 
 #### Firewall config
 ```bash
