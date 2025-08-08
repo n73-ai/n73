@@ -20,6 +20,7 @@ func main() {
 		"PORT",
 		"EMAIL_SECRET_KEY",
 		"ROOT_PATH",
+		"SECRET_KEY",
 	}
 	if err := utils.CheckRequiredEnv(required); err != nil {
 		fmt.Printf("Environment error: %v.", err)
