@@ -54,7 +54,7 @@ python3 main.py
 
 - Make admin user
 ```bash
-UPDATE users SET role = 'admin' WHERE email = 'hej@agustfricke.com';
+UPDATE users SET role = 'admin' WHERE email = 'agustfricke@gmail.com';
 ```
 
 # Dependencies
