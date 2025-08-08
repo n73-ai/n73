@@ -40,5 +40,6 @@ func main() {
 	}
 
 	app := api.RunServer()
-	log.Fatal(app.Listen(":8080"))
+  port := fmt.Sprintf(":%v", os.Getenv("PORT"))
+	log.Fatal(app.Listen(port))
 }

@@ -45,10 +45,117 @@ go run cmd/main.go
 - python3.10-env
 
 # Deploy
-- Install dependencies
-- Login gh cli
-- Login wrangler 
-- Login claude code
+#### Install dependencies
+For `Ubuntu 22.04`.
+- Go
+```bash
+wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
+tar -xf go1.22.5.linux-amd64.tar.gz
+rm go1.22.5.linux-amd64.tar.gz
+mv go /usr/bin
+```
+- Node
+```bash
+wget https://nodejs.org/dist/v22.17.1/node-v22.17.1-linux-x64.tar.xz
+tar -xf node-v22.17.1-linux-x64.tar.xz
+rm node-v22.17.1-linux-x64.tar.xz
+mv node-v22.17.1-linux-x64 /usr/bin/node
+```
+Add to .bashrc
+```bash
+export PATH=/usr/bin/go/bin:$PATH
+export GOPATH=/.go
+export PATH=$PATH:$GOPATH/bin
+export PATH=$PATH:/usr/bin/node/bin
+```
+- Docker
+```bash
+apt-get remove docker docker-engine docker.io containerd runc 
+apt-get update 
+apt-get install ca-certificates curl gnupg 
+install -m 0755 -d /etc/apt/keyrings 
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg  
+chmod a+r /etc/apt/keyrings/docker.gpg 
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list 
+apt-get update -y 
+apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y 
+```
+- Wrangler
+```bash
+npm i -D -g wrangler@latest
+```
+gh cli
+```bash
+(type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
+	&& sudo mkdir -p -m 755 /etc/apt/keyrings \
+	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+	&& cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+	&& sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+	&& sudo mkdir -p -m 755 /etc/apt/sources.list.d \
+	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+	&& sudo apt update \
+	&& sudo apt install gh -y
+```
+- Python venv
+```bash
+# check python version
+python3 --version
+# if python 3.12.* set python3.12-venv
+apt install python3.12-venv
+```
+- Claude code
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+- check if install is correct
+```bash
+node --version
+go version
+docker --version
+wrangler --version
+gh --version
+```
+
+#### Auth
+##### GitHub ssh
+Generating a new SSH key
+```bash
+ssh-keygen -t ed25519 -C "hej@agustfricke.com"
+```
+Start the ssh-agent in the background and add your SSH private key to the ssh-agent
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+Copy and past to your GitHub account
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+##### gh 
+```bash
+gh auth login
+```
+
+##### wrangler
+```bash
+```
+Go to your browser and open the oauth url
+it will redirect to a localhost:[port]
+now, open a new terminal in your server and curl that url
+```bash
+curl "localhost_url"
+```
+
+##### claude code
+```bash
+claude
+```
+Open the url in local web browser, copy the code and pase in the terminal
+
+#### Clone the repo
+```bash
+git clone git@github.com:zustack/ai.git
+```
 
 - Edit .env file with correct values(db and port)
 
