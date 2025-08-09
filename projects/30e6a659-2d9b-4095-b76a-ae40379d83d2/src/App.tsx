@@ -46,7 +46,7 @@ function App() {
               : 'bg-white/40 border-gray-300/50'
           }`}>
             <span className={`font-medium transition-colors duration-300 ${
-              isDarkMode ? 'text-white' : 'text-gray-800'
+              isDarkMode ? 'text-gray-200' : 'text-gray-800'
             }`}>
               ✨ Built with React & Tailwind ✨
             </span>
@@ -55,7 +55,7 @@ function App() {
         
         <div className="mt-6">
           <p className={`text-sm transition-colors duration-300 ${
-            isDarkMode ? 'text-white/70' : 'text-gray-600'
+            isDarkMode ? 'text-gray-400' : 'text-gray-600'
           }`}>
             {isDarkMode ? 'Dark Theme Active' : 'Light Theme Active'}
           </p>
