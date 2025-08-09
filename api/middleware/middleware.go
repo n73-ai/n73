@@ -65,9 +65,9 @@ func Admin(c *fiber.Ctx) error {
 		return c.Status(500).SendString(err.Error())
 	}
 
-  if user.Role != "admin" {
+	if user.Role != "admin" {
 		return c.SendStatus(403)
-  }
+	}
 
 	c.Locals("scope", claims["scope"])
 	c.Locals("user", &user)

@@ -24,21 +24,21 @@ def validate_fields(data, required_fields):
 @app.route("/claude/new", methods=["POST"])
 def new_endpoint():
     data = request.get_json()
-    valid, error = validate_fields(data, ["prompt", "model", "work_dir", "webhook_url"])
+    valid, error = validate_fields(data, ["prompt", "model", "work_dir", "webhook_url", "jwt"])
     if not valid:
         return jsonify({"error": error}), 400
 
-    start_background_task(NewProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"])
+    start_background_task(NewProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["jwt"])
     return jsonify({"status": "processing"}), 200
 
 @app.route("/claude/resume", methods=["POST"])
 def resume_endpoint():
     data = request.get_json()
-    valid, error = validate_fields(data, ["prompt", "model", "work_dir", "webhook_url", "session_id"])
+    valid, error = validate_fields(data, ["prompt", "model", "work_dir", "webhook_url", "session_id", "jwt"])
     if not valid:
         return jsonify({"error": error}), 400
 
-    start_background_task(ResumeProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["session_id"])
+    start_background_task(ResumeProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["session_id"], data["jwt"])
     return jsonify({"status": "processing"}), 200
 
 if __name__ == "__main__":

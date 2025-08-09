@@ -8,14 +8,27 @@
 - "Build a hello world with a dark background and bold letters"
 - "Edit the Hello World text, i want the color to be red"
 
-## todos 
-- [ ] test in remote server via 8080
-- [ ] systemd for python server?
-- [ ] if error at resume, create project or webhook set correct state for the ui.
-- [ ] container for ai projects
-- [ ] better docs
+## todos v0.0.0
+- [ ] Click see github repo
+- [ ] Click see live website
 
-# How to use (dev)
+- [ ] handlers.messages correct deploy steps
+- [ ] add go routines to make faster deploys
+- [ ] CD/CI docs and implementation
+
+# Add docker to user
+```bash
+sudo usermod -aG docker $USER
+```
+# Create original Docker container
+```bash
+docker build -t claude-server .
+docker run -d -p 5000:5000 --name claude-server claude-server
+```
+# Commit the container
+```bash
+docker commit claude-server base:v1
+```
 - Install claude code
 ```bash
 npm install -g @anthropic-ai/claude-code
@@ -31,6 +44,10 @@ docker run --name my-postgres \
 docker ps -a
 docker exec -it my-postgres psql -U postgres -d mydb
 ```
+- Make admin user in new db
+```bash
+UPDATE users SET role = 'admin' WHERE email = 'agustfricke@gmail.com';
+```
 - Config .env.local on react
 ```bash
 vim ui/.env.local
@@ -42,19 +59,6 @@ source .env
 - Run the go server
 ```bash
 go run cmd/main.go
-```
-
-export the env for python server
-```bash
-export ADMIN_JWT_TOKEN=sign_admin_token
-```
-```bash
-python3 main.py
-```
-
-- Make admin user
-```bash
-UPDATE users SET role = 'admin' WHERE email = 'agustfricke@gmail.com';
 ```
 
 # Dependencies
@@ -231,15 +235,9 @@ mv ai/server_config/ai.service /etc/systemd/system
 
 - Systemd commands
 ```bash
-service zustack start
-service zustack status
-service zustack stop
+service ai-zustack start
+service ai- zustack status
+service ai-zustack stop
 ```
 
-#### Create symlinks for applications
-sudo ln -s /usr/local/node/bin/node /usr/bin/node
-sudo ln -s /usr/local/node/bin/npx /usr/bin/npx
-
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```
-
-

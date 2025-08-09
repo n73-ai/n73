@@ -152,11 +152,7 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
 
       socket.onmessage = (event) => {
         if (event.data !== "") {
-          if (event.data.includes("deploy-start")) {
-            queryClient.invalidateQueries({ queryKey: ["project"] });
-            return;
-          }
-          if (event.data.includes("deploy-done")) {
+          if (event.data.includes("Deploying") || event.data.includes("Deployed")) {
             queryClient.invalidateQueries({ queryKey: ["project"] });
             return;
           }

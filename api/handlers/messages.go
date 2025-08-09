@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -70,129 +69,195 @@ func WebhookMessage(c *fiber.Ctx) error {
 		id := uuid.NewString()
 		err := database.CreateMessage(id, projectID, "metadata", "", model, payload.Duration, payload.IsError, payload.TotalCostUsd)
 		if err != nil {
-      fmt.Println("1", err.Error())
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			fmt.Println(err.Error())
 		}
 
 		err = database.UpdateProjectSessionID(projectID, payload.SessionID)
 		if err != nil {
-      fmt.Println("2", err.Error())
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			fmt.Println(err.Error())
 		}
 
 		SendToUser(projectID, id)
 
 		err = database.UpdateProjectStatus(projectID, "Deploying")
 		if err != nil {
-      fmt.Println("3", err.Error())
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			fmt.Println(err.Error())
 		}
 
-		SendToUser(projectID, "deploy-start")
+		SendToUser(projectID, "Deploying")
 
 		project, err := database.GetProjectByID(projectID)
 		if err != nil {
-      fmt.Println("4", err.Error())
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			fmt.Println(err.Error())
 		}
 
 		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
-		err = utils.NpmRunBuild(projectPath)
+
+		err = utils.TryBuildProject(project.ID)
 		if err != nil {
-      fmt.Println("5", err.Error())
+			fmt.Println(err.Error())
 			wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
 			SendToUser(projectID, wsFormatError)
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
 		}
 
-		if project.CFProjectReady {
-			err = utils.Push(project.Name, projectPath)
+		// fist deployment, on every stage update p.stage & if err p.err_stage
+		if project.Stage == "0" {
+			// copy in new project
+			err = utils.CopyProjectToMainMachine(project.ID)
 			if err != nil {
-        fmt.Println("6", err.Error())
-				updateProjectError := database.UpdateProjectStatus(projectID, "Failed deployment")
-				if updateProjectError != nil {
-          fmt.Println("7", updateProjectError.Error())
-					return c.Status(500).JSON(fiber.Map{
-						"error": err.Error(),
-					})
-				}
-				return c.Status(500).JSON(fiber.Map{
-					"error": err.Error(),
-				})
+				fmt.Println(err.Error())
+				wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
+				SendToUser(projectID, wsFormatError)
 			}
+
+			// create github remote repository and push first code
+			err = utils.GhCreate(project.Slug, projectPath)
+			if err != nil {
+				fmt.Println(err.Error())
+				return nil
+			}
+
+			/*
+				err = database.UpdateProjectStage(project.ID, "1")
+				if err != nil {
+					database.CreateLog("projects", project.ID, err.Error())
+					return nil
+				}
+			*/
+
+			// push to github repository
+			err = utils.GhPush(projectPath)
+			if err != nil {
+				fmt.Println("a", err.Error())
+				database.CreateLog("projects", project.ID, err.Error())
+				err = database.UpdateProjectErrorStage(project.ID, "1")
+				if err != nil {
+					database.CreateLog("projects", project.ID, err.Error())
+					return nil
+				}
+				return nil
+			}
+			/*
+				err = database.UpdateProjectStage(project.ID, "2")
+				if err != nil {
+					database.CreateLog("projects", project.ID, err.Error())
+					return nil
+				}
+			*/
+
+			// create cf page
+			err = utils.CfCreate(project.Slug)
+			if err != nil {
+				fmt.Println("b", err.Error())
+				database.CreateLog("projects", project.ID, err.Error())
+				err = database.UpdateProjectErrorStage(project.ID, "2")
+				if err != nil {
+					database.CreateLog("projects", project.ID, err.Error())
+					return nil
+				}
+				return nil
+			}
+			/*
+				err = database.UpdateProjectStage(project.ID, "3")
+				if err != nil {
+					database.CreateLog("projects", project.ID, err.Error())
+					return nil
+				}
+			*/
+
+			// push to cloudflare
+			err = utils.CfPush(project.Slug, projectPath)
+			if err != nil {
+				fmt.Println("c", err.Error())
+				fmt.Println(err.Error())
+				database.CreateLog("projects", project.ID, err.Error())
+				err = database.UpdateProjectErrorStage(project.ID, "3")
+				if err != nil {
+					database.CreateLog("projects", project.ID, err.Error())
+					return nil
+				}
+				return nil
+			}
+			err = database.UpdateProjectStage(project.ID, "4")
+			if err != nil {
+				database.CreateLog("projects", project.ID, err.Error())
+				return nil
+			}
+			// finish deployment
 
 			err = database.UpdateProjectStatus(projectID, "Deployed")
 			if err != nil {
-        fmt.Println("8", err.Error())
-				return c.Status(500).JSON(fiber.Map{
-					"error": err.Error(),
-				})
-			}
-			SendToUser(projectID, "deploy-done")
-		} else {
-			err = utils.FistDeployment(project.Name, projectPath)
-			if err != nil {
-        fmt.Println("9", err.Error())
-				updateProjectError := database.UpdateProjectStatus(projectID, "Failed deployment")
-				if updateProjectError != nil {
-          fmt.Println("10", updateProjectError.Error())
-					return c.Status(500).JSON(fiber.Map{
-						"error": err.Error(),
-					})
-				}
-				return c.Status(500).JSON(fiber.Map{
-					"error": err.Error(),
-				})
+				database.CreateLog("projects", project.ID, err.Error())
+				return nil
 			}
 
-			err = database.UpdateProjectCFProjectReady(projectID, true)
+			domain, err := utils.GetProjectDomainFallback(project.Slug)
 			if err != nil {
-        fmt.Println("11", err.Error())
-				return c.Status(500).JSON(fiber.Map{
-					"error": err.Error(),
-				})
+				database.CreateLog("projects", project.ID, err.Error())
+				return nil
 			}
-
-			err = database.UpdateProjectStatus(projectID, "Deployed")
-			if err != nil {
-        fmt.Println("12", err.Error())
-				return c.Status(500).JSON(fiber.Map{
-					"error": err.Error(),
-				})
-			}
-
-			slug := strings.ToLower(strings.ReplaceAll(project.Name, " ", "-"))
-			domain, err := utils.GetProjectDomainFallback(slug)
-      //project%20domains’
-			if err != nil {
-        fmt.Println("13", err.Error())
-				return c.Status(500).JSON(fiber.Map{
-					"error": err.Error(),
-				})
-			}
-
 			err = database.UpdateProjectDomain(projectID, domain)
 			if err != nil {
-        fmt.Println("14", err.Error())
-				return c.Status(500).JSON(fiber.Map{
-					"error": err.Error(),
-				})
+				database.CreateLog("projects", project.ID, err.Error())
+				return nil
 			}
 
-			SendToUser(projectID, "deploy-done")
+			SendToUser(projectID, "Deployed")
+			return nil
 		}
+
+		if project.Stage == "4" {
+			err = utils.CopyProjectToExisitingProject(project.ID)
+			if err != nil {
+				fmt.Println(err.Error())
+				wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
+				SendToUser(projectID, wsFormatError)
+			}
+			// push to github repository
+			err = utils.GhPush(projectPath)
+			if err != nil {
+				fmt.Println(err.Error())
+				database.CreateLog("projects", project.ID, err.Error())
+				err = database.UpdateProjectErrorStage(project.ID, "1")
+				if err != nil {
+					database.CreateLog("projects", project.ID, err.Error())
+					return nil
+				}
+				return nil
+			}
+
+			/*
+				err = database.UpdateProjectStage(project.ID, "2")
+				if err != nil {
+					database.CreateLog("projects", project.ID, err.Error())
+					return nil
+				}
+			*/
+
+			// push to cloudflare
+			err = utils.CfPush(project.Slug, projectPath)
+			if err != nil {
+				fmt.Println(err.Error())
+				database.CreateLog("projects", project.ID, err.Error())
+				err = database.UpdateProjectErrorStage(project.ID, "3")
+				if err != nil {
+					database.CreateLog("projects", project.ID, err.Error())
+					return nil
+				}
+				return nil
+			}
+			err = database.UpdateProjectStatus(projectID, "Deployed")
+			if err != nil {
+				database.CreateLog("projects", project.ID, err.Error())
+				return nil
+			}
+			SendToUser(projectID, "Deployed")
+			return nil
+		}
+
 	default:
 		log.Println("Unknown type:", payload.Type)
+		return c.SendStatus(400)
 	}
 	return c.SendStatus(200)
 }

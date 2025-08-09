@@ -8,5 +8,5 @@ fi
 PROJECT_PATH=$1
 
 git -C $PROJECT_PATH add $PROJECT_PATH
-git -C $PROJECT_PATH commit -m "commit & deploy from ai zustack"
+git -C $PROJECT_PATH commit -m "commit from n73.io"
 git -C $PROJECT_PATH push 

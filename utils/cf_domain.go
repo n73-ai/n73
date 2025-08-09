@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-// domain, err := utils.GetProjectDomainFallback("project-name")
 func GetProjectDomainFallback(projectName string) (string, error) {
 	cmd := exec.Command("wrangler", "pages", "project", "list")
 	output, err := cmd.Output()

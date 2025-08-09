@@ -21,6 +21,7 @@ func main() {
 		"EMAIL_SECRET_KEY",
 		"ROOT_PATH",
 		"SECRET_KEY",
+		"ADMIN_JWT",
 	}
 	if err := utils.CheckRequiredEnv(required); err != nil {
 		fmt.Printf("Environment error: %v.", err)
@@ -40,6 +41,6 @@ func main() {
 	}
 
 	app := api.RunServer()
-  port := fmt.Sprintf(":%v", os.Getenv("PORT"))
+	port := fmt.Sprintf(":%v", os.Getenv("PORT"))
 	log.Fatal(app.Listen(port))
 }

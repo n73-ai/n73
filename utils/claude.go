@@ -8,14 +8,14 @@ import (
 	"os"
 )
 
-// payload.Prompt, payload.Model, webhookURL, projectPath, project.SessionID
-func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID string) error {
+func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID, endpoint string) error {
 	payload := map[string]string{
 		"work_dir":    path,
 		"prompt":      prompt,
 		"model":       model,
 		"webhook_url": webhookURL,
 		"session_id":  sessionID,
+		"jwt":         os.Getenv("ADMIN_JWT"),
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -23,7 +23,6 @@ func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID string) erro
 		return err
 	}
 
-	endpoint := "http://localhost:5000/claude/resume"
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
@@ -45,14 +44,13 @@ func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID string) erro
 	return nil
 }
 
-func CreateClaudeProject(prompt, model, webhookURL, path string) error {
-	apiKey := os.Getenv("ANTHROPIC_API_KEY")
+func CreateClaudeProject(prompt, model, webhookURL, path, endpoint string) error {
 	payload := map[string]string{
 		"work_dir":    path,
 		"prompt":      prompt,
 		"model":       model,
 		"webhook_url": webhookURL,
-		"api_key":     apiKey,
+		"jwt":         os.Getenv("ADMIN_JWT"),
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -60,7 +58,6 @@ func CreateClaudeProject(prompt, model, webhookURL, path string) error {
 		return err
 	}
 
-	endpoint := "http://localhost:5000/claude/new"
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err

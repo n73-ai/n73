@@ -9,7 +9,7 @@ import (
 type Client struct {
 	isClosing bool
 	mu        sync.Mutex
-	ID string
+	ID        string
 }
 
 type RegisterPayload struct {
@@ -69,7 +69,7 @@ func RunHub() {
 }
 
 func FeedChat(c *websocket.Conn) {
-  // project_id
+	// project_id
 	id := c.Query("id")
 
 	client := &Client{ID: id}
