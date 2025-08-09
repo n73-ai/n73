@@ -168,7 +168,8 @@ export default function ChatFeed({
         if (event.data !== "") {
           if (
             event.data.includes("Deploying") ||
-            event.data.includes("Deployed")
+            event.data.includes("Deployed") ||
+            event.data.includes("Error")
           ) {
             queryClient.invalidateQueries({ queryKey: ["project"] });
             return;
@@ -258,7 +259,7 @@ export default function ChatFeed({
         {pStatus == "Building" && (
           <div className="flex items-center gap-2 text-muted-foreground py-[30px]">
             <Spinner />
-            Thinking...
+              Building ...
           </div>
         )}
 
@@ -303,7 +304,7 @@ export default function ChatFeed({
           />
 
           <div className="flex justify-end gap-[5px]">
-            {domain && (
+            {domain && pStatus != "Error" && (
               <a 
               className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
               href={domain} target="_blank" rel="noopener noreferrer">
@@ -311,7 +312,7 @@ export default function ChatFeed({
               </a>
             )}
 
-            {slug && (
+            {pStatus != "Gh-Error" && pStatus != "Error" && (
               <a
               className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
                 href={`https://github.com/agustfricke/${slug}`}

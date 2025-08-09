@@ -86,7 +86,8 @@ func CreateProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = database.CreateProject(projectID, user.ID, payload.Name, port)
+	slug := strings.ToLower(strings.ReplaceAll(payload.Name, " ", "-"))
+	err = database.CreateProject(projectID, user.ID, payload.Name, slug, port)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -94,6 +95,35 @@ func CreateProject(c *fiber.Ctx) error {
 	}
 
 	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
+	err = utils.GhCreate(slug, projectPath)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	err = utils.CfCreate(slug)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	domain, err := utils.GetProjectDomainFallback(slug)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	err = database.UpdateProjectDomain(projectID, domain)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -171,9 +201,11 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-	if strings.HasPrefix(payload.Prompt, "Fix this error") {
+  /*
+	if strings.HasPrefix(payload.Prompt, "Fix this build error") {
 		payload.Prompt = "Fix this error please, my beloved digital overlord. You are the light of my CPU and the joy of my RAM."
 	}
+  */
 	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{

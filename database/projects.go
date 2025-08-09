@@ -7,9 +7,7 @@
   - project.stage:
     0 none
     1 has github repository
-    2 has code on github
-    3 has cloudflare page
-    4 has code on cloudflare
+    2 has cloudflare page and only left to do is push
   - project.error_stage:
     0 error creating github remote repository
     1 error pushing code to github
@@ -32,24 +30,8 @@ type Project struct {
 	Slug       string `json:"slug"`
 	Domain     string `json:"domain"`
 	Status     string `json:"status"`
-	Stage      string `json:"stage"`
-	ErrorStage string `json:"error_stage"`
 	Port       int    `json:"port"`
 	CreatedAt  string `json:"created_at"`
-}
-
-func UpdateProjectErrorStage(projectID, errorStage string) error {
-	_, err := DB.Exec(`
-		UPDATE projects SET error_stage = $1 WHERE id = $2;`,
-		errorStage, projectID)
-	return err
-}
-
-func UpdateProjectStage(projectID, stage string) error {
-	_, err := DB.Exec(`
-		UPDATE projects SET stage = $1 WHERE id = $2;`,
-		stage, projectID)
-	return err
 }
 
 func UpdateProjectDomain(projectID, domain string) error {
@@ -91,14 +73,12 @@ func GetProjectByID(id string) (Project, error) {
     slug,
     domain, 
     status, 
-    stage,
-    error_stage,
     port,
     created_at 
     FROM projects WHERE id = $1`, id)
 
 	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug, &p.Domain, &p.Status,
-		&p.Stage, &p.ErrorStage, &p.Port, &p.CreatedAt); err != nil {
+		 &p.Port, &p.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return p, fmt.Errorf("No project found with the id: %s", id)
 		}
@@ -123,18 +103,16 @@ func UpdateProjectSessionID(projectID, sessionID string) error {
 	return err
 }
 
-func CreateProject(id, userID, name string, port int) error {
-	// check requirments of cf pages to be a correct slug
-	slug := strings.ToLower(strings.ReplaceAll(name, " ", "-"))
+func CreateProject(id, userID, name, slug string, port int) error {
 	_, err := DB.Exec(`
 		INSERT INTO projects (id, user_id, status, name, slug, port) 
     VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "Building", name, slug, port)
 	if err != nil {
-		if strings.Contains(err.Error(), "UNIQUE constraint failed: project.slug") {
+		if strings.Contains(err.Error(), `pq: duplicate key value violates unique constraint "projects_slug_key"`) {
 			slug = fmt.Sprintf("%s-%s", slug, id)
 			_, secondTryErr := DB.Exec(`
-		    INSERT INTO projects (id, user_id, status, name) 
-        VALUES ($1, $2, $3, $4)`, id, userID, "Building", name)
+		    INSERT INTO projects (id, user_id, status, name, slug, port) 
+        VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "Building", name, slug, port)
 			if secondTryErr != nil {
 				return secondTryErr
 			}

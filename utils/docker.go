@@ -16,9 +16,9 @@ func CreateDockerContainer(projectID string) (int, error) {
 	}
 	addr := listener.Addr().(*net.TCPAddr)
 	assignedPort := addr.Port
-	listener.Close() 
+	listener.Close()
 
-	ports := fmt.Sprintf("%d:5000", assignedPort) 
+	ports := fmt.Sprintf("%d:5000", assignedPort)
 	runCmd := exec.Command("docker", "run", "-d",
 		"-p", ports, "--name", projectID, "base:v1")
 	output, err := runCmd.CombinedOutput()
