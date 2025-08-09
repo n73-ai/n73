@@ -12,6 +12,7 @@ import {
 import { useAuthStore } from "@/store/auth";
 import ZustackLogo from "./zustack-logo";
 import toast from "react-hot-toast";
+import n73 from "../../public/n73.png";
 
 export default function Navbar() {
   const { isAuth, logout, email } = useAuthStore();
@@ -23,10 +24,10 @@ export default function Navbar() {
         <div className="flex gap-[40px]">
           <Link
             to="/"
-            className="flex items-center gap-2 text-[25px] font-bold"
+            className="flex items-center gap-[10px] text-[25px] font-bold"
           >
-            <ZustackLogo size={40} />
-            <span>AI Zustack</span>
+            <ZustackLogo size={35} />
+            <span>n73</span>
           </Link>
         </div>
         {isAuth ? (
@@ -40,15 +41,19 @@ export default function Navbar() {
               <DropdownMenuLabel>{email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-              onClick={() => toast.error("This page do not exist, yet!")}
-              >Profile</DropdownMenuItem>
+                onClick={() => toast.error("This page do not exist, yet!")}
+              >
+                Profile
+              </DropdownMenuItem>
               <DropdownMenuItem
-              onClick={() => toast.error("This page do not exist, yet!")}
-              >Billing</DropdownMenuItem>
+                onClick={() => toast.error("This page do not exist, yet!")}
+              >
+                Billing
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-              onClick={() => logout()}
-              >Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => logout()}>
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (

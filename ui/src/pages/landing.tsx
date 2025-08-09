@@ -75,9 +75,9 @@ export default function Landing() {
 
   return (
     <section className="container mx-auto px-[10px] 2xl:px-[200px]">
-      <div className="flex justify-center items-center gap-[20px] pt-[150px]">
+      <div className="flex justify-center items-center gap-[70px] pt-[150px]">
         <div className="hidden lg:block">
-          <ZustackLogo size={300} />
+          <ZustackLogo size={200} />
         </div>
         <div className="flex flex-col gap-[20px]">
           <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">

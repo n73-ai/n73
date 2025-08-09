@@ -8,7 +8,12 @@
 - "Build a hello world with a dark background and bold letters"
 - "Edit the Hello World text, i want the color to be red"
 
-## todos v0.0.0
+
+Create a fully functional Tetris game. The game should include a grid-based playfield, tetromino shapes (I, O, T, S, Z, J, L), collision detection, line clearing, score tracking, and increasing speed as the player progresses. The design should be minimal but visually appealing, with smooth animations and responsive controls (arrow keys for movement, up arrow for rotation, down arrow for soft drop, and spacebar for hard drop). Include comments in the code explaining the logic, and ensure the game runs in any modern web browser without external dependencies.
+
+## todos 
+- [ ] deploy on new remote machine
+- [ ] deploy ui
 - [ ] add go routines to make faster deploys and builds
 - [ ] CD/CI docs and implementation
 

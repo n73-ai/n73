@@ -28,7 +28,11 @@ export default function Project() {
         <div className="flex-1 min-h-0">
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={40}>
-              <ChatFeed pStatus={data?.status} domain={data?.domain} slug={data?.slug} />
+              <ChatFeed
+                pStatus={data?.status}
+                domain={data?.domain}
+                slug={data?.slug}
+              />
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>
@@ -48,12 +52,15 @@ export default function Project() {
                   </div>
                 </div>
               )}
-              <div className="flex justify-center items-center min-h-screen gap-[10px]">
-                <Spinner />
-                <h5 className="text-xl text-muted-foreground">
-                  Spinning up preview...
-                </h5>
-              </div>
+              {data?.status === "Building" ||
+                (data?.status === "Deploying" && (
+                  <div className="flex justify-center items-center min-h-screen gap-[10px]">
+                    <Spinner />
+                    <h5 className="text-xl text-muted-foreground">
+                      Spinning up preview...
+                    </h5>
+                  </div>
+                ))}
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
