@@ -13,9 +13,17 @@ Create a fully functional Tetris game. The game should include a grid-based play
 
 ## todos 
 - [ ] deploy on new remote machine
-- [ ] deploy ui
 - [ ] add go routines to make faster deploys and builds
 - [ ] CD/CI docs and implementation
+
+- [ ] setup .env & go project & ui
+- [ ] setup db
+- [ ] setup docker original
+- [ ] working?
+- [ ] add nginx with https & wss
+- [ ] add systemd with correct user agust
+- [ ] deploy ui on cf
+- [ ] test and debug
 
 # Add docker to user
 ```bash
@@ -96,9 +104,9 @@ export PATH=$PATH:/usr/bin/node/bin
 ```
 - Docker
 ```bash
-apt-get remove docker docker-engine docker.io containerd runc 
-apt-get update 
-apt-get install ca-certificates curl gnupg 
+sudo apt-get remove docker docker-engine docker.io containerd runc 
+sudo apt-get update 
+sudo apt-get install ca-certificates curl gnupg 
 install -m 0755 -d /etc/apt/keyrings 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg  
 chmod a+r /etc/apt/keyrings/docker.gpg 
@@ -121,17 +129,6 @@ gh cli
 	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
 	&& sudo apt update \
 	&& sudo apt install gh -y
-```
-- Python venv
-```bash
-# check python version
-python3 --version
-# if python 3.12.* set python3.12-venv
-apt install python3.12-venv
-```
-- Claude code
-```bash
-npm install -g @anthropic-ai/claude-code
 ```
 - check if install is correct
 ```bash
@@ -164,6 +161,7 @@ gh auth login
 
 ##### wrangler
 ```bash
+wrangler login
 ```
 Go to your browser and open the oauth url
 it will redirect to a localhost:[port]
