@@ -9,11 +9,9 @@
 - "Edit the Hello World text, i want the color to be red"
 
 ## todos v0.0.0
-- [ ] Click see github repo
-- [ ] Click see live website
-
+- [ ] Clean repos and cf pages
 - [ ] handlers.messages correct deploy steps
-- [ ] add go routines to make faster deploys
+- [ ] add go routines to make faster deploys and builds
 - [ ] CD/CI docs and implementation
 
 # Add docker to user

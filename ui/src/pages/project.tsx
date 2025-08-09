@@ -28,7 +28,7 @@ export default function Project() {
         <div className="flex-1 min-h-0">
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={40}>
-              <ChatFeed pStatus={data?.status} />
+              <ChatFeed pStatus={data?.status} domain={data?.domain} slug={data?.slug} />
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>

@@ -1,4 +1,10 @@
-import { AlertCircleIcon, ChevronDown, Send } from "lucide-react";
+import {
+  AlertCircleIcon,
+  ChevronDown,
+  GithubIcon,
+  LinkIcon,
+  Send,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import ZustackLogo from "./zustack-logo";
@@ -35,7 +41,15 @@ const models = [
   { name: "Claude Haiku 3", apiName: "claude-3-haiku-20240307" },
 ];
 
-export default function ChatFeed({ pStatus }: { pStatus: string }) {
+export default function ChatFeed({
+  pStatus,
+  slug,
+  domain,
+}: {
+  pStatus: string;
+  slug: string;
+  domain: string;
+}) {
   const { projectID } = useParams();
   const socketRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -152,7 +166,10 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
 
       socket.onmessage = (event) => {
         if (event.data !== "") {
-          if (event.data.includes("Deploying") || event.data.includes("Deployed")) {
+          if (
+            event.data.includes("Deploying") ||
+            event.data.includes("Deployed")
+          ) {
             queryClient.invalidateQueries({ queryKey: ["project"] });
             return;
           }
@@ -284,7 +301,27 @@ export default function ChatFeed({ pStatus }: { pStatus: string }) {
             placeholder="Reply AI Zustack..."
             className="resize-none"
           />
+
           <div className="flex justify-end gap-[5px]">
+            {domain && (
+              <a 
+              className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
+              href={domain} target="_blank" rel="noopener noreferrer">
+                  <LinkIcon />
+              </a>
+            )}
+
+            {slug && (
+              <a
+              className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
+                href={`https://github.com/agustfricke/${slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                  <GithubIcon />
+              </a>
+            )}
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex gap-[5px]">
