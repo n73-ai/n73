@@ -57,7 +57,7 @@ export default function Project() {
                   <div className="flex justify-center items-center min-h-screen gap-[10px]">
                     <Spinner />
                     <h5 className="text-xl text-muted-foreground">
-                      Spinning up preview...
+                      n73 is deploying to production.
                     </h5>
                   </div>
                 ))}

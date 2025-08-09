@@ -11,16 +11,22 @@
 
 Create a fully functional Tetris game. The game should include a grid-based playfield, tetromino shapes (I, O, T, S, Z, J, L), collision detection, line clearing, score tracking, and increasing speed as the player progresses. The design should be minimal but visually appealing, with smooth animations and responsive controls (arrow keys for movement, up arrow for rotation, down arrow for soft drop, and spacebar for hard drop). Include comments in the code explaining the logic, and ensure the game runs in any modern web browser without external dependencies.
 
+git config --global user.email "hej@agustfricke.com"
+git config --global user.name "agustfricke"
+
 ## todos 
-- [ ] deploy on new remote machine
+- [x] deploy on new remote machine
+- [ ] when error try to fix: needs to update the project.state so termines the spinner
+- [ ] if project.status == error, mostrar algo de info en el preview
 - [ ] add go routines to make faster deploys and builds
 - [ ] CD/CI docs and implementation
 
-- [ ] setup .env & go project & ui
-- [ ] setup db
-- [ ] setup docker original
+- [x] setup .env & go project & ui
+- [x] setup db
+- [x] setup docker original
 - [ ] working?
 - [ ] add nginx with https & wss
+- [ ] firewall
 - [ ] add systemd with correct user agust
 - [ ] deploy ui on cf
 - [ ] test and debug
@@ -33,6 +39,7 @@ sudo usermod -aG docker $USER
 ```bash
 docker build -t claude-server .
 docker run -d -p 5000:5000 --name claude-server claude-server
+docker exec -it claude-server bash 
 ```
 # Commit the container
 ```bash
@@ -195,12 +202,35 @@ sudo ufw enable
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 ```
+
+172.17.0.1
+
 ```bash
 sudo ufw allow 22
-sudo ufw allow 80
 sudo ufw allow 443
 ```
+
 ```bash
+sudo ufw status verbose
+```
+
+```bash
+# En tu sesión de screen
+screen -S firewall-setup
+
+# Permitir SSH (esto ya cubre el puerto 22)
+sudo ufw allow ssh
+
+# Habilitar firewall y políticas
+sudo ufw enable
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Permitir HTTP y HTTPS
+sudo ufw allow 80
+sudo ufw allow 443
+
+# Verificar configuración final
 sudo ufw status verbose
 ```
 
@@ -214,7 +244,7 @@ certbot --nginx
 ```bash
 rm /etc/nginx/sites-available/default
 rm /etc/nginx/sites-enabled/default
-mv ~/ai/server_config/default /etc/nginx/sites-available
+cp ~/ai/server_config/default /etc/nginx/sites-available
 sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
@@ -234,9 +264,9 @@ mv ai/server_config/ai.service /etc/systemd/system
 
 - Systemd commands
 ```bash
-service ai-zustack start
-service ai- zustack status
-service ai-zustack stop
+service ai start
+service ai status
+service ai stop
 ```
 
 > Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```

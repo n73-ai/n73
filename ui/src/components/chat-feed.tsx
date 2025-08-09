@@ -271,7 +271,7 @@ export default function ChatFeed({
             <div className="flex gap-[5px] items-center">
               <AlertCircleIcon />
               <AlertTitle>
-                An error occurred while compiling the code.
+                Code compilation failed.
               </AlertTitle>
             </div>
             <AlertDescription>
@@ -299,7 +299,7 @@ export default function ChatFeed({
           <Input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Reply AI Zustack..."
+            placeholder="Reply n73 ..."
             className="resize-none"
           />
 

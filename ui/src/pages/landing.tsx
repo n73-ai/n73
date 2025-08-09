@@ -81,7 +81,7 @@ export default function Landing() {
         </div>
         <div className="flex flex-col gap-[20px]">
           <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
-            Build. Preview. Ship with AI.
+            Build. Preview. Ship with AI
           </h1>
           <p className="leading-7">
             Create apps and websites by chatting with AI
@@ -96,7 +96,7 @@ export default function Landing() {
               <Input
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Ask Zustack to build something cool"
+                placeholder="Ask n73 to build something cool"
               />
             </div>
             <div className="flex justify-end gap-[10px] pt-[10px]">
