@@ -75,11 +75,11 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		err = utils.TryBuildProject(project.ID)
 		if err != nil {
-      fmt.Println(err.Error())
+			fmt.Println(err.Error())
 			wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
 			SendToUser(projectID, wsFormatError)
 			err := database.UpdateProjectStatus(project.ID, "Gh-Error")
-      database.CreateLog("projects", projectID, err.Error())
+			database.CreateLog("projects", projectID, err.Error())
 			if err != nil {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
@@ -95,6 +95,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		err = utils.GhPush(projectPath)
 		if err != nil {
+      fmt.Println("the gh-errror: ", err.Error())
 			database.CreateLog("projects", project.ID, err.Error())
 			err := database.UpdateProjectStatus(project.ID, "Gh-Error")
 			if err != nil {

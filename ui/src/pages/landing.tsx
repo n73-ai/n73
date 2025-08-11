@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth";
 import { useModelStore } from "@/store/models";
+import ChatInput from "@/components/chat-input";
+import Markdown from "@/components/markdown";
 
 const models = [
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
@@ -129,6 +131,7 @@ export default function Landing() {
               </Button>
             </div>
           </form>
+          <ChatInput />
         </div>
       </div>
       {isAuth && <Projects />}

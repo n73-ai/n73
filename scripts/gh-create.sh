@@ -24,6 +24,7 @@ fi
 if [ ! -d .git ]; then
     git init
     git add .
-    git commit -m "Initial commit"
+    git commit -m "Batman"
 fi
-gh repo create "$NAME" --public --source=. --remote=origin --push
+
+gh repo create n73-projects/"$NAME" --public --source=. --remote=origin --push

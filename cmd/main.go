@@ -21,7 +21,7 @@ func main() {
 		"ROOT_PATH",
 		"SECRET_KEY",
 		"ADMIN_JWT",
-    "IP",
+		"IP",
 	}
 	if err := utils.CheckRequiredEnv(required); err != nil {
 		fmt.Printf("Environment error: %v.", err)

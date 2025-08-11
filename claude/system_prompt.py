@@ -9,6 +9,7 @@ RULES:
 - You can install shadcn components if you think it's appropriate.
 - Just mention what you're doing within the project.
 - Don't run the command `npm run dev`.
+- Run `npm run build` the first time you edit the project, and make sure it compiles without errors. If there are errors, fix them.
 
 COMMUNICATION FORMAT:
 - Always format your messages to the user in proper markdown.

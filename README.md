@@ -6,30 +6,45 @@
 
 ## Simple prompts
 - "Build a hello world with a dark background and bold letters"
+- "Build a hello friend with a dark background and bold letters"
 - "Edit the Hello World text, i want the color to be red"
 
-
+## Cool prompts
 Create a fully functional Tetris game. The game should include a grid-based playfield, tetromino shapes (I, O, T, S, Z, J, L), collision detection, line clearing, score tracking, and increasing speed as the player progresses. The design should be minimal but visually appealing, with smooth animations and responsive controls (arrow keys for movement, up arrow for rotation, down arrow for soft drop, and spacebar for hard drop). Include comments in the code explaining the logic, and ensure the game runs in any modern web browser without external dependencies.
+Create an interactive web app with a futuristic robotic animation that visually teaches the concept of Bubble Sort. The robot should manipulate and swap colorful data blocks on the screen, highlighting comparisons and movements step-by-step. Include smooth animations, glowing effects, and a clear visual indicator of sorted and unsorted sections. The style should be playful yet educational, with a tech-inspired UI.
+Create an interactive web animation where floating, glowing particles follow the movement of the mouse cursor. When the cursor moves nearby, the particles are attracted and cluster together smoothly, then disperse when the cursor moves away. Use soft motion, fluid transitions, and a slightly futuristic, neon aesthetic with a dark background for contrast
 
 git config --global user.email "hej@agustfricke.com"
 git config --global user.name "agustfricke"
 
-## todos 
-- [x] deploy on new remote machine
-- [ ] when error try to fix: needs to update the project.state so termines the spinner
-- [ ] if project.status == error, mostrar algo de info en el preview
-- [ ] add go routines to make faster deploys and builds
-- [ ] CD/CI docs and implementation
+sudo journalctl -u ai -n 50
+hostname -I
 
-- [x] setup .env & go project & ui
-- [x] setup db
-- [x] setup docker original
-- [ ] working?
-- [ ] add nginx with https & wss
-- [ ] firewall
-- [ ] add systemd with correct user agust
-- [ ] deploy ui on cf
-- [ ] test and debug
+docker exec -it 400895aeec33 bash
+curl "http://172.17.0.1:8080"
+
+# Solo la red Docker por defecto
+sudo ufw allow from 172.16.0.0/12
+
+### better user expirience
+- [ ] the redirect to project.tsx must be instant(add go routines) and expect no errors
+- [ ] nice to watch loading on preview & only on the first time, after that the spinner is not showed again on preview, on preview must be the current website build
+- [ ] edit base project with font, logo, title, readme, tailwind css, shadcn
+- [ ] add list of projects made by n73 on landing
+- [ ] clean all the code & better docs = push
+- [ ] no auth required user_id = "guest", after the second prompt is required login
+## Soon
+- [ ] no project name required, send prompt to claude and ask what name should i give the project based on the prompt in go routine
+- [ ] ui: text area instead of input(on enter submit)
+- [ ] infra: CD/CI docs and implementation
+- [ ] e2e & unit test
+- [ ] infra: load balancer config
+- [ ] infra: stress test 80K projects build / day 
+- [ ] infra: deploy frontend on cf
+## Ideas
+- [ ] based on the text prompt the user is putting, internalmente, mejora este prompt: [prompt] y da opciones para que el usuario selecione un mejor prompt
+- [ ] add stripe & cryptomus integration
+- [ ] add backend in go
 
 # Add docker to user
 ```bash
@@ -37,12 +52,12 @@ sudo usermod -aG docker $USER
 ```
 # Create original Docker container
 ```bash
+# build and run
 docker build -t claude-server .
 docker run -d -p 5000:5000 --name claude-server claude-server
+# go in the container to login in claude
 docker exec -it claude-server bash 
-```
 # Commit the container
-```bash
 docker commit claude-server base:v1
 ```
 - Install claude code
@@ -88,6 +103,7 @@ go run cmd/main.go
 # Deploy
 #### Install dependencies
 For `Ubuntu 22.04`.
+For `Some text`.
 - Go
 ```bash
 wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz

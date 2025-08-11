@@ -23,15 +23,30 @@ import (
 )
 
 type Project struct {
-	ID         string `json:"id"`
-	UserID     string `json:"user_id"`
-	SessionID  string `json:"session_id"`
-	Name       string `json:"name"`
-	Slug       string `json:"slug"`
-	Domain     string `json:"domain"`
-	Status     string `json:"status"`
-	Port       int    `json:"port"`
-	CreatedAt  string `json:"created_at"`
+	ID        string `json:"id"`
+	UserID    string `json:"user_id"`
+	SessionID string `json:"session_id"`
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	Domain    string `json:"domain"`
+	Status    string `json:"status"`
+	Port      int    `json:"port"`
+	CreatedAt string `json:"created_at"`
+}
+
+func DeleteProject(projectID string) error {
+	result, err := DB.Exec(`DELETE FROM projects WHERE id = ?;`, projectID)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("No project found with the id %v", projectID)
+	}
+	return nil
 }
 
 func UpdateProjectDomain(projectID, domain string) error {
@@ -78,7 +93,7 @@ func GetProjectByID(id string) (Project, error) {
     FROM projects WHERE id = $1`, id)
 
 	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug, &p.Domain, &p.Status,
-		 &p.Port, &p.CreatedAt); err != nil {
+		&p.Port, &p.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return p, fmt.Errorf("No project found with the id: %s", id)
 		}

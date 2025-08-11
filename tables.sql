@@ -16,7 +16,8 @@ CREATE TABLE projects (
     domain VARCHAR(255) DEFAULT '',
     status VARCHAR(255) DEFAULT '',
     port INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE messages (
@@ -28,7 +29,8 @@ CREATE TABLE messages (
     duration INTEGER DEFAULT 0,
     is_error BOOLEAN DEFAULT false,
     total_cost_usd NUMERIC(10, 6) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE   
 );
 
 CREATE TABLE logs (

@@ -12,6 +12,54 @@ import (
 	"github.com/google/uuid"
 )
 
+/*
+todo: ON_DELETE CASCADE messages
+*/
+func DeleteProject(c *fiber.Ctx) error {
+	projectID := c.Params("projectID")
+	_, err := database.GetProjectByID(projectID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	err = utils.RmDockerContainer(projectID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
+
+	if _, err := os.Stat(projectPath); err != nil {
+		if os.IsNotExist(err) {
+			return c.Status(404).JSON(fiber.Map{
+				"error": "Project directory not found",
+			})
+		}
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Error checking project directory: " + err.Error(),
+		})
+	}
+
+	err = os.RemoveAll(projectPath)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Error removing project directory: " + err.Error(),
+		})
+	}
+
+	err = database.DeleteProject(projectID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.SendStatus(200)
+}
+
 func CreateProject(c *fiber.Ctx) error {
 	user := c.Locals("user").(*database.User)
 	payload := struct {
@@ -201,11 +249,11 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-  /*
-	if strings.HasPrefix(payload.Prompt, "Fix this build error") {
-		payload.Prompt = "Fix this error please, my beloved digital overlord. You are the light of my CPU and the joy of my RAM."
-	}
-  */
+	/*
+		if strings.HasPrefix(payload.Prompt, "Fix this build error") {
+			payload.Prompt = "Fix this error please, my beloved digital overlord. You are the light of my CPU and the joy of my RAM."
+		}
+	*/
 	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
