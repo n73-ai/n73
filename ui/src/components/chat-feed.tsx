@@ -31,6 +31,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Textarea } from "./ui/textarea";
 
 const models = [
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
@@ -58,6 +59,7 @@ export default function ChatFeed({
   const [buildError, setBuildError] = useState(false);
   const [buildErrorMessage, setBuildErrorMessage] = useState(true);
   const [fixingErr, setFixingErr] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   const { model, setModel } = useModelStore();
 
@@ -76,7 +78,8 @@ export default function ChatFeed({
     mutationFn: () => resumeProject(prompt, selectedModel.apiName, projectID!),
     onSuccess: async () => {
       setPrompt("");
-      await queryClient.invalidateQueries({ queryKey: ["project"] });
+      setIsPending(true);
+      //:await queryClient.invalidateQueries({ queryKey: ["project"] });
       addItemManually({
         role: "user",
         content: prompt,
@@ -90,10 +93,7 @@ export default function ChatFeed({
     },
   });
 
-  const handleSubmitResumeProject = (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
+  const submitLogic = () => {
     if (prompt === "") {
       toast.error("The prompt is required.");
       return;
@@ -101,12 +101,23 @@ export default function ChatFeed({
     resumeProjectMutation.mutate();
   };
 
+  const handleSubmitResumeProject = (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    submitLogic();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submitLogic();
+    }
+  };
+
   const getMessageByIDMutation = useMutation({
     mutationFn: (messageID: string) => getMessageByID(messageID),
     onSuccess: async (response) => {
-      if (response.role == "metadata") {
-        await queryClient.invalidateQueries({ queryKey: ["project"] });
-      }
       addItemManually({
         role: response.role,
         content: response.content,
@@ -167,10 +178,11 @@ export default function ChatFeed({
       socket.onmessage = (event) => {
         if (event.data !== "") {
           if (
-            event.data.includes("Deploying") ||
+            //event.data.includes("Deploying") ||
             event.data.includes("Deployed") ||
             event.data.includes("Error")
           ) {
+            setIsPending(false);
             queryClient.invalidateQueries({ queryKey: ["project"] });
             return;
           }
@@ -214,7 +226,7 @@ export default function ChatFeed({
           <div key={i}>
             {m.role === "user" ? (
               <>
-                <div className="flex justify-end py-[30px]">
+                <div className="flex justify-end pb-[30px]">
                   <div className="bg-secondary/60 w-[75%] px-[15px] py-[10px] rounded-md">
                     <p>{m.content}</p>
                   </div>
@@ -224,7 +236,7 @@ export default function ChatFeed({
                   <div className="flex items-center gap-5">
                     <ZustackLogo size={35} />
                     <p className="text-xl font-semibold text-secondary-foreground">
-                      Zustack
+                      n73
                     </p>
                   </div>
                 </div>
@@ -235,7 +247,7 @@ export default function ChatFeed({
                   <Markdown content={m.content} />
                 </div>
                 {m.role === "metadata" && (
-                  <div className="flex justify-start text-muted-foreground">
+                  <div className="flex justify-start text-muted-foreground pb-[20px]">
                     <Accordion type="single" collapsible>
                       <AccordionItem value="item-1">
                         <AccordionTrigger>Response metadata</AccordionTrigger>
@@ -256,10 +268,11 @@ export default function ChatFeed({
           </div>
         ))}
 
-        {pStatus == "Building" && (
-          <div className="flex items-center gap-2 text-muted-foreground py-[30px]">
+        {(pStatus == "Building" ||
+          pStatus == "Building-First" ||
+          isPending) && (
+          <div className="flex items-center gap-2 text-muted-foreground pb-[20px]">
             <Spinner />
-              Building ...
           </div>
         )}
 
@@ -270,9 +283,7 @@ export default function ChatFeed({
           >
             <div className="flex gap-[5px] items-center">
               <AlertCircleIcon />
-              <AlertTitle>
-                Code compilation failed.
-              </AlertTitle>
+              <AlertTitle>Code compilation failed.</AlertTitle>
             </div>
             <AlertDescription>
               <Button
@@ -296,30 +307,34 @@ export default function ChatFeed({
           onSubmit={handleSubmitResumeProject}
           className="w-full space-y-[10px] p-[10px] bg-secondary/50"
         >
-          <Input
+          <Textarea
+            onKeyDown={handleKeyDown}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Reply n73 ..."
+            placeholder="Reply to n73..."
             className="resize-none"
           />
 
           <div className="flex justify-end gap-[5px]">
             {domain && pStatus != "Error" && (
-              <a 
-              className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
-              href={domain} target="_blank" rel="noopener noreferrer">
-                  <LinkIcon />
+              <a
+                className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
+                href={domain}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <LinkIcon />
               </a>
             )}
 
             {pStatus != "Gh-Error" && pStatus != "Error" && (
               <a
-              className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
-                href={`https://github.com/agustfricke/${slug}`}
+                className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
+                href={`https://github.com/n73-projects/${slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                  <GithubIcon />
+                <GithubIcon />
               </a>
             )}
 

@@ -57,14 +57,6 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		SendToUser(projectID, id)
 
-		err = database.UpdateProjectStatus(projectID, "Deploying")
-		if err != nil {
-			database.CreateLog("projects", projectID, err.Error())
-			return c.SendStatus(500)
-		}
-
-		SendToUser(projectID, "Deploying")
-
 		project, err := database.GetProjectByID(projectID)
 		if err != nil {
 			database.CreateLog("projects", projectID, err.Error())
@@ -79,7 +71,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 			wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
 			SendToUser(projectID, wsFormatError)
 			err := database.UpdateProjectStatus(project.ID, "Gh-Error")
-			database.CreateLog("projects", projectID, err.Error())
+			database.CreateLog("projects", projectID, wsFormatError)
 			if err != nil {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
@@ -93,18 +85,6 @@ func WebhookMessage(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		err = utils.GhPush(projectPath)
-		if err != nil {
-      fmt.Println("the gh-errror: ", err.Error())
-			database.CreateLog("projects", project.ID, err.Error())
-			err := database.UpdateProjectStatus(project.ID, "Gh-Error")
-			if err != nil {
-				database.CreateLog("projects", project.ID, err.Error())
-			}
-			SendToUser(projectID, "Error")
-			return nil
-		}
-
 		err = utils.CfPush(project.Slug, projectPath)
 		if err != nil {
 			database.CreateLog("projects", project.ID, err.Error())
@@ -114,6 +94,19 @@ func WebhookMessage(c *fiber.Ctx) error {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
 
+			SendToUser(projectID, "Error")
+			return nil
+		}
+
+
+		err = utils.GhPush(projectPath)
+		if err != nil {
+			fmt.Println("the gh-errror: ", err.Error())
+			database.CreateLog("projects", project.ID, err.Error())
+			err := database.UpdateProjectStatus(project.ID, "Gh-Error")
+			if err != nil {
+				database.CreateLog("projects", project.ID, err.Error())
+			}
 			SendToUser(projectID, "Error")
 			return nil
 		}

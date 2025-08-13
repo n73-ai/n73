@@ -11,10 +11,10 @@ export default function Projects() {
   });
 
   return (
-    <div className="py-[100px]">
+    <div className="pt-[100px]">
       <h1
         className="scroll-m-20 text-start 
-      text-3xl font-bold tracking-tight text-balance pb-[20px]"
+      text-2xl font-bold tracking-tight text-balance pb-[20px]"
       >
         Your Projects
       </h1>

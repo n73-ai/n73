@@ -1,7 +1,6 @@
 import { createProject } from "@/api/projects";
 import Spinner from "@/components/spinner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import ZustackLogo from "@/components/zustack-logo";
 import type { ErrorResponse } from "@/lib/types";
 import { useMutation } from "@tanstack/react-query";
@@ -18,8 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth";
 import { useModelStore } from "@/store/models";
-import ChatInput from "@/components/chat-input";
-import Markdown from "@/components/markdown";
+import { Textarea } from "@/components/ui/textarea";
+import LatestProjects from "@/components/latest_projects";
 
 const models = [
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
@@ -54,48 +53,43 @@ export default function Landing() {
     },
   });
 
-  const handleCreateProject = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!isAuth) {
-      navigate("/signup");
-      return;
-    }
-    if (!prompt) {
-      toast.error("The prompt is required to create a project.");
-      return;
-    }
-    if (!name) {
-      toast.error("The project name is required to create a project.");
-      return;
-    }
-    if (!selectedModel) {
-      toast.error("Please select a model.");
+  const submitLogic = () => {
+    if (prompt === "") {
+      toast.error("The prompt is required.");
       return;
     }
     createProjectMut.mutate();
   };
 
+  const handleCreateProject = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    submitLogic();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submitLogic();
+    }
+  };
+
   return (
-    <section className="container mx-auto px-[10px] 2xl:px-[200px]">
-      <div className="flex justify-center items-center gap-[70px] pt-[150px]">
-        <div className="hidden lg:block">
-          <ZustackLogo size={200} />
+    <section className="container mx-auto px-[10px] 2xl:px-[200px] pt-[150px]">
+      <div className="flex flex-col gap-[20px]">
+        <div className="flex justify-center items-center gap-[10px] ">
+          <div className="hidden lg:block">
+            <ZustackLogo size={50} />
+          </div>
+          <h5 className="text-3xl font-extrabold">
+            Build. Preview. Ship with n73
+          </h5>
         </div>
-        <div className="flex flex-col gap-[20px]">
-          <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
-            Build. Preview. Ship with AI
-          </h1>
-          <p className="leading-7">
-            Create apps and websites by chatting with AI
-          </p>
-          <form onSubmit={handleCreateProject}>
+
+        <div className="flex justify-center">
+          <form onSubmit={handleCreateProject} className="w-[700px]">
             <div className="flex flex-col gap-[10px]">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Name your project"
-              />
-              <Input
+              <Textarea
+                onKeyDown={handleKeyDown}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Ask n73 to build something cool"
@@ -126,15 +120,15 @@ export default function Landing() {
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button type="submit" variant="outline">
-                <span>Create</span>
+                <span>Send</span>
                 {createProjectMut.isPending ? <Spinner /> : <Send />}
               </Button>
             </div>
           </form>
-          <ChatInput />
         </div>
       </div>
       {isAuth && <Projects />}
+      <LatestProjects />
     </section>
   );
 }

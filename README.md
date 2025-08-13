@@ -26,25 +26,14 @@ curl "http://172.17.0.1:8080"
 # Solo la red Docker por defecto
 sudo ufw allow from 172.16.0.0/12
 
-### better user expirience
-- [ ] the redirect to project.tsx must be instant(add go routines) and expect no errors
-- [ ] nice to watch loading on preview & only on the first time, after that the spinner is not showed again on preview, on preview must be the current website build
-- [ ] edit base project with font, logo, title, readme, tailwind css, shadcn
-- [ ] add list of projects made by n73 on landing
-- [ ] clean all the code & better docs = push
-- [ ] no auth required user_id = "guest", after the second prompt is required login
-## Soon
-- [ ] no project name required, send prompt to claude and ask what name should i give the project based on the prompt in go routine
-- [ ] ui: text area instead of input(on enter submit)
-- [ ] infra: CD/CI docs and implementation
-- [ ] e2e & unit test
-- [ ] infra: load balancer config
-- [ ] infra: stress test 80K projects build / day 
-- [ ] infra: deploy frontend on cf
-## Ideas
-- [ ] based on the text prompt the user is putting, internalmente, mejora este prompt: [prompt] y da opciones para que el usuario selecione un mejor prompt
-- [ ] add stripe & cryptomus integration
-- [ ] add backend in go
+## todo
+- [ ] delete project
+- [ ] update project name
+- [ ] middleware is owner?
+
+- [ ] deploy frontend on cf 
+- [ ] load balancer config
+- [ ] stress test 5K deployments in one day
 
 # Add docker to user
 ```bash
@@ -57,6 +46,7 @@ docker build -t claude-server .
 docker run -d -p 5000:5000 --name claude-server claude-server
 # go in the container to login in claude
 docker exec -it claude-server bash 
+claude
 # Commit the container
 docker commit claude-server base:v1
 ```

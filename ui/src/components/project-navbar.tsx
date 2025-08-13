@@ -37,17 +37,6 @@ export default function ProjectNavbar() {
             <DropdownMenuContent>
               <DropdownMenuLabel>{email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => toast.error("This page do not exist, yet!")}
-              >
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => toast.error("This page do not exist, yet!")}
-              >
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => logout()}>
                 Logout
               </DropdownMenuItem>

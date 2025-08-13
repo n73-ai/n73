@@ -44,7 +44,7 @@ async def process_message(message, target_url, jwt):
                     clean_path = file_path.replace("../../ui/", "").replace("../ui/", "")
                     await post_json(target_url, {
                        "type": "text", 
-                        "text": f"`Created ***{clean_path}***`"
+                        "text": f"Created **{clean_path}**"
                     }, jwt)
                 elif block.name == "Edit":
                     # File being edited
@@ -52,7 +52,7 @@ async def process_message(message, target_url, jwt):
                     clean_path = file_path.replace("../../ui/", "").replace("../ui/", "")
                     await post_json(target_url, {
                         "type": "text", 
-                        "text": f"Edited ***{clean_path}***"
+                        "text": f"Edited **{clean_path}**"
                     }, jwt)
             
             # Process text content

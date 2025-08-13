@@ -12,9 +12,16 @@ import (
 	"github.com/google/uuid"
 )
 
-/*
-todo: ON_DELETE CASCADE messages
-*/
+func GetAllDeployedProjects(c *fiber.Ctx) error {
+  projects, err := database.GetDeployedProjects()
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+  return c.JSON(projects)
+}
+
 func DeleteProject(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
 	_, err := database.GetProjectByID(projectID)
@@ -23,6 +30,7 @@ func DeleteProject(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+
 	err = utils.RmDockerContainer(projectID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
@@ -80,22 +88,12 @@ func CreateProject(c *fiber.Ctx) error {
 		})
 	}
 
-	if payload.Name == "" {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "The project name is required.",
-		})
-	}
-
-	if len(payload.Name) > 55 {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "The project name should not have more than 55 characters.",
-		})
+	if len(payload.Model) > 55 {
+		payload.Model = "claude-3-7-sonnet-20250219"
 	}
 
 	if payload.Model == "" {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "The model is required.",
-		})
+		payload.Model = "claude-3-7-sonnet-20250219"
 	}
 
 	validModels := map[string]bool{
@@ -108,26 +106,16 @@ func CreateProject(c *fiber.Ctx) error {
 	}
 
 	if !validModels[payload.Model] {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid model. Please select a valid Claude model.",
-		})
+		payload.Model = "claude-3-7-sonnet-20250219"
 	}
 
 	projectID := uuid.NewString()
+	payload.Name = "project-" + projectID
 	messageID := uuid.NewString()
 	webhookURL := fmt.Sprintf("http://%s:%s/webhook/messages/%s/%s", os.Getenv("IP"), os.Getenv("PORT"), projectID, payload.Model)
 	dockerProjectPath := filepath.Join("/app", "project")
 
-	port, err := utils.CreateDockerContainer(projectID)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	endpoint := fmt.Sprintf("http://0.0.0.0:%d/claude/new", port)
-
-	err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, dockerProjectPath, endpoint)
+	port, err := utils.GetFreePort()
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -149,34 +137,48 @@ func CreateProject(c *fiber.Ctx) error {
 		})
 	}
 
-	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
-	err = utils.GhCreate(slug, projectPath)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+	go func() {
 
-	err = utils.CfCreate(slug)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+		err = utils.CreateDockerContainer(projectID, port)
+		if err != nil {
+      fmt.Println(err.Error())
+			return
+		}
 
-	domain, err := utils.GetProjectDomainFallback(slug)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+		endpoint := fmt.Sprintf("http://0.0.0.0:%d/claude/new", port)
 
-	err = database.UpdateProjectDomain(projectID, domain)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, dockerProjectPath, endpoint)
+		if err != nil {
+      fmt.Println(err.Error())
+			return
+		}
+
+		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
+		err = utils.GhCreate(slug, projectPath)
+		if err != nil {
+      fmt.Println(err.Error())
+			return
+		}
+
+		err = utils.CfCreate(slug)
+		if err != nil {
+      fmt.Println(err.Error())
+			return
+		}
+
+		domain, err := utils.GetProjectDomainFallback(slug)
+		if err != nil {
+      fmt.Println(err.Error())
+			return
+		}
+
+		err = database.UpdateProjectDomain(projectID, domain)
+		if err != nil {
+      fmt.Println(err.Error())
+			return
+		}
+
+	}()
 
 	return c.Status(200).JSON(fiber.Map{
 		"project_id": projectID,

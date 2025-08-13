@@ -9,11 +9,12 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import Spinner from "@/components/spinner";
 import { getProjectByID } from "@/api/projects";
+import Stars from "@/components/stars";
 
 export default function Project() {
   const { projectID } = useParams();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, dataUpdatedAt } = useQuery({
     queryKey: ["project", projectID],
     queryFn: () => getProjectByID(projectID!),
   });
@@ -36,7 +37,7 @@ export default function Project() {
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>
-              {data?.status == "Deployed" && (
+              {(data?.status == "Deployed" || data?.status == "Building") && (
                 <div className="flex flex-col h-full">
                   <div className="flex-1">
                     {data?.domain == "" ? (
@@ -45,6 +46,7 @@ export default function Project() {
                       </p>
                     ) : (
                       <iframe
+                        key={dataUpdatedAt}
                         className="w-full h-full block"
                         src={data.domain}
                       />
@@ -52,15 +54,8 @@ export default function Project() {
                   </div>
                 </div>
               )}
-              {data?.status === "Building" ||
-                (data?.status === "Deploying" && (
-                  <div className="flex justify-center items-center min-h-screen gap-[10px]">
-                    <Spinner />
-                    <h5 className="text-xl text-muted-foreground">
-                      n73 is deploying to production.
-                    </h5>
-                  </div>
-                ))}
+
+              {data?.status == "Building-First" && <Stars />}
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

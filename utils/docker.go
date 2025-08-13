@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,26 +17,18 @@ func RmDockerContainer(projectID string) error {
 	return nil
 }
 
-func CreateDockerContainer(projectID string) (int, error) {
-	listener, err := net.Listen("tcp", ":0")
-	if err != nil {
-		return 0, err
-	}
-	addr := listener.Addr().(*net.TCPAddr)
-	assignedPort := addr.Port
-	listener.Close()
-
-	ports := fmt.Sprintf("%d:5000", assignedPort)
+func CreateDockerContainer(projectID string, port int) error {
+	ports := fmt.Sprintf("%d:5000", port)
 	runCmd := exec.Command("docker", "run", "-d", "-p", ports, "--name", projectID, "base:v1")
 	output, err := runCmd.CombinedOutput()
 	if err != nil {
-		return 0, fmt.Errorf("docker run failed: %s", string(output))
+		return fmt.Errorf("docker run failed: %s", string(output))
 	}
 
 	fmt.Printf("Waiting for container to initialize...")
 	time.Sleep(10 * time.Second)
 
-	return assignedPort, nil
+	return nil
 }
 
 func cleanDirectoryExceptGit(dirPath string) error {

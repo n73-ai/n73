@@ -10,7 +10,7 @@ import (
 
 func KeepClaudeAlive(prompt, endpoint string) error {
 	payload := map[string]string{
-		"prompt":      prompt,
+		"prompt": prompt,
 	}
 
 	jsonData, err := json.Marshal(payload)

@@ -1,5 +1,10 @@
 import { authAxios } from "@/lib/axios-instance";
 
+export const getLatestProjects = async () => {
+  const response = await authAxios.get(`/projects/latest`);
+  return response.data;
+};
+
 export const getUserProjects = async () => {
   const response = await authAxios.get(`/projects/user`);
   return response.data;

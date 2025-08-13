@@ -1,19 +1,3 @@
-/*
-  - project.status:
-    building
-    deploying
-    deployed
-    error
-  - project.stage:
-    0 none
-    1 has github repository
-    2 has cloudflare page and only left to do is push
-  - project.error_stage:
-    0 error creating github remote repository
-    1 error pushing code to github
-    2 error creating cloudflare page
-    3 error pushing code to cloudflare
-*/
 package database
 
 import (
@@ -32,6 +16,28 @@ type Project struct {
 	Status    string `json:"status"`
 	Port      int    `json:"port"`
 	CreatedAt string `json:"created_at"`
+}
+
+func GetDeployedProjects() ([]Project, error) {
+	var projects []Project
+	rows, err := DB.Query(`SELECT id, name, domain, status
+  FROM projects WHERE domain != '' ORDER BY created_at DESC LIMIT 20;`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var p Project
+		if err := rows.Scan(&p.ID, &p.Name, &p.Domain, &p.Status); err != nil {
+			return nil, err
+		}
+		projects = append(projects, p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return projects, nil
 }
 
 func DeleteProject(projectID string) error {
@@ -121,7 +127,7 @@ func UpdateProjectSessionID(projectID, sessionID string) error {
 func CreateProject(id, userID, name, slug string, port int) error {
 	_, err := DB.Exec(`
 		INSERT INTO projects (id, user_id, status, name, slug, port) 
-    VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "Building", name, slug, port)
+    VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "Building-First", name, slug, port)
 	if err != nil {
 		if strings.Contains(err.Error(), `pq: duplicate key value violates unique constraint "projects_slug_key"`) {
 			slug = fmt.Sprintf("%s-%s", slug, id)
