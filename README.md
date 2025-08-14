@@ -40,6 +40,7 @@ sudo ufw allow from 172.16.0.0/12
 
 ## todo
 - [ ] power on, power off docker container
+
 - [ ] load balancer config
 - [ ] load balancer key-value:
 get_best_server()

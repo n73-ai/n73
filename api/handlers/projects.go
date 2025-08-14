@@ -302,24 +302,38 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-	messageID := uuid.NewString()
-	webhookURL := fmt.Sprintf("http://%s:%s/webhook/messages/%s/%s", os.Getenv("IP"), os.Getenv("PORT"), projectID, payload.Model)
-	dockerProjectPath := filepath.Join("/app", "project")
-	endpoint := fmt.Sprintf("http://0.0.0.0:%d/claude/resume", project.Port)
+	go func() {
 
-	err = utils.ResumeClaudeProject(payload.Prompt, payload.Model, webhookURL, dockerProjectPath, project.SessionID, endpoint)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+		messageID := uuid.NewString()
+		webhookURL := fmt.Sprintf("http://%s:%s/webhook/messages/%s/%s", os.Getenv("IP"), os.Getenv("PORT"), projectID, payload.Model)
+		dockerProjectPath := filepath.Join("/app", "project")
+		endpoint := fmt.Sprintf("http://0.0.0.0:%d/claude/resume", project.Port)
 
-	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+		if !utils.IsServiceReady(project.Port) {
+			fmt.Println(" X Container is NOT ready!")
+			// here check if the container is running! if not power on
+			err = utils.PowerOn(projectID, project.Port)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			fmt.Println(" ✓ Container started!")
+		}
+
+		fmt.Println(" ✓ Container is ready!")
+
+		err = utils.ResumeClaudeProject(payload.Prompt, payload.Model, webhookURL, dockerProjectPath, project.SessionID, endpoint)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+	}()
 
 	return c.SendStatus(200)
 }
