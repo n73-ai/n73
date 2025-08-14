@@ -7,15 +7,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { EditIcon } from "lucide-react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useParams } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ErrorResponse } from "@/lib/types";
-import { editProject } from "@/api/projects";
+import { editProject, getProjectByID } from "@/api/projects";
 import toast from "react-hot-toast";
 import Spinner from "./spinner";
 
@@ -26,7 +26,7 @@ export default function EditProject() {
   const { projectID } = useParams();
 
   const editProjectMutation = useMutation({
-    mutationFn: () => editProject(projectID!, ""),
+    mutationFn: () => editProject(projectID!, name),
     onSuccess: () => {
       setIsOpen(false);
     },
@@ -34,6 +34,17 @@ export default function EditProject() {
       toast.error(error.response.data.error || "An unexpected error occurred.");
     },
   });
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["project", projectID],
+    queryFn: () => getProjectByID(projectID!),
+  });
+
+  useEffect(() => {
+    if (data) {
+      setName(data.name);
+    }
+  }, [data]);
 
   return (
     <AlertDialog
@@ -55,13 +66,23 @@ export default function EditProject() {
               <Label htmlFor="name" className="text-sm font-medium">
                 Project name
               </Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                id="name"
-                type="text"
-                placeholder="Project name"
-              />
+              {isError ? (
+                <div className="flex justify-center">
+                  <p>An unexpected error occurred.</p>
+                </div>
+              ) : isLoading ? (
+                <div className="flex justify-center">
+                  <Spinner />
+                </div>
+              ) : (
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  id="name"
+                  type="text"
+                  placeholder="Project name"
+                />
+              )}
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

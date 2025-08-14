@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth";
 import ZustackLogo from "./zustack-logo";
-import toast from "react-hot-toast";
 
 export default function Navbar() {
   const { isAuth, logout, email } = useAuthStore();

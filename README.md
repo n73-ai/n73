@@ -27,7 +27,6 @@ curl "http://172.17.0.1:8080"
 sudo ufw allow from 172.16.0.0/12
 
 ## todo
-- [ ] update project name
 - [ ] check all endpoints middleware is owner?
 - [ ] docker asign static resouces
 - [ ] load balancer config
