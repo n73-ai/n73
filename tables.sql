@@ -14,6 +14,8 @@ CREATE TABLE projects (
     name TEXT NOT NULL,
     slug TEXT NOT NULL UNIQUE,
     domain VARCHAR(255) DEFAULT '',
+    gh_repo VARCHAR(255) DEFAULT '',
+    docker_running BOOLEAN DEFAULT true,
     status VARCHAR(255) DEFAULT '',
     port INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

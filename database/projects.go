@@ -7,15 +7,17 @@ import (
 )
 
 type Project struct {
-	ID        string `json:"id"`
-	UserID    string `json:"user_id"`
-	SessionID string `json:"session_id"`
-	Name      string `json:"name"`
-	Slug      string `json:"slug"`
-	Domain    string `json:"domain"`
-	Status    string `json:"status"`
-	Port      int    `json:"port"`
-	CreatedAt string `json:"created_at"`
+	ID            string `json:"id"`
+	UserID        string `json:"user_id"`
+	SessionID     string `json:"session_id"`
+	Name          string `json:"name"`
+	Slug          string `json:"slug"`
+	Domain        string `json:"domain"`
+	GhRepo        string `json:"gh_repo"`
+	DockerRunning bool   `json:"docker_running"`
+	Status        string `json:"status"`
+	Port          int    `json:"port"`
+	CreatedAt     string `json:"created_at"`
 }
 
 func UpdateProjectName(projectID, name string) error {

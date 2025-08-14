@@ -309,15 +309,32 @@ func ResumeProject(c *fiber.Ctx) error {
 		dockerProjectPath := filepath.Join("/app", "project")
 		endpoint := fmt.Sprintf("http://0.0.0.0:%d/claude/resume", project.Port)
 
-		if !utils.IsServiceReady(project.Port) {
-			fmt.Println(" X Container is NOT ready!")
-			// here check if the container is running! if not power on
-			err = utils.PowerOn(projectID, project.Port)
+		// check if docker container exists
+		err = utils.DockerExists(projectID)
+		if err != nil {
+			fmt.Println("@Container do not exists!")
+
+			port, err := utils.GetFreePort()
 			if err != nil {
 				fmt.Println(err.Error())
 				return
 			}
-			fmt.Println(" ✓ Container started!")
+			fmt.Println("@Free port ok")
+
+			err = utils.CreateDockerContainer(projectID, port)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			fmt.Println("@Docker container created")
+
+			err = utils.DockerCloneRepo(project.Name, projectID)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			fmt.Println("@Docker clone repo ok")
+
 		}
 
 		fmt.Println(" ✓ Container is ready!")
@@ -328,11 +345,15 @@ func ResumeProject(c *fiber.Ctx) error {
 			return
 		}
 
+		fmt.Println(" ✓ Resume project is ok!")
+
 		err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
+		fmt.Println(" ✓ Message created!")
+		fmt.Println("End of go routine!")
 	}()
 
 	return c.SendStatus(200)

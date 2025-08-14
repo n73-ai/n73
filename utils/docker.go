@@ -10,6 +10,50 @@ import (
 	"time"
 )
 
+func DockerExists(projectID string) error {
+	runCmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=%s", projectID), "--format", "{{.Status}}")
+	output, err := runCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker command failed: %s", string(output))
+	}
+
+	status := strings.TrimSpace(string(output))
+	if status == "" {
+		return fmt.Errorf("container '%s' does not exist", projectID)
+	}
+
+	if !strings.Contains(status, "Up") {
+		return fmt.Errorf("container '%s' exists but is not running (status: %s)", projectID, status)
+	}
+
+	return nil
+}
+
+func DockerCloneRepo(projectName, projectID string) error {
+	runCmd := exec.Command("docker", "exec", "-it", projectID, "rm", "-rf", "/app/project")
+	output, err := runCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker failed: %s", string(output))
+	}
+
+	repoToClone := fmt.Sprintf("https://github.com/n73-projects/%s", projectName)
+	runCmd = exec.Command("docker", "exec", "-it", projectID, "git", "clone", repoToClone, "/app/project")
+	output, err = runCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker failed: %s", string(output))
+	}
+	return nil
+}
+
+func RmDockerContainer(projectID string) error {
+	runCmd := exec.Command("docker", "rm", "-f", projectID)
+	output, err := runCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker rm -f failed: %s", string(output))
+	}
+	return nil
+}
+
 func PowerOn(projectID string, port int) error {
 	runCmd := exec.Command("docker", "start", projectID)
 	output, err := runCmd.CombinedOutput()
@@ -38,15 +82,6 @@ func PowerOn(projectID string, port int) error {
 
 		fmt.Print(".")
 		time.Sleep(1 * time.Second)
-	}
-	return nil
-}
-
-func RmDockerContainer(projectID string) error {
-	runCmd := exec.Command("docker", "rm", "-f", projectID)
-	output, err := runCmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("docker rm -f failed: %s", string(output))
 	}
 	return nil
 }
