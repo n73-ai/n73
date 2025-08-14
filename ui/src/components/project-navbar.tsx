@@ -9,9 +9,9 @@ import {
 import { ChevronLeft, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import Settings from "./settings";
 import { useAuthStore } from "@/store/auth";
-import toast from "react-hot-toast";
+import EditProject from "./edit-project";
+import DeleteProject from "./delete-project";
 
 export default function ProjectNavbar() {
   const { logout, email } = useAuthStore();
@@ -25,7 +25,8 @@ export default function ProjectNavbar() {
               <ChevronLeft />
             </Button>
           </Link>
-          <Settings />
+          <EditProject />
+          <DeleteProject />
         </div>
         <div className="flex gap-[10px]">
           <DropdownMenu>

@@ -18,6 +18,13 @@ type Project struct {
 	CreatedAt string `json:"created_at"`
 }
 
+func UpdateProjectName(projectID, name string) error {
+	_, err := DB.Exec(`
+		UPDATE projects SET name = $1 WHERE id = $2;`,
+		name, projectID)
+	return err
+}
+
 func GetDeployedProjects() ([]Project, error) {
 	var projects []Project
 	rows, err := DB.Query(`SELECT id, name, domain, status
@@ -41,7 +48,7 @@ func GetDeployedProjects() ([]Project, error) {
 }
 
 func DeleteProject(projectID string) error {
-	result, err := DB.Exec(`DELETE FROM projects WHERE id = ?;`, projectID)
+	result, err := DB.Exec(`DELETE FROM projects WHERE id = $1;`, projectID)
 	if err != nil {
 		return err
 	}

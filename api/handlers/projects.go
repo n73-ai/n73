@@ -22,6 +22,54 @@ func GetAllDeployedProjects(c *fiber.Ctx) error {
   return c.JSON(projects)
 }
 
+func UpdateProject(c *fiber.Ctx) error {
+	user := c.Locals("user").(*database.User)
+	projectID := c.Params("projectID")
+	payload := struct {
+		Name   string `json:"name"`
+	}{}
+	err := c.BodyParser(&payload)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	if payload.Name == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "The name is required.",
+		})
+	}
+
+	if len(payload.Name) > 255 {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "The name should not have more than 55 characters.",
+		})
+	}
+
+	project, err := database.GetProjectByID(projectID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+if project.UserID != user.ID {
+    return c.Status(403).JSON(fiber.Map{
+        "error": "You don't have access to this resource",
+    })
+}
+
+	err = database.UpdateProjectName(projectID, payload.Name)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.SendStatus(200)
+}
+
 func DeleteProject(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
 	_, err := database.GetProjectByID(projectID)

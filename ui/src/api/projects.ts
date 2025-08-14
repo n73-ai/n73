@@ -1,5 +1,17 @@
 import { authAxios } from "@/lib/axios-instance";
 
+export const editProject = async (projectID: string, name: string) => {
+  const response = await authAxios.put(`/projects/${projectID}`, {
+    name,
+  });
+  return response.data;
+};
+
+export const deleteProject = async (projectID: string) => {
+  const response = await authAxios.delete(`/projects/${projectID}`);
+  return response.data;
+};
+
 export const getLatestProjects = async () => {
   const response = await authAxios.get(`/projects/latest`);
   return response.data;
