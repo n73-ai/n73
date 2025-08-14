@@ -98,7 +98,6 @@ func WebhookMessage(c *fiber.Ctx) error {
 			return nil
 		}
 
-
 		err = utils.GhPush(projectPath)
 		if err != nil {
 			fmt.Println("the gh-errror: ", err.Error())
@@ -127,6 +126,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 }
 
 func GetMessageByID(c *fiber.Ctx) error {
+	user := c.Locals("user").(*database.User)
 	messageID := c.Params("messageID")
 	message, err := database.GetMessageByID(messageID)
 	if err != nil {
@@ -134,15 +134,41 @@ func GetMessageByID(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+	project, err := database.GetProjectByID(message.ProjectID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	if project.UserID != user.ID {
+		return c.Status(403).JSON(fiber.Map{
+			"error": "You don't have access to this resource",
+		})
+	}
 	return c.JSON(message)
 }
 
 func GetMessagesByProjectID(c *fiber.Ctx) error {
+	user := c.Locals("user").(*database.User)
 	projectID := c.Params("projectID")
 	messages, err := database.GetMessagesByProjectID(projectID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
+		})
+	}
+
+	project, err := database.GetProjectByID(projectID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	if project.UserID != user.ID {
+		return c.Status(403).JSON(fiber.Map{
+			"error": "You don't have access to this resource",
 		})
 	}
 	return c.JSON(messages)

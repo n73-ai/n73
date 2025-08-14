@@ -19,10 +19,10 @@ type Message struct {
 
 func GetMessageByID(id string) (Message, error) {
 	var m Message
-	row := DB.QueryRow(`SELECT id, role, content, model, duration,
+	row := DB.QueryRow(`SELECT id, project_id, role, content, model, duration,
         is_error, total_cost_usd, model FROM messages WHERE id = $1`, id)
 
-	if err := row.Scan(&m.ID, &m.Role, &m.Content, &m.Model,
+	if err := row.Scan(&m.ID, &m.ProjectID, &m.Role, &m.Content, &m.Model,
 		&m.Duration, &m.IsError, &m.TotalCostUsd, &m.Model); err != nil {
 		if err == sql.ErrNoRows {
 			return m, fmt.Errorf("No message found with the id: %s", id)

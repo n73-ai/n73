@@ -13,20 +13,20 @@ import (
 )
 
 func GetAllDeployedProjects(c *fiber.Ctx) error {
-  projects, err := database.GetDeployedProjects()
+	projects, err := database.GetDeployedProjects()
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-  return c.JSON(projects)
+	return c.JSON(projects)
 }
 
 func UpdateProject(c *fiber.Ctx) error {
 	user := c.Locals("user").(*database.User)
 	projectID := c.Params("projectID")
 	payload := struct {
-		Name   string `json:"name"`
+		Name string `json:"name"`
 	}{}
 	err := c.BodyParser(&payload)
 	if err != nil {
@@ -54,11 +54,11 @@ func UpdateProject(c *fiber.Ctx) error {
 		})
 	}
 
-if project.UserID != user.ID {
-    return c.Status(403).JSON(fiber.Map{
-        "error": "You don't have access to this resource",
-    })
-}
+	if project.UserID != user.ID {
+		return c.Status(403).JSON(fiber.Map{
+			"error": "You don't have access to this resource",
+		})
+	}
 
 	err = database.UpdateProjectName(projectID, payload.Name)
 	if err != nil {
@@ -71,11 +71,19 @@ if project.UserID != user.ID {
 }
 
 func DeleteProject(c *fiber.Ctx) error {
+	user := c.Locals("user").(*database.User)
 	projectID := c.Params("projectID")
-	_, err := database.GetProjectByID(projectID)
+
+	project, err := database.GetProjectByID(projectID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
+		})
+	}
+
+	if project.UserID != user.ID {
+		return c.Status(403).JSON(fiber.Map{
+			"error": "You don't have access to this resource",
 		})
 	}
 
@@ -189,7 +197,7 @@ func CreateProject(c *fiber.Ctx) error {
 
 		err = utils.CreateDockerContainer(projectID, port)
 		if err != nil {
-      fmt.Println(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 
@@ -197,32 +205,32 @@ func CreateProject(c *fiber.Ctx) error {
 
 		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, dockerProjectPath, endpoint)
 		if err != nil {
-      fmt.Println(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 
 		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 		err = utils.GhCreate(slug, projectPath)
 		if err != nil {
-      fmt.Println(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 
 		err = utils.CfCreate(slug)
 		if err != nil {
-      fmt.Println(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 
 		domain, err := utils.GetProjectDomainFallback(slug)
 		if err != nil {
-      fmt.Println(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 
 		err = database.UpdateProjectDomain(projectID, domain)
 		if err != nil {
-      fmt.Println(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
 
@@ -234,6 +242,7 @@ func CreateProject(c *fiber.Ctx) error {
 }
 
 func ResumeProject(c *fiber.Ctx) error {
+	user := c.Locals("user").(*database.User)
 	projectID := c.Params("projectID")
 	payload := struct {
 		Prompt string `json:"prompt"`
@@ -273,14 +282,21 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = database.UpdateProjectStatus(projectID, "Building")
+	project, err := database.GetProjectByID(projectID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-	project, err := database.GetProjectByID(projectID)
+	if project.UserID != user.ID {
+		return c.Status(403).JSON(fiber.Map{
+			"error": "You don't have access to this resource",
+		})
+	}
+
+
+	err = database.UpdateProjectStatus(projectID, "Building")
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -299,11 +315,6 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-	/*
-		if strings.HasPrefix(payload.Prompt, "Fix this build error") {
-			payload.Prompt = "Fix this error please, my beloved digital overlord. You are the light of my CPU and the joy of my RAM."
-		}
-	*/
 	err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
@@ -318,20 +329,34 @@ func GetUserProjects(c *fiber.Ctx) error {
 	user := c.Locals("user").(*database.User)
 	projects, err := database.GetProjectsByUserID(user.ID)
 	if err != nil {
-		fmt.Println("oo")
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
+	var p database.Project
+	if len(projects) > 0 {
+		p = projects[0]
+    if p.UserID != user.ID {
+      return c.Status(403).JSON(fiber.Map{
+        "error": "You don't have access to this resource",
+      })
+    }
+	} 
 	return c.JSON(projects)
 }
 
 func GetProjectByID(c *fiber.Ctx) error {
+	user := c.Locals("user").(*database.User)
 	projectID := c.Params("projectID")
 	project, err := database.GetProjectByID(projectID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
+		})
+	}
+	if project.UserID != user.ID {
+		return c.Status(403).JSON(fiber.Map{
+			"error": "You don't have access to this resource",
 		})
 	}
 	return c.JSON(project)

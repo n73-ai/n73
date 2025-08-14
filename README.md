@@ -27,14 +27,11 @@ curl "http://172.17.0.1:8080"
 sudo ufw allow from 172.16.0.0/12
 
 ## todo
-- [ ] check all endpoints middleware is owner?
 - [ ] docker asign static resouces
-- [ ] load balancer config
 - [ ] cuanto recursos usa en momento pico?
 - [ ] asignar recursos realistas a docker
+- [ ] load balancer config
 - [ ] load balancer key-value:
-- [ ] deploy frontend on cf 
-- [ ] stress test x deployments in one day
 ```
 {"project_id": {
     {"server_domain": "domain"}
@@ -45,6 +42,8 @@ if p.num => max_allowed {
     this server is full
 }
 ```
+- [ ] deploy frontend on cf 
+- [ ] stress test x deployments in one day
 ## v1 Backend development
 - [ ] create the backend in golang
 - [ ] all the postgres databases must be in server inside of docker with x disk
