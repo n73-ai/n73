@@ -39,7 +39,6 @@ curl "http://172.17.0.1:8080"
 sudo ufw allow from 172.16.0.0/12
 
 ## todo
-
 - [ ] load balancer config
 - [ ] load balancer key-value:
 
