@@ -5,9 +5,21 @@
 ⚠️ **This project is under active development. It's not yet production-ready.**
 
 ## Simple prompts
-- "Build a hello world with a dark background and bold letters"
-- "Build a hello friend with a dark background and bold letters"
+- "Build a hello with a dark background and bold letters"
+- "Build a Hello Friend with a dark background and bold letters"
 - "Edit the Hello World text, i want the color to be red"
+docker inspect --format={{.State.Running}} claude-server
+
+statusCmd := exec.Command("docker", "inspect", "--format={{.State.Running}}", projectID)
+		statusOutput, err := statusCmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("failed to check container status: %s", string(statusOutput))
+		}
+		
+		isRunning := strings.TrimSpace(string(statusOutput)) == "true"
+		if !isRunning {
+			return fmt.Errorf("container failed to start")
+		}
 
 ## Cool prompts
 Create a fully functional Tetris game. The game should include a grid-based playfield, tetromino shapes (I, O, T, S, Z, J, L), collision detection, line clearing, score tracking, and increasing speed as the player progresses. The design should be minimal but visually appealing, with smooth animations and responsive controls (arrow keys for movement, up arrow for rotation, down arrow for soft drop, and spacebar for hard drop). Include comments in the code explaining the logic, and ensure the game runs in any modern web browser without external dependencies.
@@ -27,23 +39,40 @@ curl "http://172.17.0.1:8080"
 sudo ufw allow from 172.16.0.0/12
 
 ## todo
-- [ ] docker asign static resouces
-- [ ] cuanto recursos usa en momento pico?
-- [ ] asignar recursos realistas a docker
+- [ ] power on, power off docker container
 - [ ] load balancer config
 - [ ] load balancer key-value:
+get_best_server()
+    projectID = "420"
+
+    p = kv.get(projectID)
+    como se si esta corriendo?
+    if p.is_running {
+        redirect(p.server_domain)
+    }
+
+    for s in servers {
+        get server where num_of_docker se acerca mas a max_allowed
+        para llenar el servidor 
+        add a new kv with the projectID
+        rediect(p.server_domain)
+    }
+     
 ```
-{"project_id": {
-    {"server_domain": "domain"}
-    {"num_of_docker": num}
-    {"max_allowed": num}
-               }
+p = {"project_id": {
+        {"server_domain": "domain"}
+        {"num_of_docker": num}
+        {"max_allowed": num}
+    }
 if p.num => max_allowed {
     this server is full
 }
 ```
-- [ ] deploy frontend on cf 
-- [ ] stress test x deployments in one day
+- [ ] deploy frontend on cf
+- [ ] stress test 
+- [ ] api endpoints Rate limiting
+- [ ] user rate limit($[x]/day)
+- [ ] connect database via vpn
 ## v1 Backend development
 - [ ] create the backend in golang
 - [ ] all the postgres databases must be in server inside of docker with x disk

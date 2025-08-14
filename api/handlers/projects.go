@@ -295,7 +295,6 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-
 	err = database.UpdateProjectStatus(projectID, "Building")
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
@@ -333,15 +332,6 @@ func GetUserProjects(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	var p database.Project
-	if len(projects) > 0 {
-		p = projects[0]
-    if p.UserID != user.ID {
-      return c.Status(403).JSON(fiber.Map{
-        "error": "You don't have access to this resource",
-      })
-    }
-	} 
 	return c.JSON(projects)
 }
 

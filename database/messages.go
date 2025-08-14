@@ -35,7 +35,7 @@ func GetMessageByID(id string) (Message, error) {
 func GetMessagesByProjectID(projectID string) ([]Message, error) {
 	var messages []Message
 	rows, err := DB.Query(`SELECT id, role, content, duration, total_cost_usd, model
-  FROM messages WHERE project_id = $1;`, projectID)
+  FROM messages WHERE project_id = $1 ORDER BY created_at ASC;`, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}

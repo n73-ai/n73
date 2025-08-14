@@ -41,5 +41,9 @@ def resume_endpoint():
     start_background_task(ResumeProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["session_id"], data["jwt"])
     return jsonify({"status": "processing"}), 200
 
+@app.route('/health', methods=['GET'])
+def health():
+    return '', 200
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

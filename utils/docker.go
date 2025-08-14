@@ -2,9 +2,11 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -19,6 +21,68 @@ func RmDockerContainer(projectID string) error {
 
 func CreateDockerContainer(projectID string, port int) error {
 	ports := fmt.Sprintf("%d:5000", port)
+	runCmd := exec.Command("docker", "run",
+		"-d",
+		"-p", ports,
+		"--memory=300m", 
+		"--cpus=0.5",    
+		"--name", projectID,
+		"base:v1")
+	output, err := runCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker run failed: %s", string(output))
+	}
+
+	fmt.Printf("Waiting for container to be ready...")
+	
+	// Verificar que el contenedor esté funcionando
+	maxAttempts := 30 // máximo 30 intentos (30 segundos)
+	for i := 0; i < maxAttempts; i++ {
+		// Verificar estado del contenedor
+		statusCmd := exec.Command("docker", "inspect", "--format={{.State.Running}}", projectID)
+		statusOutput, err := statusCmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("failed to check container status: %s", string(statusOutput))
+		}
+		
+		isRunning := strings.TrimSpace(string(statusOutput)) == "true"
+		if !isRunning {
+			return fmt.Errorf("container failed to start")
+		}
+
+		if isServiceReady(port) {
+			fmt.Println(" ✓ Container is ready!")
+			return nil
+		}
+		
+		fmt.Print(".")
+		time.Sleep(1 * time.Second)
+	}
+	
+	return fmt.Errorf("container did not become ready within %d seconds", maxAttempts)
+}
+
+// Función auxiliar para verificar si el servicio está respondiendo
+func isServiceReady(port int) bool {
+	client := &http.Client{
+		Timeout: 2 * time.Second,
+	}
+	
+	// Health check endpoint
+	url := fmt.Sprintf("http://0.0.0.0:%d/health", port)
+	
+	resp, err := client.Get(url)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	
+	return resp.StatusCode == http.StatusOK
+}
+
+/*
+func CreateDockerContainer(projectID string, port int) error {
+	ports := fmt.Sprintf("%d:5000", port)
 	runCmd := exec.Command("docker", "run", "-d", "-p", ports, "--name", projectID, "base:v1")
 	output, err := runCmd.CombinedOutput()
 	if err != nil {
@@ -30,6 +94,7 @@ func CreateDockerContainer(projectID string, port int) error {
 
 	return nil
 }
+*/
 
 func cleanDirectoryExceptGit(dirPath string) error {
 	entries, err := os.ReadDir(dirPath)
