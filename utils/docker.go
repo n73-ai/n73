@@ -22,9 +22,11 @@ func DockerExists(projectID string) error {
 		return fmt.Errorf("container '%s' does not exist", projectID)
 	}
 
+	/* do this in another function
 	if !strings.Contains(status, "Up") {
 		return fmt.Errorf("container '%s' exists but is not running (status: %s)", projectID, status)
 	}
+	*/
 
 	return nil
 }

@@ -20,6 +20,28 @@ type Project struct {
 	CreatedAt     string `json:"created_at"`
 }
 
+func GetProjects() ([]Project, error) {
+	var projects []Project
+	rows, err := DB.Query(`SELECT id, name, domain, status, gh_repo, docker_running 
+  FROM projects ORDER BY created_at DESC;`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var p Project
+		if err := rows.Scan(&p.ID, &p.Name, &p.Domain, &p.Status, &p.GhRepo, &p.DockerRunning); err != nil {
+			return nil, err
+		}
+		projects = append(projects, p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return projects, nil
+}
+
 func UpdateProjectName(projectID, name string) error {
 	_, err := DB.Exec(`
 		UPDATE projects SET name = $1 WHERE id = $2;`,

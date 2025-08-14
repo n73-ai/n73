@@ -12,6 +12,59 @@ import (
 	"github.com/google/uuid"
 )
 
+func AdminDeleteDockerProject(c *fiber.Ctx) error {
+	projectID := c.Params("projectID")
+	user := c.Locals("user").(*database.User)
+	if user.Role != "admin" {
+		return c.SendStatus(403)
+	}
+	err := utils.RmDockerContainer(projectID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
+
+	if _, err := os.Stat(projectPath); err != nil {
+		if os.IsNotExist(err) {
+			err = database.DeleteProject(projectID)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{
+					"error": err.Error(),
+				})
+			}
+			return c.SendStatus(200)
+		}
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Error checking project directory: " + err.Error(),
+		})
+	}
+
+	err = os.RemoveAll(projectPath)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Error removing project directory: " + err.Error(),
+		})
+	}
+	return c.SendStatus(200)
+}
+
+func AdminGetProjects(c *fiber.Ctx) error {
+	user := c.Locals("user").(*database.User)
+	if user.Role != "admin" {
+		return c.SendStatus(403)
+	}
+	projects, err := database.GetProjects()
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(projects)
+}
+
 func GetAllDeployedProjects(c *fiber.Ctx) error {
 	projects, err := database.GetDeployedProjects()
 	if err != nil {
@@ -87,20 +140,28 @@ func DeleteProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = utils.RmDockerContainer(projectID)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+	// only delete if project exists
+	err = utils.DockerExists(projectID)
+	if err == nil {
+		err = utils.RmDockerContainer(projectID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
 	}
 
 	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 
 	if _, err := os.Stat(projectPath); err != nil {
 		if os.IsNotExist(err) {
-			return c.Status(404).JSON(fiber.Map{
-				"error": "Project directory not found",
-			})
+			err = database.DeleteProject(projectID)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{
+					"error": err.Error(),
+				})
+			}
+			return c.SendStatus(200)
 		}
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Error checking project directory: " + err.Error(),
