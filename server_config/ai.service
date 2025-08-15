@@ -3,7 +3,6 @@ Description=ai
 
 [Service]
 User=agust
-Environment=PATH=/usr/bin/node/bin:/usr/local/bin:/usr/bin:/bin
 Environment=DB_USER=postgres
 Environment=DB_PASSWORD=secret
 Environment=DB_HOST=localhost

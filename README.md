@@ -98,12 +98,6 @@ Apply changes:
 source /path/to/.bashrc
 ```
 
-#### Claude Code
-
-```bash
-npm install -g @anthropic-ai/claude-code
-```
-
 #### Python 3.10 Environment
 
 ```bash
@@ -307,15 +301,14 @@ sudo ufw status verbose
 
 ### 2. Nginx + Certbot (HTTPS & WSS)
 
-**Step 1:** Point your DNS record to your server's IP address.
-**Step 2:** Install Nginx and Certbot:
+Point your DNS record to your server's IP address, then install Nginx and Certbot:
 
 ```bash
 sudo apt install certbot python3-certbot-nginx nginx -y
 certbot --nginx
 ```
 
-**Step 3:** Replace the default Nginx config with your custom config:
+Replace the default Nginx config with your custom config:
 
 ```bash
 rm /etc/nginx/sites-available/default
