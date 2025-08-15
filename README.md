@@ -1,90 +1,175 @@
-# AI Zustack
+# n73
 
-## Build, Preview, and Ship with AI.
+## Build, Preview, and Ship with AI
 
-⚠️ **This project is under active development. It's not yet production-ready.**
+**n73** is an AI-powered app development platform that lets you create entire web applications using **natural language prompts**.
+Transform your ideas into reality with the power of artificial intelligence.
 
-## admin endpoints
+**Version 1** is now available — try it here:
+[https://n73.agustfricke.com](https://n73.agustfricke.com)
+
+> Questions, feedback, or just interested? Hit me up at my email **[hej@agustfricke.com](mailto:hej@agustfricke.com)** your input is always appreciated.
+
+---
+
+## Local Setup (Ubuntu 22.04)
+
+### Dependencies
+
+#### Node.js
+
 ```bash
-export JWT=""
-curl -X GET "http://localhost:8080/admin/projects" \
-  -H "Authorization: Bearer ${JWT}" | jq
+wget https://nodejs.org/dist/v22.17.1/node-v22.17.1-linux-x64.tar.xz
+tar -xf node-v22.17.1-linux-x64.tar.xz
+rm node-v22.17.1-linux-x64.tar.xz
+mv node-v22.17.1-linux-x64 /usr/bin/node
 ```
+
+Add to your `.bashrc`:
+
 ```bash
-export P_ID="164fed94-dd9c-4b47-9233-722ed78423ac"
-export JWT=""
-curl -X POST "http://localhost:8080/admin/rm/docker/${P_ID}" \
-  -H "Authorization: Bearer ${JWT}"
+export PATH=$PATH:/usr/bin/node/bin
 ```
 
-## Simple prompts
-- "Build a hello world with a dark background and bold letters"
-- "Build a Hello Friend with a dark background and bold letters"
-- "Edit the Hello World text, i want the color to be red"
-docker inspect --format={{.State.Running}} claude-server
+Apply changes:
 
-statusCmd := exec.Command("docker", "inspect", "--format={{.State.Running}}", projectID)
-		statusOutput, err := statusCmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("failed to check container status: %s", string(statusOutput))
-		}
-		
-		isRunning := strings.TrimSpace(string(statusOutput)) == "true"
-		if !isRunning {
-			return fmt.Errorf("container failed to start")
-		}
-
-## Cool prompts
-Create a fully functional Tetris game. The game should include a grid-based playfield, tetromino shapes (I, O, T, S, Z, J, L), collision detection, line clearing, score tracking, and increasing speed as the player progresses. The design should be minimal but visually appealing, with smooth animations and responsive controls (arrow keys for movement, up arrow for rotation, down arrow for soft drop, and spacebar for hard drop). Include comments in the code explaining the logic, and ensure the game runs in any modern web browser without external dependencies.
-Create an interactive web app with a futuristic robotic animation that visually teaches the concept of Bubble Sort. The robot should manipulate and swap colorful data blocks on the screen, highlighting comparisons and movements step-by-step. Include smooth animations, glowing effects, and a clear visual indicator of sorted and unsorted sections. The style should be playful yet educational, with a tech-inspired UI.
-Create an interactive web animation where floating, glowing particles follow the movement of the mouse cursor. When the cursor moves nearby, the particles are attracted and cluster together smoothly, then disperse when the cursor moves away. Use soft motion, fluid transitions, and a slightly futuristic, neon aesthetic with a dark background for contrast
-
-git config --global user.email "hej@agustfricke.com"
-git config --global user.name "agustfricke"
-
-sudo journalctl -u ai -n 50
-hostname -I
-
-docker exec -it 400895aeec33 bash
-curl "http://172.17.0.1:8080"
-
-# Solo la red Docker por defecto
-sudo ufw allow from 172.16.0.0/12
-
-## beta
-- [ ] deploy
-- [ ] test
-- [ ] fix README
-## v1
-- [ ] deploy frontend on cf
-- [ ] stress test 
-- [ ] api endpoints Rate limiting
-- [ ] user rate limit($[x]/day)
-- [ ] connect database via vpn
-## v1 Backend development
-- [ ] create the backend in golang
-- [ ] all the postgres databases must be in server inside of docker with x disk
-
-# Add docker to user
 ```bash
-sudo usermod -aG docker $USER
+source /path/to/.bashrc
 ```
-# Create original Docker container
+
+#### Wrangler
+
 ```bash
-# build and run
-docker build -t claude-server .
-docker run -d -p 5000:5000 --name claude-server claude-server
-# go in the container to login in claude
-docker exec -it claude-server bash 
-claude
-# Commit the container
-docker commit claude-server base:v1
+npm i -D -g wrangler@latest
 ```
-- Install claude code
+
+#### GitHub CLI
+
+```bash
+(type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
+ && sudo mkdir -p -m 755 /etc/apt/keyrings \
+ && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+ && sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg < $out > /dev/null \
+ && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+ && sudo mkdir -p -m 755 /etc/apt/sources.list.d \
+ && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+    | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+ && sudo apt update \
+ && sudo apt install gh -y
+```
+
+#### Docker
+
+```bash
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+ | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+chmod a+r /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+ https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" \
+ | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt-get update -y
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+```
+
+#### Go
+
+```bash
+wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
+tar -xf go1.22.5.linux-amd64.tar.gz
+rm go1.22.5.linux-amd64.tar.gz
+mv go /usr/bin
+```
+
+Add to your `.bashrc`:
+
+```bash
+export PATH=/usr/bin/go/bin:$PATH
+export GOPATH=/.go
+export PATH=$PATH:$GOPATH/bin
+```
+
+Apply changes:
+
+```bash
+source /path/to/.bashrc
+```
+
+#### Claude Code
+
 ```bash
 npm install -g @anthropic-ai/claude-code
 ```
-- Run the db with docker for local development
+
+#### Python 3.10 Environment
+
+```bash
+apt install python3.10-venv
+```
+
+---
+
+### Authentication & Login Setup
+
+#### Generate SSH Key
+
+```bash
+ssh-keygen -t ed25519 -C "hej@agustfricke.com"
+```
+
+Start ssh-agent and add key:
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
+Copy your public key:
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+Add it to your GitHub account.
+
+#### GitHub CLI Login
+
+```bash
+gh auth login
+```
+
+#### Wrangler Login
+
+```bash
+wrangler login
+```
+
+Follow the OAuth flow — after it redirects to `localhost:[port]`,
+open a new terminal on your server and run:
+
+```bash
+curl "localhost_url"
+```
+
+---
+
+### Claude Code (Docker Build & Commit)
+
+```bash
+docker build -t claude-server .
+docker run -d -p 5000:5000 --name claude-server claude-server
+docker exec -it claude-server bash
+claude  # Login to Claude
+docker commit claude-server base:v1
+```
+
+---
+
+### Database Setup
+
 ```bash
 docker run --name my-postgres \
   -e POSTGRES_USER=postgres \
@@ -92,191 +177,146 @@ docker run --name my-postgres \
   -e POSTGRES_DB=mydb \
   -p 5432:5432 \
   -d postgres
-docker ps -a
 docker exec -it my-postgres psql -U postgres -d mydb
 ```
-- Make admin user in new db
+
+Paste the contents of `tables.sql` into the PostgreSQL shell.
+
+---
+
+### Environment Variables
+
+**Frontend** (`ai/ui/.env.local`):
+
 ```bash
-UPDATE users SET role = 'admin' WHERE email = 'agustfricke@gmail.com';
+VITE_BACKEND_URL="http://localhost:8080"
+VITE_WEBSOCKET_URL="ws://localhost:8080"
 ```
-- Config .env.local on react
+
+**Backend**:
+
 ```bash
-vim ui/.env.local
+export DB_USER=postgres
+export DB_PASSWORD=secret
+export DB_HOST=localhost
+export DB_NAME=mydb
+export DB_PORT=5432
+export EMAIL_SECRET_KEY=secret_email_pass
+export PORT=8080
+export ROOT_PATH=/path/to/ai
+export SECRET_KEY="very_long_string"
+export ADMIN_JWT="jwt_with_email_admin_user_claim"
+export IP="192.168.1.9"
 ```
-- Export env
-```bash
-source .env
+
+---
+
+### Notes
+
+* **EMAIL\_SECRET\_KEY**: Obtain from your Google account to enable email sending.
+* **ROOT\_PATH**: Path to your AI project (e.g., `/home/agust/work/ai`).
+* **ADMIN\_JWT**: Generate using this Go snippet:
+
+```go
+package main
+
+import (
+  "fmt"
+  "time"
+
+  "github.com/golang-jwt/jwt"
+)
+
+func main() {
+  tokenByte := jwt.New(jwt.SigningMethodHS256)
+  now := time.Now().UTC()
+  claims := tokenByte.Claims.(jwt.MapClaims)
+  //expDuration := time.Hour * 24 * 180
+  //exp := now.Add(expDuration).Unix()
+  //claims["exp"] = exp
+  claims["email"] = "agustfricke@gmail.com"
+  claims["iat"] = now.Unix()
+  claims["nbf"] = now.Unix()
+  tokenString, err := tokenByte.SignedString([]byte("sodibg3obg48wb4ogbwsl4gjwnf4owbg9snkfbitbfwouebgiw893r83bf9uw3bsfeiugfiwbf4ifgw938hg9w74gfi4wubcwih39h0f038298yhw8beguiwebgiwbe=w-eto293ru2094tf-w=efwnoigb"))
+  if err != nil {
+    panic(err)
+  }
+  fmt.Println(tokenString)
+}
 ```
-- Run the go server
+
+Run it and use the output as your admin JWT.
+
+* **IP**: Your local IP (use `hostname -I`).
+
+---
+
+### Running the Project
+
+**Backend:**
+
 ```bash
 go run cmd/main.go
 ```
 
-# Dependencies
-- gh cli `https://cli.github.com/`
-- wrangler cli `https://developers.cloudflare.com/workers/wrangler/install-and-update/`
-- Docker (install like in the dotfiles) `https://github.com/agustfricke/dotfiles`
-- Go (install like in the dotfiles) `https://github.com/agustfricke/dotfiles`
-- Claude code
-- python3.10-env
-
-# Deploy
-#### Install dependencies
-For `Ubuntu 22.04`.
-For `Some text`.
-- Go
-```bash
-wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
-tar -xf go1.22.5.linux-amd64.tar.gz
-rm go1.22.5.linux-amd64.tar.gz
-mv go /usr/bin
-```
-- Node
-```bash
-wget https://nodejs.org/dist/v22.17.1/node-v22.17.1-linux-x64.tar.xz
-tar -xf node-v22.17.1-linux-x64.tar.xz
-rm node-v22.17.1-linux-x64.tar.xz
-mv node-v22.17.1-linux-x64 /usr/bin/node
-```
-Add to .bashrc
-```bash
-export PATH=/usr/bin/go/bin:$PATH
-export GOPATH=/.go
-export PATH=$PATH:$GOPATH/bin
-export PATH=$PATH:/usr/bin/node/bin
-```
-- Docker
-```bash
-sudo apt-get remove docker docker-engine docker.io containerd runc 
-sudo apt-get update 
-sudo apt-get install ca-certificates curl gnupg 
-install -m 0755 -d /etc/apt/keyrings 
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg  
-chmod a+r /etc/apt/keyrings/docker.gpg 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list 
-apt-get update -y 
-apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y 
-```
-- Wrangler
-```bash
-npm i -D -g wrangler@latest
-```
-gh cli
-```bash
-(type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
-	&& sudo mkdir -p -m 755 /etc/apt/keyrings \
-	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-	&& cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
-	&& sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-	&& sudo mkdir -p -m 755 /etc/apt/sources.list.d \
-	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-	&& sudo apt update \
-	&& sudo apt install gh -y
-```
-- check if install is correct
-```bash
-node --version
-go version
-docker --version
-wrangler --version
-gh --version
-```
-
-#### Auth
-##### GitHub ssh
-Generating a new SSH key
-```bash
-ssh-keygen -t ed25519 -C "hej@agustfricke.com"
-```
-Start the ssh-agent in the background and add your SSH private key to the ssh-agent
-```bash
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
-```
-Copy and past to your GitHub account
-```bash
-cat ~/.ssh/id_ed25519.pub
-```
-##### gh 
-```bash
-gh auth login
-```
-
-##### wrangler
-```bash
-wrangler login
-```
-Go to your browser and open the oauth url
-it will redirect to a localhost:[port]
-now, open a new terminal in your server and curl that url
-```bash
-curl "localhost_url"
-```
-
-##### claude code
-```bash
-claude
-```
-Open the url in local web browser, copy the code and pase in the terminal
-
-#### Clone the repo
-```bash
-git clone git@github.com:zustack/ai.git
-```
-
-- Edit .env file with correct values(db and port)
-
-- Config .env.local on react
-```bash
-vim ui/.env.local
-```
-- Config the postgres db and add credentials to .env
-
-#### Firewall config
-```bash
-sudo ufw enable
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-```
-
-172.17.0.1
+Create a new user in the UI, then make them admin:
 
 ```bash
-sudo ufw allow 22
-sudo ufw allow 443
+docker exec -it my-postgres psql -U postgres -d mydb
 ```
 
-```bash
-sudo ufw status verbose
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'your@admin.com';
 ```
 
+**Frontend:**
+
 ```bash
-# En tu sesión de screen
+cd ui
+npm run dev
+```
+
+Visit [http://localhost:5173](http://localhost:5173) to use the app locally.
+
+> You’ll also need to update the repository upload location.
+> In my case, it’s under **GitHub `n73-projects`**, so make sure to change this in the `scripts/gh-create.sh` file.
+
+## Deployments
+
+### 1. Firewall Configuration
+
+Start a `screen` session to keep the firewall setup running even if you disconnect:
+
+```bash
 screen -S firewall-setup
+```
 
-# Permitir SSH (esto ya cubre el puerto 22)
+Configure **UFW**:
+
+```bash
 sudo ufw allow ssh
-
-# Habilitar firewall y políticas
 sudo ufw enable
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-
-# Permitir HTTP y HTTPS
 sudo ufw allow 80
 sudo ufw allow 443
-
-# Verificar configuración final
 sudo ufw status verbose
 ```
 
-#### Nginx with certbot
+---
+
+### 2. Nginx + Certbot (HTTPS & WSS)
+
+**Step 1:** Point your DNS record to your server's IP address.
+**Step 2:** Install Nginx and Certbot:
+
 ```bash
 sudo apt install certbot python3-certbot-nginx nginx -y
 certbot --nginx
 ```
 
-- Remove default config and move the config file for nginx.
+**Step 3:** Replace the default Nginx config with your custom config:
+
 ```bash
 rm /etc/nginx/sites-available/default
 rm /etc/nginx/sites-enabled/default
@@ -286,23 +326,36 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-- Optional: Check if Nginx is OK
+**Optional:** Test if Nginx and the application work as expected:
+
 ```bash
+cd ~/ai
+
+# Build frontend
+cd ui
+npm run build
+
+# Run backend
+cd ..
 source .env
 go run cmd/main.go
 ```
 
-#### Systemd 
-- Edit the server_config/ai.service with .env and then move the file to systemd
+---
+
+### 3. Systemd Service
+
+**Step 1:** Edit `server_config/ai.service` and update environment variables (`.env`).
+**Step 2:** Move the file to systemd:
+
 ```bash
 mv ai/server_config/ai.service /etc/systemd/system
 ```
 
-- Systemd commands
+**Step 3:** Manage the service:
+
 ```bash
 service ai start
 service ai status
 service ai stop
 ```
-
-> Questions, feedback, or just interested? Hit me up at ```contact@zustack.com```
