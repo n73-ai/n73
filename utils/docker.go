@@ -96,8 +96,8 @@ func CreateDockerContainer(projectID string, port int) error {
 	runCmd := exec.Command("docker", "run",
 		"-d",
 		"-p", ports,
-		"--memory=300m",
-		"--cpus=0.5",
+		//"--memory=300m",
+		//"--cpus=0.5",
 		"--name", projectID,
 		"base:v1")
 	output, err := runCmd.CombinedOutput()
