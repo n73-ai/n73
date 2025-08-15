@@ -34,6 +34,7 @@ export default function Project() {
                 domain={data?.domain}
                 slug={data?.slug}
               />
+
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>

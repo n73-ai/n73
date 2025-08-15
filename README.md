@@ -53,6 +53,7 @@ sudo ufw allow from 172.16.0.0/12
 
 ## beta
 - [ ] deploy
+- [ ] test
 - [ ] fix README
 ## v1
 - [ ] deploy frontend on cf

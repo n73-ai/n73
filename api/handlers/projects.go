@@ -429,12 +429,12 @@ func ResumeProject(c *fiber.Ctx) error {
       // end of pw on
       sessionID = ""
 
-    }
+      err = database.UpdateProjectDockerRunning(projectID, !p.DockerRunning)
+      if err != nil {
+        fmt.Println(err.Error())
+        return
+      }
 
-    err = database.UpdateProjectDockerRunning(projectID, !p.DockerRunning)
-    if err != nil {
-			fmt.Println(err.Error())
-			return
     }
 
 		fmt.Println(" ✓ Container is ready to resume!")
