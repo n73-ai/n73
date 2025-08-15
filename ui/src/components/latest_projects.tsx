@@ -1,9 +1,7 @@
 import { getLatestProjects } from "@/api/projects";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
 import Spinner from "./spinner";
-import { Button } from "./ui/button";
 import { GithubIcon, LinkIcon } from "lucide-react";
 
 export default function LatestProjects() {

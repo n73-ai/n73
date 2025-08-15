@@ -31,7 +31,7 @@ const models = [
 
 export default function Landing() {
   const [prompt, setPrompt] = useState("");
-  const [name, setName] = useState("");
+  const [name, _] = useState("");
   const navigate = useNavigate();
   const { model, setModel } = useModelStore();
 

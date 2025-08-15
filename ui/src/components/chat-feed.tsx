@@ -6,7 +6,6 @@ import {
   Send,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import ZustackLogo from "./zustack-logo";
 import Spinner from "./spinner";
 import Markdown from "./markdown";

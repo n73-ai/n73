@@ -10,8 +10,6 @@ import {
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { TrashIcon } from "lucide-react";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { deleteProject } from "@/api/projects";
 import { useNavigate, useParams } from "react-router-dom";
