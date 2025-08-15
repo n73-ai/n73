@@ -1,8 +1,9 @@
 import { getUserProjects } from "@/api/projects";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Spinner from "./spinner";
+import { GithubIcon, LinkIcon } from "lucide-react";
 
 export default function Projects() {
   const { data, isLoading, isError } = useQuery<any>({
@@ -33,9 +34,15 @@ export default function Projects() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-[15px]">
         {data?.map((p: any) => (
           <Link to={`/project/${p.id}`}>
-            <Card className="@container/card hover:border hover:border-zinc-700 transition-all duration-200 ease-in-out">
+            <Card className="@container/card hover:border hover:border-muted-foreground/30 transition-all duration-200 ease-in-out">
               <CardHeader>
-                <CardTitle className="font-semibold">{p.name}</CardTitle>
+                <CardTitle className="pb-[10px]">{p.name}</CardTitle>
+                <div className="relative overflow-hidden w-full h-48 rounded-md border border-zinc-700">
+                  <iframe
+                    src={p.domain}
+                    className="absolute top-0 left-0 w-[1280px] h-[800px] scale-[0.25] origin-top-left pointer-events-none"
+                  />
+                </div>
               </CardHeader>
             </Card>
           </Link>

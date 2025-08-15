@@ -18,7 +18,15 @@ func AdminDeleteDockerProject(c *fiber.Ctx) error {
 	if user.Role != "admin" {
 		return c.SendStatus(403)
 	}
-	err := utils.RmDockerContainer(projectID)
+
+  project, err := database.GetProjectByID(projectID)
+  if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+  }
+
+	err = utils.RmDockerContainer(projectID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -28,11 +36,11 @@ func AdminDeleteDockerProject(c *fiber.Ctx) error {
 	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 
 	if _, err := os.Stat(projectPath); err != nil {
-		if os.IsNotExist(err) {
-			err = database.DeleteProject(projectID)
+		if os.IsExist(err) {
+			err = os.RemoveAll(projectPath)
 			if err != nil {
 				return c.Status(500).JSON(fiber.Map{
-					"error": err.Error(),
+					"error": "Error removing project directory: " + err.Error(),
 				})
 			}
 			return c.SendStatus(200)
@@ -42,12 +50,13 @@ func AdminDeleteDockerProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = os.RemoveAll(projectPath)
-	if err != nil {
+  err = database.UpdateProjectDockerRunning(projectID, !project.DockerRunning)
+  if err != nil {
 		return c.Status(500).JSON(fiber.Map{
-			"error": "Error removing project directory: " + err.Error(),
+			"error": err.Error(),
 		})
-	}
+  }
+
 	return c.SendStatus(200)
 }
 
@@ -295,6 +304,13 @@ func CreateProject(c *fiber.Ctx) error {
 			return
 		}
 
+    ghRepo := fmt.Sprintf("https://github.com/n73-projects/%s", slug)
+		err = database.UpdateGhRepo(projectID, ghRepo)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
 	}()
 
 	return c.Status(200).JSON(fiber.Map{
@@ -369,11 +385,16 @@ func ResumeProject(c *fiber.Ctx) error {
 		webhookURL := fmt.Sprintf("http://%s:%s/webhook/messages/%s/%s", os.Getenv("IP"), os.Getenv("PORT"), projectID, payload.Model)
 		dockerProjectPath := filepath.Join("/app", "project")
 		endpoint := fmt.Sprintf("http://0.0.0.0:%d/claude/resume", project.Port)
+    sessionID := project.SessionID
 
-		// check if docker container exists
-		err = utils.DockerExists(projectID)
-		if err != nil {
-			fmt.Println("@Container do not exists!")
+    p, err := database.GetProjectByID(projectID)
+    if err != nil {
+      fmt.Println(err.Error())
+      return
+    }
+
+    if !p.DockerRunning {
+			fmt.Println("@Container is not running!")
 
 			port, err := utils.GetFreePort()
 			if err != nil {
@@ -381,6 +402,16 @@ func ResumeProject(c *fiber.Ctx) error {
 				return
 			}
 			fmt.Println("@Free port ok")
+
+      // update in db the new port
+      err = database.UpdateProjectPort(projectID, port)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+
+      // resign endpoint here
+		  endpoint = fmt.Sprintf("http://0.0.0.0:%d/claude/resume", port)
 
 			err = utils.CreateDockerContainer(projectID, port)
 			if err != nil {
@@ -395,12 +426,21 @@ func ResumeProject(c *fiber.Ctx) error {
 				return
 			}
 			fmt.Println("@Docker clone repo ok")
+      // end of pw on
+      sessionID = ""
 
-		}
+    }
 
-		fmt.Println(" ✓ Container is ready!")
+    err = database.UpdateProjectDockerRunning(projectID, !p.DockerRunning)
+    if err != nil {
+			fmt.Println(err.Error())
+			return
+    }
 
-		err = utils.ResumeClaudeProject(payload.Prompt, payload.Model, webhookURL, dockerProjectPath, project.SessionID, endpoint)
+		fmt.Println(" ✓ Container is ready to resume!")
+
+		err = utils.ResumeClaudeProject(payload.Prompt, payload.Model, webhookURL, 
+    dockerProjectPath, sessionID, endpoint)
 		if err != nil {
 			fmt.Println(err.Error())
 			return

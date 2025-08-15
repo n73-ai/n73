@@ -51,7 +51,7 @@ func UpdateProjectName(projectID, name string) error {
 
 func GetDeployedProjects() ([]Project, error) {
 	var projects []Project
-	rows, err := DB.Query(`SELECT id, name, domain, status
+	rows, err := DB.Query(`SELECT id, name, domain, status, gh_repo
   FROM projects WHERE domain != '' ORDER BY created_at DESC LIMIT 20;`)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func GetDeployedProjects() ([]Project, error) {
 
 	for rows.Next() {
 		var p Project
-		if err := rows.Scan(&p.ID, &p.Name, &p.Domain, &p.Status); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Domain, &p.Status, &p.GhRepo); err != nil {
 			return nil, err
 		}
 		projects = append(projects, p)
@@ -90,6 +90,27 @@ func UpdateProjectDomain(projectID, domain string) error {
 	_, err := DB.Exec(`
 		UPDATE projects SET domain = $1 WHERE id = $2;`,
 		domain, projectID)
+	return err
+}
+
+func UpdateProjectDockerRunning(projectID string, dockerRunning bool) error {
+    _, err := DB.Exec(`
+        UPDATE projects SET docker_running = $1 WHERE id = $2;`,
+        dockerRunning, projectID)
+    return err
+}
+
+func UpdateProjectPort(projectID string, port int) error {
+	_, err := DB.Exec(`
+		UPDATE projects SET port = $1 WHERE id = $2;`,
+		port, projectID)
+	return err
+}
+
+func UpdateGhRepo(projectID, gh_repo string) error {
+	_, err := DB.Exec(`
+		UPDATE projects SET gh_repo = $1 WHERE id = $2;`,
+		gh_repo, projectID)
 	return err
 }
 
@@ -124,12 +145,13 @@ func GetProjectByID(id string) (Project, error) {
     name, 
     slug,
     domain, 
+    docker_running,
     status, 
     port,
     created_at 
     FROM projects WHERE id = $1`, id)
 
-	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug, &p.Domain, &p.Status,
+	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug, &p.Domain, &p.DockerRunning, &p.Status,
 		&p.Port, &p.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return p, fmt.Errorf("No project found with the id: %s", id)

@@ -4,8 +4,21 @@
 
 ⚠️ **This project is under active development. It's not yet production-ready.**
 
+## admin endpoints
+```bash
+export JWT=""
+curl -X GET "http://localhost:8080/admin/projects" \
+  -H "Authorization: Bearer ${JWT}" | jq
+```
+```bash
+export P_ID="164fed94-dd9c-4b47-9233-722ed78423ac"
+export JWT=""
+curl -X POST "http://localhost:8080/admin/rm/docker/${P_ID}" \
+  -H "Authorization: Bearer ${JWT}"
+```
+
 ## Simple prompts
-- "Build a hello with a dark background and bold letters"
+- "Build a hello world with a dark background and bold letters"
 - "Build a Hello Friend with a dark background and bold letters"
 - "Edit the Hello World text, i want the color to be red"
 docker inspect --format={{.State.Running}} claude-server
@@ -38,36 +51,10 @@ curl "http://172.17.0.1:8080"
 # Solo la red Docker por defecto
 sudo ufw allow from 172.16.0.0/12
 
-## todo
-- [ ] load balancer config
-- [ ] load balancer key-value:
-
-get_best_server()
-    projectID = "420"
-
-    p = kv.get(projectID)
-    como se si esta corriendo?
-    if p.is_running {
-        redirect(p.server_domain)
-    }
-
-    for s in servers {
-        get server where num_of_docker se acerca mas a max_allowed
-        para llenar el servidor 
-        add a new kv with the projectID
-        rediect(p.server_domain)
-    }
-     
-```
-p = {"project_id": {
-        {"server_domain": "domain"}
-        {"num_of_docker": num}
-        {"max_allowed": num}
-    }
-if p.num => max_allowed {
-    this server is full
-}
-```
+## beta
+- [ ] deploy
+- [ ] fix README
+## v1
 - [ ] deploy frontend on cf
 - [ ] stress test 
 - [ ] api endpoints Rate limiting

@@ -3,6 +3,7 @@ CREATE TABLE users (
   email VARCHAR(55) NOT NULL UNIQUE,
   active BOOL DEFAULT TRUE,
   role TEXT CHECK (role IN ('user', 'admin')) NOT NULL,
+  plan FLOAT DEFAULT 0,
   balance FLOAT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

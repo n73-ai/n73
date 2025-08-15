@@ -32,18 +32,21 @@ func DockerExists(projectID string) error {
 }
 
 func DockerCloneRepo(projectName, projectID string) error {
-	runCmd := exec.Command("docker", "exec", "-it", projectID, "rm", "-rf", "/app/project")
+	// Remover directorio existente
+	runCmd := exec.Command("docker", "exec", projectID, "rm", "-rf", "/app/project")
 	output, err := runCmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("docker failed: %s", string(output))
 	}
-
+	
+	// Clonar repositorio
 	repoToClone := fmt.Sprintf("https://github.com/n73-projects/%s", projectName)
-	runCmd = exec.Command("docker", "exec", "-it", projectID, "git", "clone", repoToClone, "/app/project")
+	runCmd = exec.Command("docker", "exec", projectID, "git", "clone", repoToClone, "/app/project")
 	output, err = runCmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("docker failed: %s", string(output))
 	}
+	
 	return nil
 }
 
