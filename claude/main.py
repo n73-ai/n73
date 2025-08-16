@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import threading
 import asyncio
 from claude import NewProject, ResumeProject
+import os
 
 app = Flask(__name__)
 
@@ -45,5 +46,7 @@ def resume_endpoint():
 def health():
     return '', 200
 
+port = int(os.getenv('PORT', 5000))
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True)

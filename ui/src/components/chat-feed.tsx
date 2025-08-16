@@ -187,6 +187,7 @@ export default function ChatFeed({
           }
           if (event.data.includes("build-error")) {
             setBuildError(true);
+            setIsPending(false);
             const cleanedErrMsg = event.data.replace("build-error: ", "");
             setBuildErrorMessage(cleanedErrMsg);
             return;

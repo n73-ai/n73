@@ -58,6 +58,10 @@ export default function Landing() {
       toast.error("The prompt is required.");
       return;
     }
+    if (!isAuth) {
+      navigate("/login")
+      return
+    }
     createProjectMut.mutate();
   };
 

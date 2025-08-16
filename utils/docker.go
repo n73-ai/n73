@@ -10,6 +10,22 @@ import (
 	"time"
 )
 
+func RefreshCommit() error {
+  runCmd := exec.Command("docker", "commit", "claude-server", "base:v1")
+	output, err := runCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker command failed: %s", string(output))
+	}
+
+  runCmd = exec.Command("docker", "image", "prune", "-f")
+	output, err = runCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker command failed: %s", string(output))
+	}
+
+  return nil
+}
+
 func DockerExists(projectID string) error {
 	runCmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=%s", projectID), "--format", "{{.Status}}")
 	output, err := runCmd.CombinedOutput()
@@ -22,24 +38,16 @@ func DockerExists(projectID string) error {
 		return fmt.Errorf("container '%s' does not exist", projectID)
 	}
 
-	/* do this in another function
-	if !strings.Contains(status, "Up") {
-		return fmt.Errorf("container '%s' exists but is not running (status: %s)", projectID, status)
-	}
-	*/
-
 	return nil
 }
 
 func DockerCloneRepo(projectName, projectID string) error {
-	// Remover directorio existente
 	runCmd := exec.Command("docker", "exec", projectID, "rm", "-rf", "/app/project")
 	output, err := runCmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("docker failed: %s", string(output))
 	}
 	
-	// Clonar repositorio
 	repoToClone := fmt.Sprintf("https://github.com/n73-projects/%s", projectName)
 	runCmd = exec.Command("docker", "exec", projectID, "git", "clone", repoToClone, "/app/project")
 	output, err = runCmd.CombinedOutput()
@@ -65,7 +73,7 @@ func PowerOn(projectID string, port int) error {
 	if err != nil {
 		return fmt.Errorf("docker run failed: %s", string(output))
 	}
-	// Verificar que el contenedor esté funcionando
+
 	maxAttempts := 30 // máximo 30 intentos (30 segundos)
 	for i := 0; i < maxAttempts; i++ {
 		// Verificar estado del contenedor
@@ -92,10 +100,11 @@ func PowerOn(projectID string, port int) error {
 }
 
 func CreateDockerContainer(projectID string, port int) error {
-	ports := fmt.Sprintf("%d:5000", port)
+	//ports := fmt.Sprintf("%d:5000", port)
 	runCmd := exec.Command("docker", "run",
 		"-d",
-		"-p", ports,
+		//"-p", ports,
+    "-e", fmt.Sprintf("PORT=%v", port), 
 		//"--memory=300m",
 		//"--cpus=0.5",
 		"--name", projectID,

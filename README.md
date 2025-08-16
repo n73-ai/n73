@@ -159,7 +159,11 @@ docker build -t claude-server .
 docker run --network host -d -p 5000:5000 --name claude-server claude-server
 # new
 docker run --network host -d  --name claude-server claude-server
-#
+
+# new with port, dont need the port because if not port, sets the port to 5000
+docker run --network host -e PORT=5000 -d --name claude-server claude-server
+# end new
+
 docker exec -it claude-server bash
 claude  # Login to Claude
 docker commit claude-server base:v1

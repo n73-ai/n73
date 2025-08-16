@@ -46,6 +46,6 @@ if __name__ == '__main__':
 
 ## 401: OAuth token has expired under claude
 func() {
-    `docker image prune` para elminar todos los commits de claude-server y ->
     `docker commit claude-server base:v1` volver a hacer el commit de la misma imagen para que el token este fresssco
+    `docker image prune` para elminar todos los commits de claude-server y ->
 }()

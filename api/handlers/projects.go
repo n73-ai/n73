@@ -14,11 +14,6 @@ import (
 
 func AdminDeleteDockerProject(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
-	user := c.Locals("user").(*database.User)
-	if user.Role != "admin" {
-		return c.SendStatus(403)
-	}
-
   project, err := database.GetProjectByID(projectID)
   if err != nil {
 		return c.Status(500).JSON(fiber.Map{
@@ -61,10 +56,6 @@ func AdminDeleteDockerProject(c *fiber.Ctx) error {
 }
 
 func AdminGetProjects(c *fiber.Ctx) error {
-	user := c.Locals("user").(*database.User)
-	if user.Role != "admin" {
-		return c.SendStatus(403)
-	}
 	projects, err := database.GetProjects()
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
