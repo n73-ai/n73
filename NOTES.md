@@ -1,5 +1,7 @@
 # Just notes of code and debug here.
 
+docker exec -it claude-server bash
+
 ### run docker in same network
 docker run --network host -d  --name claude-server claude-server
 

@@ -100,13 +100,10 @@ func PowerOn(projectID string, port int) error {
 }
 
 func CreateDockerContainer(projectID string, port int) error {
-	//ports := fmt.Sprintf("%d:5000", port)
 	runCmd := exec.Command("docker", "run",
 		"-d",
-		//"-p", ports,
+    "--network", "host",
     "-e", fmt.Sprintf("PORT=%v", port), 
-		//"--memory=300m",
-		//"--cpus=0.5",
 		"--name", projectID,
 		"base:v1")
 	output, err := runCmd.CombinedOutput()

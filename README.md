@@ -156,7 +156,7 @@ curl "localhost_url"
 
 ```bash
 docker build -t claude-server .
-docker run --network host -d -p 5000:5000 --name claude-server claude-server
+docker run --network host -d  --name claude-server claude-server
 # new
 docker run --network host -d  --name claude-server claude-server
 
@@ -173,14 +173,38 @@ docker commit claude-server base:v1
 
 ### Database Setup
 
+psql -h 178.18.240.78 -p 5432 -U postgres -d mydb
+
 ```bash
-docker run --name my-postgres \
+docker run -d \
+  --name owo \
+  --network host \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=secret \
   -e POSTGRES_DB=mydb \
-  -p 5432:5432 \
+  postgres
+
+docker run --name n73-database \
+  --network host \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=secret \
+  -e POSTGRES_DB=mydb \
   -d postgres
-docker exec -it my-postgres psql -U postgres -d mydb
+
+  --volumes-from my-postgres \
+
+  -p 5432:5432 \
+docker exec -it n73-database psql -U postgres -d mydb
+
+psql -h localhost -p 5432 -U postgres -d mydb
+
+docker run --name my-new-postgres \
+  --network host \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=secret \
+  -e POSTGRES_DB=mydb \
+  -e PGPORT=5433 \
+  -d postgres
 ```
 
 Paste the contents of `tables.sql` into the PostgreSQL shell.
@@ -357,7 +381,7 @@ mv ai/server_config/ai.service /etc/systemd/system
 **Step 3:** Manage the service:
 
 ```bash
-service ai start
-service ai status
-service ai stop
+sudo service ai start
+sudo service ai status
+sudo service ai stop
 ```
