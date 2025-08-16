@@ -8,6 +8,8 @@ Transform your ideas into reality with the power of artificial intelligence.
 **Version 1** is now available — try it here:
 [https://n73.agustfricke.com](https://n73.agustfricke.com)
 
+All pending items (bugs, features, and tasks) are tracked in the TODO.md file.
+
 > Questions, feedback, or just interested? Hit me up at my email **[hej@agustfricke.com](mailto:hej@agustfricke.com)** your input is always appreciated.
 
 ---
@@ -154,7 +156,10 @@ curl "localhost_url"
 
 ```bash
 docker build -t claude-server .
-docker run -d -p 5000:5000 --name claude-server claude-server
+docker run --network host -d -p 5000:5000 --name claude-server claude-server
+# new
+docker run --network host -d  --name claude-server claude-server
+#
 docker exec -it claude-server bash
 claude  # Login to Claude
 docker commit claude-server base:v1
