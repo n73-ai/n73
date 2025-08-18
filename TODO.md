@@ -6,12 +6,13 @@ submit a pull request.
 - [ ]
 
 ### Bug
-- [ ]
+- [x] redirect to login on create project if !auth
 
 ### Test
 - [ ] how many projects can work at the same time? 
 
 ### Feature
+- [x] Edit 10 max_turns for 50 max_turns
 - [ ] User Limit
 - [ ] Load balancer
 - [ ] Backend integration

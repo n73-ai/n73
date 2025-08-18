@@ -76,7 +76,7 @@ async def process_message(message, target_url, jwt):
 
 async def NewProject(prompt: str, model: str, workDir: str, target_url: str, jwt: str):
     options = ClaudeCodeOptions(
-        max_turns=10,
+        max_turns=50,
         model=model,
         system_prompt=SYSTEM_PROMPT,
         cwd=workDir,
@@ -95,7 +95,7 @@ async def ResumeProject(prompt: str, model: str, workDir: str, target_url: str, 
     options = ClaudeCodeOptions(
         continue_conversation=True,
         resume=session_id,
-        max_turns=10,
+        max_turns=50,
         model=model,
         system_prompt=SYSTEM_PROMPT,
         cwd=workDir,

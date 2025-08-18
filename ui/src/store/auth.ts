@@ -6,6 +6,7 @@ type State = {
   access: string;
   email: string;
   isAuth: boolean;
+  hydrated: boolean;
 };
 
 type Actions = {
@@ -25,12 +26,8 @@ export const useAuthStore = create(
       exp: 0,
       email: "",
       isAuth: false,
-      setAuthState: (
-        access: string,
-        exp: number,
-        email: string,
-        isAuth: boolean
-      ) =>
+      hydrated: false,
+      setAuthState: (access, exp, email, isAuth) =>
         set(() => ({
           access,
           exp,
@@ -42,6 +39,9 @@ export const useAuthStore = create(
     }),
     {
       name: "auth",
+      onRehydrateStorage: () => (state) => {
+        state?.setAuthState(state.access, state.exp, state.email, state.isAuth);
+      },
     }
   )
 );
