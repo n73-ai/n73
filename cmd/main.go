@@ -48,12 +48,12 @@ func main() {
 	}
 
   go func() {
-    ticker := time.NewTicker(6 * time.Hour)
+    ticker := time.NewTicker(1 * time.Hour)
     defer ticker.Stop()
     for range ticker.C {
-        if err := utils.RefreshCommit(); err != nil {
-            fmt.Printf("Refresh Commit error: %v\n", err)
-        }
+      if err := utils.RefreshCommit(); err != nil {
+        fmt.Printf("Refresh Commit error: %v\n", err)
+      }
     }
   }()
 

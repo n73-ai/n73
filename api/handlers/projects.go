@@ -411,7 +411,8 @@ func ResumeProject(c *fiber.Ctx) error {
 			}
 			fmt.Println("@Docker container created")
 
-			err = utils.DockerCloneRepo(project.Name, projectID)
+      uniqueRepoID := fmt.Sprintf("project-%s", project.ID)
+			err = utils.DockerCloneRepo(uniqueRepoID, projectID)
 			if err != nil {
 				fmt.Println(err.Error())
 				return

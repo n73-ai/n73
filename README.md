@@ -384,4 +384,6 @@ mv ai/server_config/ai.service /etc/systemd/system
 sudo service ai start
 sudo service ai status
 sudo service ai stop
+# check the log
+journalctl -u ai.service -n 100
 ```
