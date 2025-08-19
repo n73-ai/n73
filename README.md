@@ -385,5 +385,20 @@ sudo service ai start
 sudo service ai status
 sudo service ai stop
 # check the log
-journalctl -u ai.service -n 100
+journalctl -u ai.service -n 50
+```
+
+## Admin endpoints(only via api)
+
+```bash
+export JWT=""
+export P_ID=""
+curl -i -X POST "https://n73.agustfricke.com/admin/rm/docker/$P_ID" \
+     -H "Authorization: Bearer $JWT"
+```
+
+```bash
+export JWT=""
+curl -i -X POST "https://n73.agustfricke.com/admin/projects" \
+     -H "Authorization: Bearer $JWT"
 ```

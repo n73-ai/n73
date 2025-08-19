@@ -7,10 +7,10 @@ async def main():
         print(message)
 
 async def keep_alive():
-    await asyncio.sleep(2 * 60 * 60) 
+    await asyncio.sleep(1 * 60 * 60) 
     while True:
         print(f"Ejecutando keep alive: {anyio.current_time()}")
         await main()
-        await asyncio.sleep(8 * 60 * 60)  
+        await asyncio.sleep(1 * 60 * 60)  
 
 anyio.run(keep_alive)
