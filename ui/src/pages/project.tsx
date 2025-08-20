@@ -10,12 +10,10 @@ import { useQuery } from "@tanstack/react-query";
 import Spinner from "@/components/spinner";
 import { getProjectByID } from "@/api/projects";
 import Stars from "@/components/stars";
-import { useState } from "react";
 import axios from "axios";
 
 export default function Project() {
   const { projectID } = useParams();
-  const [iframeStatus, setIframeStatus] = useState('loading');
 
   const { data, isLoading, isError, dataUpdatedAt } = useQuery({
     queryKey: ["project", projectID],

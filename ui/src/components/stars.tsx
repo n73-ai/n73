@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Spinner from "./spinner";
-import { useProjectStateById, useProjectStore } from "@/store/project";
+import { useProjectStateById } from "@/store/project";
 import { useParams } from "react-router-dom";
 import { AlertCircleIcon } from "lucide-react";
 
@@ -22,7 +22,7 @@ const StarryBackground = ({ isIframeError }: { isIframeError: boolean }) => {
   const [mounted, setMounted] = useState<boolean>(false);
   const { projectID } = useParams();
 
-  const { errorMsg, fixingErr } = useProjectStateById(projectID!);
+  const { errorMsg } = useProjectStateById(projectID!);
 
   useEffect(() => {
     const generateStars = (): void => {
