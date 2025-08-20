@@ -165,7 +165,9 @@ docker run --network host -e PORT=5000 -d --name claude-server claude-server
 # end new
 
 docker exec -it claude-server bash
+
 claude  # Login to Claude
+
 docker commit claude-server base:v1
 ```
 
@@ -392,13 +394,14 @@ journalctl -u ai.service -n 50
 
 ```bash
 export JWT=""
-export P_ID=""
+export P_ID="d849fcf1-0e0f-4e47-b7e2-f078b9ef1099"
 curl -i -X POST "https://n73.agustfricke.com/admin/rm/docker/$P_ID" \
      -H "Authorization: Bearer $JWT"
 ```
 
 ```bash
 export JWT=""
-curl -i -X POST "https://n73.agustfricke.com/admin/projects" \
+curl -i -X GET "https://n73.agustfricke.com/admin/projects" \
      -H "Authorization: Bearer $JWT"
 ```
+

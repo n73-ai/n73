@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -63,33 +64,51 @@ func WebhookMessage(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
+		isFirstBuild := project.Status == "Building-First"
+		var pStatusErr string
+		if isFirstBuild {
+			pStatusErr = "Building-First-Error"
+		} else {
+			pStatusErr = "Error"
+		}
+
 		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
 
-		err = utils.TryBuildProject(project.ID)
+
+    err = utils.TryBuildProject(project.ID)
 		if err != nil {
-			fmt.Println(err.Error())
-			wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
-			SendToUser(projectID, wsFormatError)
-			err := database.UpdateProjectStatus(project.ID, "Gh-Error")
-			database.CreateLog("projects", projectID, wsFormatError)
-			if err != nil {
+
+			errP := database.UpdateProjectStatus(project.ID, pStatusErr)
+			if errP != nil {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
+
+			wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
+			SendToUser(projectID, wsFormatError)
+
 			return c.SendStatus(500)
 		}
 
+    fmt.Println("sleeping")
+    time.Sleep(15 * time.Second)
 		err = utils.CopyProjectToExisitingProject(project.ID)
 		if err != nil {
+      database.CreateLog("Copy Project error", project.ID, err.Error())
+
+			err := database.UpdateProjectStatus(project.ID, pStatusErr)
+			if err != nil {
+				database.CreateLog("projects", project.ID, err.Error())
+			}
+
 			SendToUser(projectID, "Error")
-			database.CreateLog("projects", projectID, err.Error())
 			return c.SendStatus(500)
 		}
 
 		err = utils.CfPush(project.Slug, projectPath)
 		if err != nil {
-			database.CreateLog("projects", project.ID, err.Error())
+			database.CreateLog("Cloudflare push error", project.ID, err.Error())
 
-			err := database.UpdateProjectStatus(project.ID, "Error")
+			err := database.UpdateProjectStatus(project.ID, pStatusErr)
 			if err != nil {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
@@ -100,14 +119,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		err = utils.GhPush(projectPath)
 		if err != nil {
-			fmt.Println("the gh-errror: ", err.Error())
-			database.CreateLog("projects", project.ID, err.Error())
-			err := database.UpdateProjectStatus(project.ID, "Gh-Error")
-			if err != nil {
-				database.CreateLog("projects", project.ID, err.Error())
-			}
-			SendToUser(projectID, "Error")
-			return nil
+			database.CreateLog("GitHub push error", project.ID, err.Error())
 		}
 
 		err = database.UpdateProjectStatus(projectID, "Deployed")

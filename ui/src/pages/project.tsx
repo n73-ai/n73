@@ -10,13 +10,25 @@ import { useQuery } from "@tanstack/react-query";
 import Spinner from "@/components/spinner";
 import { getProjectByID } from "@/api/projects";
 import Stars from "@/components/stars";
+import { useState } from "react";
+import axios from "axios";
 
 export default function Project() {
   const { projectID } = useParams();
+  const [iframeStatus, setIframeStatus] = useState('loading');
 
   const { data, isLoading, isError, dataUpdatedAt } = useQuery({
     queryKey: ["project", projectID],
     queryFn: () => getProjectByID(projectID!),
+  });
+
+  const { isError: isErrorIframe } = useQuery({
+    queryKey: ["iframe-status", data?.domain],
+    queryFn: async () => {
+      const res = await axios.head(data?.domain); // HEAD = solo headers, más rápido
+      return res.status;
+    },
+    retry: false, // no reintentar si falla
   });
 
   return (
@@ -34,11 +46,12 @@ export default function Project() {
                 domain={data?.domain}
                 slug={data?.slug}
               />
-
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>
-              {(data?.status == "Deployed" || data?.status == "Building") && (
+              {(data?.status == "Deployed" ||
+                data?.status == "Building" ||
+                data?.status == "Error") && !isErrorIframe && (
                 <div className="flex flex-col h-full">
                   <div className="flex-1">
                     {data?.domain == "" ? (
@@ -56,7 +69,12 @@ export default function Project() {
                 </div>
               )}
 
-              {data?.status == "Building-First" && <Stars />}
+              {isErrorIframe && (
+                <Stars isIframeError={isErrorIframe} />
+              )}
+
+              {(data?.status == "Building-First" ||
+                data?.status == "Building-First-Error") && <Stars isIframeError={isErrorIframe} />}
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

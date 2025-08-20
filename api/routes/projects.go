@@ -13,6 +13,7 @@ func ProjectsRoutes(app *fiber.App) {
 
 	app.Put("/projects/:projectID", middleware.User, handlers.UpdateProject)
 	app.Delete("/projects/:projectID", middleware.User, handlers.DeleteProject)
+
 	app.Get("/projects/latest", handlers.GetAllDeployedProjects)
 	app.Get("/projects/user", middleware.User, handlers.GetUserProjects)
 	app.Post("/projects/resume/:projectID", middleware.User, handlers.ResumeProject)

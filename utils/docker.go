@@ -11,19 +11,19 @@ import (
 )
 
 func RefreshCommit() error {
-  runCmd := exec.Command("docker", "commit", "claude-server", "base:v1")
+	runCmd := exec.Command("docker", "commit", "claude-server", "base:v1")
 	output, err := runCmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("docker command failed: %s", string(output))
 	}
 
-  runCmd = exec.Command("docker", "image", "prune", "-f")
+	runCmd = exec.Command("docker", "image", "prune", "-f")
 	output, err = runCmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("docker command failed: %s", string(output))
 	}
 
-  return nil
+	return nil
 }
 
 func DockerExists(projectID string) error {
@@ -47,14 +47,14 @@ func DockerCloneRepo(projectName, projectID string) error {
 	if err != nil {
 		return fmt.Errorf("docker failed: %s", string(output))
 	}
-	
+
 	repoToClone := fmt.Sprintf("https://github.com/n73-projects/%s", projectName)
 	runCmd = exec.Command("docker", "exec", projectID, "git", "clone", repoToClone, "/app/project")
 	output, err = runCmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("docker failed: %s", string(output))
 	}
-	
+
 	return nil
 }
 
@@ -102,8 +102,8 @@ func PowerOn(projectID string, port int) error {
 func CreateDockerContainer(projectID string, port int) error {
 	runCmd := exec.Command("docker", "run",
 		"-d",
-    "--network", "host",
-    "-e", fmt.Sprintf("PORT=%v", port), 
+		"--network", "host",
+		"-e", fmt.Sprintf("PORT=%v", port),
 		"--name", projectID,
 		"base:v1")
 	output, err := runCmd.CombinedOutput()

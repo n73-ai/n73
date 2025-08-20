@@ -31,6 +31,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Textarea } from "./ui/textarea";
+import { useProjectStateById } from "@/store/project";
 
 const models = [
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
@@ -55,10 +56,9 @@ export default function ChatFeed({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
-  const [buildError, setBuildError] = useState(false);
-  const [buildErrorMessage, setBuildErrorMessage] = useState(true);
-  const [fixingErr, setFixingErr] = useState(false);
-  const [isPending, setIsPending] = useState(false);
+
+  // Usar el hook específico para este projectID
+  const { setProjectState, isPending, errorMsg, fixingErr } = useProjectStateById(projectID!);
 
   const { model, setModel } = useModelStore();
 
@@ -69,7 +69,7 @@ export default function ChatFeed({
   const selectedModel = models.find((m) => m.apiName === model) || models[0];
 
   const { data, isLoading, isError } = useQuery<Message[]>({
-    queryKey: ["messages"],
+    queryKey: ["messages", projectID],
     queryFn: () => getMessagesByProjectID(projectID!),
   });
 
@@ -77,8 +77,7 @@ export default function ChatFeed({
     mutationFn: () => resumeProject(prompt, selectedModel.apiName, projectID!),
     onSuccess: async () => {
       setPrompt("");
-      setIsPending(true);
-      //:await queryClient.invalidateQueries({ queryKey: ["project"] });
+      setProjectState(true, "", false);
       addItemManually({
         role: "user",
         content: prompt,
@@ -131,10 +130,11 @@ export default function ChatFeed({
   });
 
   const addItemManually = (newItem: Message) => {
-    queryClient.setQueryData<Message[]>(["messages"], (oldData = []) => {
+    queryClient.setQueryData<Message[]>(["messages", projectID], (oldData = []) => {
       return [...oldData, newItem];
     });
   };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -177,19 +177,17 @@ export default function ChatFeed({
       socket.onmessage = (event) => {
         if (event.data !== "") {
           if (
-            //event.data.includes("Deploying") ||
             event.data.includes("Deployed") ||
             event.data.includes("Error")
           ) {
-            setIsPending(false);
+            setProjectState(false, "", false);
             queryClient.invalidateQueries({ queryKey: ["project"] });
             return;
           }
           if (event.data.includes("build-error")) {
-            setBuildError(true);
-            setIsPending(false);
             const cleanedErrMsg = event.data.replace("build-error: ", "");
-            setBuildErrorMessage(cleanedErrMsg);
+            setProjectState(false, cleanedErrMsg, false);
+            queryClient.invalidateQueries({ queryKey: ["project"] });
             return;
           }
           getMessageByIDMutation.mutate(event.data);
@@ -276,20 +274,21 @@ export default function ChatFeed({
           </div>
         )}
 
-        {buildError && !fixingErr && (
+
+        {(errorMsg != "" && !fixingErr) && (
           <Alert
-            className="my-[20px] flex justify-between items-center"
+            className="flex justify-between items-center"
             variant="destructive"
           >
             <div className="flex gap-[5px] items-center">
               <AlertCircleIcon />
-              <AlertTitle>Code compilation failed.</AlertTitle>
+              <AlertTitle>Code compilation failed</AlertTitle>
             </div>
             <AlertDescription>
               <Button
                 onClick={() => {
-                  setFixingErr(true);
-                  setPrompt(`Fix this build error: ${buildErrorMessage}`);
+                  setProjectState(false, errorMsg, true);
+                  setPrompt(`Fix this build error: ${errorMsg}`);
                   resumeProjectMutation.mutate();
                 }}
                 variant="outline"
@@ -329,7 +328,7 @@ export default function ChatFeed({
 
             {pStatus != "Gh-Error" && pStatus != "Error" && (
               <a
-                className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
+                className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[33px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
                 href={`https://github.com/n73-projects/${slug}`}
                 target="_blank"
                 rel="noopener noreferrer"

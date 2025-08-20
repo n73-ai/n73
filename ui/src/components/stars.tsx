@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import Spinner from "./spinner";
+import { useProjectStateById, useProjectStore } from "@/store/project";
+import { useParams } from "react-router-dom";
+import { AlertCircleIcon } from "lucide-react";
 
 interface Star {
   id: number;
@@ -14,9 +17,12 @@ interface Star {
   appearDelay: number;
 }
 
-const StarryBackground: React.FC = () => {
+const StarryBackground = ({ isIframeError }: { isIframeError: boolean }) => {
   const [stars, setStars] = useState<Star[]>([]);
   const [mounted, setMounted] = useState<boolean>(false);
+  const { projectID } = useParams();
+
+  const { errorMsg, fixingErr } = useProjectStateById(projectID!);
 
   useEffect(() => {
     const generateStars = (): void => {
@@ -184,10 +190,22 @@ const StarryBackground: React.FC = () => {
 
       <div className="relative z-10 flex items-center justify-center h-full">
         <div className="text-center text-white">
-          <div className="text-xl flex items-center gap-2 text-muted-foreground py-[30px]">
-            <Spinner />
-            Building your project
-          </div>
+          {errorMsg !== "" ? (
+            <div className="text-xl flex items-center gap-2 text-destructive py-[30px]">
+              <AlertCircleIcon />
+              Code compilation failed
+            </div>
+          ) : isIframeError && errorMsg === "" ? (
+            <div className="text-xl flex items-center gap-2 text-destructive py-[30px]">
+              <AlertCircleIcon />
+              Ups, your production website has an error and it’s not there
+            </div>
+          ) : (
+            <div className="text-xl flex items-center gap-2 text-muted-foreground py-[30px]">
+              <Spinner />
+              Building your project
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -14,12 +14,12 @@ import (
 
 func AdminDeleteDockerProject(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
-  project, err := database.GetProjectByID(projectID)
-  if err != nil {
+	project, err := database.GetProjectByID(projectID)
+	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
+	}
 
 	err = utils.RmDockerContainer(projectID)
 	if err != nil {
@@ -45,12 +45,12 @@ func AdminDeleteDockerProject(c *fiber.Ctx) error {
 		})
 	}
 
-  err = database.UpdateProjectDockerRunning(projectID, !project.DockerRunning)
-  if err != nil {
+	err = database.UpdateProjectDockerRunning(projectID, !project.DockerRunning)
+	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
+	}
 
 	return c.SendStatus(200)
 }
@@ -150,6 +150,19 @@ func DeleteProject(c *fiber.Ctx) error {
 			})
 		}
 	}
+
+	go func() {
+		err := utils.DeleteGhRepo(projectID)
+		if err != nil {
+			fmt.Println("admin_delelete_gh_repo: ", err.Error())
+			return
+		}
+		err = utils.DeleteCfPage(projectID)
+		if err != nil {
+			fmt.Println("admin_cf_page: ", err.Error())
+			return
+		}
+	}()
 
 	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 
@@ -295,7 +308,7 @@ func CreateProject(c *fiber.Ctx) error {
 			return
 		}
 
-    ghRepo := fmt.Sprintf("https://github.com/n73-projects/%s", slug)
+		ghRepo := fmt.Sprintf("https://github.com/n73-projects/%s", slug)
 		err = database.UpdateGhRepo(projectID, ghRepo)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -376,15 +389,15 @@ func ResumeProject(c *fiber.Ctx) error {
 		webhookURL := fmt.Sprintf("http://%s:%s/webhook/messages/%s/%s", os.Getenv("IP"), os.Getenv("PORT"), projectID, payload.Model)
 		dockerProjectPath := filepath.Join("/app", "project")
 		endpoint := fmt.Sprintf("http://0.0.0.0:%d/claude/resume", project.Port)
-    sessionID := project.SessionID
+		sessionID := project.SessionID
 
-    p, err := database.GetProjectByID(projectID)
-    if err != nil {
-      fmt.Println(err.Error())
-      return
-    }
+		p, err := database.GetProjectByID(projectID)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 
-    if !p.DockerRunning {
+		if !p.DockerRunning {
 			fmt.Println("@Container is not running!")
 
 			port, err := utils.GetFreePort()
@@ -394,15 +407,15 @@ func ResumeProject(c *fiber.Ctx) error {
 			}
 			fmt.Println("@Free port ok")
 
-      // update in db the new port
-      err = database.UpdateProjectPort(projectID, port)
+			// update in db the new port
+			err = database.UpdateProjectPort(projectID, port)
 			if err != nil {
 				fmt.Println(err.Error())
 				return
 			}
 
-      // resign endpoint here
-		  endpoint = fmt.Sprintf("http://0.0.0.0:%d/claude/resume", port)
+			// resign endpoint here
+			endpoint = fmt.Sprintf("http://0.0.0.0:%d/claude/resume", port)
 
 			err = utils.CreateDockerContainer(projectID, port)
 			if err != nil {
@@ -411,28 +424,28 @@ func ResumeProject(c *fiber.Ctx) error {
 			}
 			fmt.Println("@Docker container created")
 
-      uniqueRepoID := fmt.Sprintf("project-%s", project.ID)
+			uniqueRepoID := fmt.Sprintf("project-%s", project.ID)
 			err = utils.DockerCloneRepo(uniqueRepoID, projectID)
 			if err != nil {
 				fmt.Println(err.Error())
 				return
 			}
 			fmt.Println("@Docker clone repo ok")
-      // end of pw on
-      sessionID = ""
+			// end of pw on
+			sessionID = ""
 
-      err = database.UpdateProjectDockerRunning(projectID, !p.DockerRunning)
-      if err != nil {
-        fmt.Println(err.Error())
-        return
-      }
+			err = database.UpdateProjectDockerRunning(projectID, !p.DockerRunning)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
 
-    }
+		}
 
 		fmt.Println(" ✓ Container is ready to resume!")
 
-		err = utils.ResumeClaudeProject(payload.Prompt, payload.Model, webhookURL, 
-    dockerProjectPath, sessionID, endpoint)
+		err = utils.ResumeClaudeProject(payload.Prompt, payload.Model, webhookURL,
+			dockerProjectPath, sessionID, endpoint)
 		if err != nil {
 			fmt.Println(err.Error())
 			return

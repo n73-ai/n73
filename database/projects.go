@@ -94,10 +94,10 @@ func UpdateProjectDomain(projectID, domain string) error {
 }
 
 func UpdateProjectDockerRunning(projectID string, dockerRunning bool) error {
-    _, err := DB.Exec(`
+	_, err := DB.Exec(`
         UPDATE projects SET docker_running = $1 WHERE id = $2;`,
-        dockerRunning, projectID)
-    return err
+		dockerRunning, projectID)
+	return err
 }
 
 func UpdateProjectPort(projectID string, port int) error {
