@@ -2,17 +2,16 @@
 
 ## Build, Preview, and Ship with AI
 
-**n73** is an AI-powered app development platform that lets you create entire web applications using **natural language prompts**.
-Transform your ideas into reality with the power of artificial intelligence.
+**n73** is an AI-powered app development platform that lets you create entire web 
+applications using **natural language prompts**.
 
 **Version 1** is now available — try it here:
 [https://n73.agustfricke.com](https://n73.agustfricke.com)
 
 All pending items (bugs, features, and tasks) are tracked in the TODO.md file.
 
-> Questions, feedback, or just interested? Hit me up at my email **[hej@agustfricke.com](mailto:hej@agustfricke.com)** your input is always appreciated.
-
----
+> Questions, feedback, or just interested? Hit me up at my email 
+**[hej@agustfricke.com](mailto:hej@agustfricke.com)** your input is always appreciated.
 
 ## Local Setup (Ubuntu 22.04)
 
@@ -156,17 +155,12 @@ curl "localhost_url"
 
 ```bash
 docker build -t claude-server .
-docker run --network host -d  --name claude-server claude-server
-# new
-docker run --network host -d  --name claude-server claude-server
 
-# new with port, dont need the port because if not port, sets the port to 5000
-docker run --network host -e PORT=5000 -d --name claude-server claude-server
-# end new
+docker run --network host -d  --name claude-server claude-server
 
 docker exec -it claude-server bash
 
-claude  # Login to Claude
+claude  
 
 docker commit claude-server base:v1
 ```
@@ -175,17 +169,7 @@ docker commit claude-server base:v1
 
 ### Database Setup
 
-psql -h 178.18.240.78 -p 5432 -U postgres -d mydb
-
 ```bash
-docker run -d \
-  --name owo \
-  --network host \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=secret \
-  -e POSTGRES_DB=mydb \
-  postgres
-
 docker run --name n73-database \
   --network host \
   -e POSTGRES_USER=postgres \
@@ -193,20 +177,17 @@ docker run --name n73-database \
   -e POSTGRES_DB=mydb \
   -d postgres
 
-  --volumes-from my-postgres \
-
-  -p 5432:5432 \
 docker exec -it n73-database psql -U postgres -d mydb
 
-psql -h localhost -p 5432 -U postgres -d mydb
+# or
 
-docker run --name my-new-postgres \
-  --network host \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=secret \
-  -e POSTGRES_DB=mydb \
-  -e PGPORT=5433 \
-  -d postgres
+psql -h localhost -p 5432 -U postgres -d mydb
+```
+
+add new:
+```sql
+ALTER TABLE projects
+ADD COLUMN error_msg TEXT DEFAULT '';
 ```
 
 Paste the contents of `tables.sql` into the PostgreSQL shell.
@@ -296,6 +277,7 @@ docker exec -it my-postgres psql -U postgres -d mydb
 
 ```sql
 UPDATE users SET role = 'admin' WHERE email = 'your@admin.com';
+UPDATE projects SET status = 'Deployed' WHERE id = 'd849fcf1-0e0f-4e47-b7e2-f078b9ef1099';
 ```
 
 **Frontend:**
@@ -391,17 +373,22 @@ journalctl -u ai.service -n 50
 ```
 
 ## Admin endpoints(only via api)
-
+rm docker
 ```bash
 export JWT=""
-export P_ID="d849fcf1-0e0f-4e47-b7e2-f078b9ef1099"
+export P_ID=""
 curl -i -X POST "https://n73.agustfricke.com/admin/rm/docker/$P_ID" \
      -H "Authorization: Bearer $JWT"
 ```
 
+check projects
 ```bash
 export JWT=""
 curl -i -X GET "https://n73.agustfricke.com/admin/projects" \
      -H "Authorization: Bearer $JWT"
 ```
 
+check the logs
+```bash
+curl -i -X GET "http://localhost:8080/logs" | jq
+```

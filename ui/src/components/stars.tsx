@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import Spinner from "./spinner";
-import { useProjectStateById } from "@/store/project";
-import { useParams } from "react-router-dom";
 import { AlertCircleIcon } from "lucide-react";
 
 interface Star {
@@ -17,12 +15,15 @@ interface Star {
   appearDelay: number;
 }
 
-const StarryBackground = ({ isIframeError }: { isIframeError: boolean }) => {
+const StarryBackground = ({
+  isIframeError,
+  status,
+}: {
+  isIframeError: boolean;
+  status: string;
+}) => {
   const [stars, setStars] = useState<Star[]>([]);
   const [mounted, setMounted] = useState<boolean>(false);
-  const { projectID } = useParams();
-
-  const { errorMsg } = useProjectStateById(projectID!);
 
   useEffect(() => {
     const generateStars = (): void => {
@@ -190,22 +191,27 @@ const StarryBackground = ({ isIframeError }: { isIframeError: boolean }) => {
 
       <div className="relative z-10 flex items-center justify-center h-full">
         <div className="text-center text-white">
-          {errorMsg !== "" ? (
+          {status == "new_error" && (
             <div className="text-xl flex items-center gap-2 text-destructive py-[30px]">
               <AlertCircleIcon />
               Code compilation failed
             </div>
-          ) : isIframeError && errorMsg === "" ? (
+          )}
+
+          {isIframeError && status != "new_pending" && status != "new_error" && (
             <div className="text-xl flex items-center gap-2 text-destructive py-[30px]">
               <AlertCircleIcon />
-              Ups, your production website has an error and it’s not there
+              Your website looks it's not online
             </div>
-          ) : (
+          )}
+
+          {status == "new_pending" && (
             <div className="text-xl flex items-center gap-2 text-muted-foreground py-[30px]">
               <Spinner />
               Building your project
             </div>
           )}
+
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ type Project struct {
 	DockerRunning bool   `json:"docker_running"`
 	Status        string `json:"status"`
 	Port          int    `json:"port"`
+  ErrorMsg string `json:"error_msg"`
 	CreatedAt     string `json:"created_at"`
 }
 
@@ -147,18 +148,29 @@ func GetProjectByID(id string) (Project, error) {
     domain, 
     docker_running,
     status, 
+    gh_repo,
     port,
+    error_msg,
     created_at 
     FROM projects WHERE id = $1`, id)
 
-	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug, &p.Domain, &p.DockerRunning, &p.Status,
-		&p.Port, &p.CreatedAt); err != nil {
+	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug, 
+  &p.Domain, &p.DockerRunning, &p.Status, &p.GhRepo,
+		&p.Port, &p.ErrorMsg, &p.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return p, fmt.Errorf("No project found with the id: %s", id)
 		}
 		return p, err
 	}
 	return p, nil
+}
+
+func UpdateProjectErrorMsg(projectID, msg string) error {
+	_, err := DB.Exec(`
+		UPDATE projects SET error_msg = $1 WHERE id = $2;`,
+		msg, projectID)
+
+	return err
 }
 
 func UpdateProjectStatus(projectID, status string) error {
@@ -180,13 +192,13 @@ func UpdateProjectSessionID(projectID, sessionID string) error {
 func CreateProject(id, userID, name, slug string, port int) error {
 	_, err := DB.Exec(`
 		INSERT INTO projects (id, user_id, status, name, slug, port) 
-    VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "Building-First", name, slug, port)
+    VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "new_pending", name, slug, port)
 	if err != nil {
 		if strings.Contains(err.Error(), `pq: duplicate key value violates unique constraint "projects_slug_key"`) {
 			slug = fmt.Sprintf("%s-%s", slug, id)
 			_, secondTryErr := DB.Exec(`
 		    INSERT INTO projects (id, user_id, status, name, slug, port) 
-        VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "Building", name, slug, port)
+        VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "new_pending", name, slug, port)
 			if secondTryErr != nil {
 				return secondTryErr
 			}

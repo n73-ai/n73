@@ -31,34 +31,20 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Textarea } from "./ui/textarea";
-import { useProjectStateById } from "@/store/project";
 
 const models = [
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
   { name: "Claude Sonnet 3.7", apiName: "claude-3-7-sonnet-20250219" },
-  { name: "Claude Sonnet 3.5 v2", apiName: "claude-3-5-sonnet-20241022" },
-  { name: "Claude Sonnet 3.5", apiName: "claude-3-5-sonnet-20240620" },
   { name: "Claude Haiku 3.5", apiName: "claude-3-5-haiku-20241022" },
   { name: "Claude Haiku 3", apiName: "claude-3-haiku-20240307" },
 ];
 
-export default function ChatFeed({
-  pStatus,
-  slug,
-  domain,
-}: {
-  pStatus: string;
-  slug: string;
-  domain: string;
-}) {
+export default function ChatFeed({ p }: { p: any }) {
   const { projectID } = useParams();
   const socketRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
-
-  // Usar el hook específico para este projectID
-  const { setProjectState, isPending, errorMsg, fixingErr } = useProjectStateById(projectID!);
 
   const { model, setModel } = useModelStore();
 
@@ -76,8 +62,8 @@ export default function ChatFeed({
   const resumeProjectMutation = useMutation({
     mutationFn: () => resumeProject(prompt, selectedModel.apiName, projectID!),
     onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["project"] });
       setPrompt("");
-      setProjectState(true, "", false);
       addItemManually({
         role: "user",
         content: prompt,
@@ -130,9 +116,12 @@ export default function ChatFeed({
   });
 
   const addItemManually = (newItem: Message) => {
-    queryClient.setQueryData<Message[]>(["messages", projectID], (oldData = []) => {
-      return [...oldData, newItem];
-    });
+    queryClient.setQueryData<Message[]>(
+      ["messages", projectID],
+      (oldData = []) => {
+        return [...oldData, newItem];
+      }
+    );
   };
 
   const scrollToBottom = () => {
@@ -141,7 +130,7 @@ export default function ChatFeed({
 
   useEffect(() => {
     scrollToBottom();
-  }, [data, pStatus]);
+  }, [data, p?.status]);
 
   useEffect(() => {
     if (data && !isLoading) {
@@ -176,17 +165,7 @@ export default function ChatFeed({
 
       socket.onmessage = (event) => {
         if (event.data !== "") {
-          if (
-            event.data.includes("Deployed") ||
-            event.data.includes("Error")
-          ) {
-            setProjectState(false, "", false);
-            queryClient.invalidateQueries({ queryKey: ["project"] });
-            return;
-          }
-          if (event.data.includes("build-error")) {
-            const cleanedErrMsg = event.data.replace("build-error: ", "");
-            setProjectState(false, cleanedErrMsg, false);
+          if (event.data.includes("error") || event.data.includes("idle")) {
             queryClient.invalidateQueries({ queryKey: ["project"] });
             return;
           }
@@ -218,7 +197,6 @@ export default function ChatFeed({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-[10px]">
-        {isLoading && <Spinner />}
         {isError && <p>An unexpected error occurred.</p>}
         {data?.map((m: Message, i: number) => (
           <div key={i}>
@@ -266,16 +244,27 @@ export default function ChatFeed({
           </div>
         ))}
 
-        {(pStatus == "Building" ||
-          pStatus == "Building-First" ||
-          isPending) && (
+        {(p.status == "new_pending" ||
+          p.status == "pending" ||
+          isLoading) && (
           <div className="flex items-center gap-2 text-muted-foreground pb-[20px]">
             <Spinner />
           </div>
         )}
 
+        {(p.status == "internal_error" || p.status == "new_internal_error") && (
+          <Alert
+            className="flex justify-between items-center"
+            variant="destructive"
+          >
+            <AlertDescription>
+                The project deployment encountered an issue. The latest production 
+                push failed due to an internal error, and our team has already been notified.
+            </AlertDescription>
+          </Alert>
+        )}
 
-        {(errorMsg != "" && !fixingErr) && (
+        {p?.error_msg != "" && (
           <Alert
             className="flex justify-between items-center"
             variant="destructive"
@@ -287,8 +276,7 @@ export default function ChatFeed({
             <AlertDescription>
               <Button
                 onClick={() => {
-                  setProjectState(false, errorMsg, true);
-                  setPrompt(`Fix this build error: ${errorMsg}`);
+                  setPrompt(`Fix this build error: ${p.error_msg}`);
                   resumeProjectMutation.mutate();
                 }}
                 variant="outline"
@@ -301,6 +289,7 @@ export default function ChatFeed({
 
         <div ref={messagesEndRef} />
       </div>
+
       <div>
         <form
           onSubmit={handleSubmitResumeProject}
@@ -315,21 +304,19 @@ export default function ChatFeed({
           />
 
           <div className="flex justify-end gap-[5px]">
-            {domain && pStatus != "Error" && (
-              <a
-                className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
-                href={domain}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <LinkIcon />
-              </a>
-            )}
+            <a
+              className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
+              href={p?.domain}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <LinkIcon />
+            </a>
 
-            {pStatus != "Gh-Error" && pStatus != "Error" && (
+            {p?.gh_repo != "" && (
               <a
                 className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[33px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
-                href={`https://github.com/n73-projects/${slug}`}
+                href={p.gh_repo}
                 target="_blank"
                 rel="noopener noreferrer"
               >

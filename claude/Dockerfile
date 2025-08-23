@@ -18,8 +18,6 @@ ENV PATH="/usr/local/nodejs/bin:$PATH"
 
 RUN npm install -g @anthropic-ai/claude-code
 
-RUN node --version && npm --version && python --version
-
 WORKDIR /app
 
 COPY requirements.txt ./

@@ -23,8 +23,6 @@ import LatestProjects from "@/components/latest_projects";
 const models = [
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
   { name: "Claude Sonnet 3.7", apiName: "claude-3-7-sonnet-20250219" },
-  { name: "Claude Sonnet 3.5 v2", apiName: "claude-3-5-sonnet-20241022" },
-  { name: "Claude Sonnet 3.5", apiName: "claude-3-5-sonnet-20240620" },
   { name: "Claude Haiku 3.5", apiName: "claude-3-5-haiku-20241022" },
   { name: "Claude Haiku 3", apiName: "claude-3-haiku-20240307" },
 ];

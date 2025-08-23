@@ -19,6 +19,7 @@ CREATE TABLE projects (
     docker_running BOOLEAN DEFAULT true,
     status VARCHAR(255) DEFAULT '',
     port INTEGER DEFAULT 0,
+    error_msg TEXT DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

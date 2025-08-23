@@ -41,12 +41,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = utils.RefreshCommit()
-	if err != nil {
-		fmt.Printf("refresh commit error: %v.", err)
-		os.Exit(1)
-	}
-
 	go func() {
 		ticker := time.NewTicker(1 * time.Hour)
 		defer ticker.Stop()

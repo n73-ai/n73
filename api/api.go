@@ -37,6 +37,7 @@ func RunServer() *fiber.App {
 	routes.MessagesRoutes(app)
 	routes.WebsocketRoutes(app)
 	routes.UsersRoutes(app)
+	routes.LogsRoutes(app)
 
 	app.All("*", func(c *fiber.Ctx) error {
 		return c.SendFile(os.Getenv("ROOT_PATH") + "/ui/dist/index.html")

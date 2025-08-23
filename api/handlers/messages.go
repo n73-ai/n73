@@ -52,6 +52,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		err = database.UpdateProjectSessionID(projectID, payload.SessionID)
 		if err != nil {
+      fmt.Println(err.Error())
 			database.CreateLog("projects", projectID, err.Error())
 			return c.SendStatus(500)
 		}
@@ -64,33 +65,39 @@ func WebhookMessage(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		isFirstBuild := project.Status == "Building-First"
-		var pStatusErr string
-		if isFirstBuild {
-			pStatusErr = "Building-First-Error"
-		} else {
-			pStatusErr = "Error"
-		}
-
 		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
-
 
     err = utils.TryBuildProject(project.ID)
 		if err != nil {
 
-			errP := database.UpdateProjectStatus(project.ID, pStatusErr)
+			errP := database.UpdateProjectStatus(project.ID, "new_error")
+			if errP != nil {
+				database.CreateLog("projects", project.ID, err.Error())
+			}
+      
+			errP = database.UpdateProjectErrorMsg(project.ID, err.Error())
 			if errP != nil {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
 
-			wsFormatError := fmt.Sprintf("build-error: %s", err.Error())
-			SendToUser(projectID, wsFormatError)
+		  isFirstBuild := project.Status == "new_pending"
+      if isFirstBuild {
+        SendToUser(projectID, "new_error")
+      } else {
+        SendToUser(projectID, "error")
+      }
 
 			return c.SendStatus(500)
 		}
 
-    fmt.Println("sleeping")
-    time.Sleep(15 * time.Second)
+		isFirstBuild := project.Status == "new_pending"
+		var pStatusErr string
+		if isFirstBuild {
+			pStatusErr = "new_internal_error"
+		} else {
+			pStatusErr = "internal_error"
+		}
+
 		err = utils.CopyProjectToExisitingProject(project.ID)
 		if err != nil {
       database.CreateLog("Copy Project error", project.ID, err.Error())
@@ -100,7 +107,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
 
-			SendToUser(projectID, "Error")
+			SendToUser(projectID, "error")
 			return c.SendStatus(500)
 		}
 
@@ -113,7 +120,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
 
-			SendToUser(projectID, "Error")
+			SendToUser(projectID, "error")
 			return nil
 		}
 
@@ -122,13 +129,13 @@ func WebhookMessage(c *fiber.Ctx) error {
 			database.CreateLog("GitHub push error", project.ID, err.Error())
 		}
 
-		err = database.UpdateProjectStatus(projectID, "Deployed")
+		err = database.UpdateProjectStatus(projectID, "idle")
 		if err != nil {
 			database.CreateLog("projects", project.ID, err.Error())
 			return nil
 		}
 
-		SendToUser(projectID, "Deployed")
+		SendToUser(projectID, "idle")
 
 	default:
 		log.Println("Unknown type:", payload.Type)
@@ -162,6 +169,7 @@ func GetMessageByID(c *fiber.Ctx) error {
 }
 
 func GetMessagesByProjectID(c *fiber.Ctx) error {
+  time.Sleep(1500 * time.Millisecond)
 	user := c.Locals("user").(*database.User)
 	projectID := c.Params("projectID")
 	messages, err := database.GetMessagesByProjectID(projectID)

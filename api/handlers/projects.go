@@ -140,7 +140,6 @@ func DeleteProject(c *fiber.Ctx) error {
 		})
 	}
 
-	// only delete if project exists
 	err = utils.DockerExists(projectID)
 	if err == nil {
 		err = utils.RmDockerContainer(projectID)
@@ -376,12 +375,32 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = database.UpdateProjectStatus(projectID, "Building")
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+  if project.Status == "new_error" || project.Status == "new_internal_error" {
+    err = database.UpdateProjectStatus(projectID, "new_pending")
+    if err != nil {
+      return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+      })
+    }
+  }
+
+  if project.ErrorMsg != "" {
+    err := database.UpdateProjectErrorMsg(project.ID, "")
+    if err != nil {
+      database.CreateLog("projects", project.ID, err.Error())
+    }
+  }
+
+  if project.Status == "error" ||
+    project.Status == "internal_error" ||
+    project.Status == "idle" {
+    err = database.UpdateProjectStatus(projectID, "pending")
+    if err != nil {
+      return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+      })
+    }
+  }
 
 	go func() {
 
