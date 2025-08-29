@@ -7,23 +7,22 @@ import (
 )
 
 type Project struct {
-	ID            string `json:"id"`
-	UserID        string `json:"user_id"`
-	SessionID     string `json:"session_id"`
-	Name          string `json:"name"`
-	Slug          string `json:"slug"`
-	Domain        string `json:"domain"`
-	GhRepo        string `json:"gh_repo"`
-	DockerRunning bool   `json:"docker_running"`
-	Status        string `json:"status"`
-	Port          int    `json:"port"`
-  ErrorMsg string `json:"error_msg"`
-	CreatedAt     string `json:"created_at"`
+	ID        string `json:"id"`
+	UserID    string `json:"user_id"`
+	SessionID string `json:"session_id"`
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	Domain    string `json:"domain"`
+	GhRepo    string `json:"gh_repo"`
+	Status    string `json:"status"`
+	Port      int    `json:"port"`
+	ErrorMsg  string `json:"error_msg"`
+	CreatedAt string `json:"created_at"`
 }
 
 func GetProjects() ([]Project, error) {
 	var projects []Project
-	rows, err := DB.Query(`SELECT id, name, domain, status, gh_repo, docker_running 
+	rows, err := DB.Query(`SELECT id, name, domain, status, gh_repo
   FROM projects ORDER BY created_at DESC;`)
 	if err != nil {
 		return nil, err
@@ -32,7 +31,7 @@ func GetProjects() ([]Project, error) {
 
 	for rows.Next() {
 		var p Project
-		if err := rows.Scan(&p.ID, &p.Name, &p.Domain, &p.Status, &p.GhRepo, &p.DockerRunning); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Domain, &p.Status, &p.GhRepo); err != nil {
 			return nil, err
 		}
 		projects = append(projects, p)
@@ -94,13 +93,6 @@ func UpdateProjectDomain(projectID, domain string) error {
 	return err
 }
 
-func UpdateProjectDockerRunning(projectID string, dockerRunning bool) error {
-	_, err := DB.Exec(`
-        UPDATE projects SET docker_running = $1 WHERE id = $2;`,
-		dockerRunning, projectID)
-	return err
-}
-
 func UpdateProjectPort(projectID string, port int) error {
 	_, err := DB.Exec(`
 		UPDATE projects SET port = $1 WHERE id = $2;`,
@@ -146,7 +138,6 @@ func GetProjectByID(id string) (Project, error) {
     name, 
     slug,
     domain, 
-    docker_running,
     status, 
     gh_repo,
     port,
@@ -154,8 +145,8 @@ func GetProjectByID(id string) (Project, error) {
     created_at 
     FROM projects WHERE id = $1`, id)
 
-	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug, 
-  &p.Domain, &p.DockerRunning, &p.Status, &p.GhRepo,
+	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug,
+		&p.Domain, &p.Status, &p.GhRepo,
 		&p.Port, &p.ErrorMsg, &p.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return p, fmt.Errorf("No project found with the id: %s", id)

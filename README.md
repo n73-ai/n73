@@ -188,6 +188,9 @@ add new:
 ```sql
 ALTER TABLE projects
 ADD COLUMN error_msg TEXT DEFAULT '';
+
+ALTER TABLE projects
+DROP COLUMN docker_running;
 ```
 
 Paste the contents of `tables.sql` into the PostgreSQL shell.

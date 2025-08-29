@@ -69,7 +69,6 @@ func RunHub() {
 }
 
 func FeedChat(c *websocket.Conn) {
-	// project_id
 	id := c.Query("id")
 
 	client := &Client{ID: id}

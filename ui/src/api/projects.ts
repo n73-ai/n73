@@ -1,4 +1,4 @@
-import { authAxios } from "@/lib/axios-instance";
+import { authAxios, noAuthAxios } from "@/lib/axios-instance";
 
 export const editProject = async (projectID: string, name: string) => {
   const response = await authAxios.put(`/projects/${projectID}`, {
@@ -13,7 +13,7 @@ export const deleteProject = async (projectID: string) => {
 };
 
 export const getLatestProjects = async () => {
-  const response = await authAxios.get(`/projects/latest`);
+  const response = await noAuthAxios.get(`/projects/latest`);
   return response.data;
 };
 

@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+func CheckContainerStatus(projectID string) (bool, error) {
+	cmd := exec.Command("docker", "inspect", "-f", "{{.State.Running}}", projectID)
+
+	output, err := cmd.Output()
+	if err != nil {
+		return false, err
+	}
+
+	return strings.TrimSpace(string(output)) == "true", nil
+}
+
 func RefreshCommit() error {
 	runCmd := exec.Command("docker", "commit", "claude-server", "base:v1")
 	output, err := runCmd.CombinedOutput()
@@ -157,22 +168,6 @@ func IsServiceReady(port int) bool {
 
 	return resp.StatusCode == http.StatusOK
 }
-
-/*
-func CreateDockerContainer(projectID string, port int) error {
-	ports := fmt.Sprintf("%d:5000", port)
-	runCmd := exec.Command("docker", "run", "-d", "-p", ports, "--name", projectID, "base:v1")
-	output, err := runCmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("docker run failed: %s", string(output))
-	}
-
-	fmt.Printf("Waiting for container to initialize...")
-	time.Sleep(10 * time.Second)
-
-	return nil
-}
-*/
 
 func cleanDirectoryExceptGit(dirPath string) error {
 	entries, err := os.ReadDir(dirPath)

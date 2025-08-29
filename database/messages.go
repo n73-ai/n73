@@ -54,7 +54,8 @@ func GetMessagesByProjectID(projectID string) ([]Message, error) {
 	return messages, nil
 }
 
-func CreateMessage(id, projectID, role, content, model string, duration int, isError bool, totalCostUsd float64) error {
+func CreateMessage(id, projectID, role, content, model string, duration int,
+	isError bool, totalCostUsd float64) error {
 	_, err := DB.Exec(`
 		INSERT INTO messages 
     (id, project_id, role, content, model, duration, is_error, total_cost_usd) 
@@ -62,6 +63,21 @@ func CreateMessage(id, projectID, role, content, model string, duration int, isE
 		id, projectID, role, content, model, duration, isError, totalCostUsd)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func DeleteMessage(id string) error {
+	result, err := DB.Exec(`DELETE FROM messages WHERE id = $1;`, id)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("No message found with the id %v", id)
 	}
 	return nil
 }

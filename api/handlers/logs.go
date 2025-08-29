@@ -7,12 +7,11 @@ import (
 )
 
 func GetLogs(c *fiber.Ctx) error {
-  logs, err := database.GetLogs()
-  if err != nil {
-		return c.Status(400).JSON(fiber.Map{
+	logs, err := database.GetLogs()
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
-  return c.JSON(logs)
-
+	}
+	return c.JSON(logs)
 }

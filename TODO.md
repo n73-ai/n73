@@ -9,14 +9,28 @@ submit a pull request.
 - Resolved duplicate spinners when loading project and chat - now only a single spinner is shown.  
 - Prevented iframe from refreshing on window focus.  
 - Removed missing auth token issue in Claude integration.  
+- Remove docker_running from the projects table; check if the service container is available instead
+- Update correct ai models 
 ## Features
 - Added log endpoint for admin.  
+- Responsive on project.tsx
+
+# Deploy
+```sql
+ALTER TABLE projects
+ADD COLUMN error_msg TEXT DEFAULT '';
+
+ALTER TABLE projects
+DROP COLUMN docker_running;
+```
+- do db migration for the new project.error_msg
+- delete docker_running from projects
 
 ### Fix
-- [ ] check que el docker container esta corriendo y que el estado de p.docker_running es correcto
+- [ ] 
 
 ### Bug
-- [ ]
+- [ ] 
 
 ### Test
 - [ ] 

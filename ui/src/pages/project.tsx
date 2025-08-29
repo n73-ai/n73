@@ -32,7 +32,7 @@ export default function Project() {
   });
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-[100dvh] flex flex-col">
       <ProjectNavbar />
       {isError && <p>An unexpected error occurred.</p>}
       {isLoading && <Spinner />}
@@ -43,7 +43,7 @@ export default function Project() {
           </ResizablePanel>
           <ResizableHandle />
 
-          <ResizablePanel>
+          <ResizablePanel className="hidden lg:block">
             {(data?.status == "new_pending" || data?.status == "new_error") && (
               <Stars status={data?.status} isIframeError={isErrorIframe} />
             )}

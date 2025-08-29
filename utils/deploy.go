@@ -10,13 +10,13 @@ import (
 
 func DeleteGhRepo(projectID string) error {
 	query := fmt.Sprintf("n73-projects/project-%s", projectID)
-  cmd := exec.Command("gh", "repo", "view", query, "--json", "name")
+	cmd := exec.Command("gh", "repo", "view", query, "--json", "name")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-    if strings.Contains(err.Error(), "GraphQL: Could not resolve to a Repository with the name") {
-      return nil 
-    }
-    return fmt.Errorf("e1: %s", string(output))
+		if strings.Contains(err.Error(), "GraphQL: Could not resolve to a Repository with the name") {
+			return nil
+		}
+		return fmt.Errorf("e1: %s", string(output))
 	}
 
 	cmd = exec.Command("gh", "repo", "delete", query, "--yes")

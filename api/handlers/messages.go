@@ -3,11 +3,9 @@ package handlers
 import (
 	"ai-zustack/database"
 	"ai-zustack/utils"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -52,7 +50,6 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		err = database.UpdateProjectSessionID(projectID, payload.SessionID)
 		if err != nil {
-      fmt.Println(err.Error())
 			database.CreateLog("projects", projectID, err.Error())
 			return c.SendStatus(500)
 		}
@@ -67,25 +64,25 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
 
-    err = utils.TryBuildProject(project.ID)
+		err = utils.TryBuildProject(project.ID)
 		if err != nil {
 
 			errP := database.UpdateProjectStatus(project.ID, "new_error")
 			if errP != nil {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
-      
+
 			errP = database.UpdateProjectErrorMsg(project.ID, err.Error())
 			if errP != nil {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
 
-		  isFirstBuild := project.Status == "new_pending"
-      if isFirstBuild {
-        SendToUser(projectID, "new_error")
-      } else {
-        SendToUser(projectID, "error")
-      }
+			isFirstBuild := project.Status == "new_pending"
+			if isFirstBuild {
+				SendToUser(projectID, "new_error")
+			} else {
+				SendToUser(projectID, "error")
+			}
 
 			return c.SendStatus(500)
 		}
@@ -100,7 +97,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		err = utils.CopyProjectToExisitingProject(project.ID)
 		if err != nil {
-      database.CreateLog("Copy Project error", project.ID, err.Error())
+			database.CreateLog("Copy Project error", project.ID, err.Error())
 
 			err := database.UpdateProjectStatus(project.ID, pStatusErr)
 			if err != nil {
@@ -169,7 +166,6 @@ func GetMessageByID(c *fiber.Ctx) error {
 }
 
 func GetMessagesByProjectID(c *fiber.Ctx) error {
-  time.Sleep(1500 * time.Millisecond)
 	user := c.Locals("user").(*database.User)
 	projectID := c.Params("projectID")
 	messages, err := database.GetMessagesByProjectID(projectID)

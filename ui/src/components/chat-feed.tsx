@@ -244,9 +244,7 @@ export default function ChatFeed({ p }: { p: any }) {
           </div>
         ))}
 
-        {(p.status == "new_pending" ||
-          p.status == "pending" ||
-          isLoading) && (
+        {(p.status == "new_pending" || p.status == "pending" || isLoading) && (
           <div className="flex items-center gap-2 text-muted-foreground pb-[20px]">
             <Spinner />
           </div>
@@ -258,13 +256,14 @@ export default function ChatFeed({ p }: { p: any }) {
             variant="destructive"
           >
             <AlertDescription>
-                The project deployment encountered an issue. The latest production 
-                push failed due to an internal error, and our team has already been notified.
+              The project deployment encountered an issue. The latest production
+              push failed due to an internal error, and our team has already
+              been notified.
             </AlertDescription>
           </Alert>
         )}
 
-        {p?.error_msg != "" && (
+        {p.error_msg != "" && (
           <Alert
             className="flex justify-between items-center"
             variant="destructive"

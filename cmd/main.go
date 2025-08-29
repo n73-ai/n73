@@ -45,7 +45,7 @@ func main() {
 		ticker := time.NewTicker(1 * time.Hour)
 		defer ticker.Stop()
 		for range ticker.C {
-      fmt.Println("running the docker commit")
+			fmt.Println("running the docker commit")
 			if err := utils.RefreshCommit(); err != nil {
 				fmt.Printf("Refresh Commit error: %v\n", err)
 			}

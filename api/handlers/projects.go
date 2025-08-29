@@ -14,7 +14,7 @@ import (
 
 func AdminDeleteDockerProject(c *fiber.Ctx) error {
 	projectID := c.Params("projectID")
-	project, err := database.GetProjectByID(projectID)
+	_, err := database.GetProjectByID(projectID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -42,13 +42,6 @@ func AdminDeleteDockerProject(c *fiber.Ctx) error {
 		}
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Error checking project directory: " + err.Error(),
-		})
-	}
-
-	err = database.UpdateProjectDockerRunning(projectID, !project.DockerRunning)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
 		})
 	}
 
@@ -228,8 +221,6 @@ func CreateProject(c *fiber.Ctx) error {
 	validModels := map[string]bool{
 		"claude-sonnet-4-20250514":   true,
 		"claude-3-7-sonnet-20250219": true,
-		"claude-3-5-sonnet-20241022": true,
-		"claude-3-5-sonnet-20240620": true,
 		"claude-3-5-haiku-20241022":  true,
 		"claude-3-haiku-20240307":    true,
 	}
@@ -350,8 +341,6 @@ func ResumeProject(c *fiber.Ctx) error {
 	validModels := map[string]bool{
 		"claude-sonnet-4-20250514":   true,
 		"claude-3-7-sonnet-20250219": true,
-		"claude-3-5-sonnet-20241022": true,
-		"claude-3-5-sonnet-20240620": true,
 		"claude-3-5-haiku-20241022":  true,
 		"claude-3-haiku-20240307":    true,
 	}
@@ -375,32 +364,32 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
-  if project.Status == "new_error" || project.Status == "new_internal_error" {
-    err = database.UpdateProjectStatus(projectID, "new_pending")
-    if err != nil {
-      return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-      })
-    }
-  }
+	if project.Status == "new_error" || project.Status == "new_internal_error" {
+		err = database.UpdateProjectStatus(projectID, "new_pending")
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+	}
 
-  if project.ErrorMsg != "" {
-    err := database.UpdateProjectErrorMsg(project.ID, "")
-    if err != nil {
-      database.CreateLog("projects", project.ID, err.Error())
-    }
-  }
+	if project.ErrorMsg != "" {
+		err := database.UpdateProjectErrorMsg(project.ID, "")
+		if err != nil {
+			database.CreateLog("projects", project.ID, err.Error())
+		}
+	}
 
-  if project.Status == "error" ||
-    project.Status == "internal_error" ||
-    project.Status == "idle" {
-    err = database.UpdateProjectStatus(projectID, "pending")
-    if err != nil {
-      return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-      })
-    }
-  }
+	if project.Status == "error" ||
+		project.Status == "internal_error" ||
+		project.Status == "idle" {
+		err = database.UpdateProjectStatus(projectID, "pending")
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+	}
 
 	go func() {
 
@@ -412,73 +401,66 @@ func ResumeProject(c *fiber.Ctx) error {
 
 		p, err := database.GetProjectByID(projectID)
 		if err != nil {
-			fmt.Println(err.Error())
+			database.UpdateProjectStatus(projectID, "idle")
 			return
 		}
 
-		if !p.DockerRunning {
-			fmt.Println("@Container is not running!")
+		isReady := utils.IsServiceReady(p.Port)
+
+		if !isReady {
+
+			utils.RmDockerContainer(p.ID)
 
 			port, err := utils.GetFreePort()
 			if err != nil {
-				fmt.Println(err.Error())
+				database.UpdateProjectStatus(projectID, "idle")
+				SendToUser(projectID, "error")
 				return
 			}
-			fmt.Println("@Free port ok")
-
-			// update in db the new port
-			err = database.UpdateProjectPort(projectID, port)
-			if err != nil {
-				fmt.Println(err.Error())
-				return
-			}
-
-			// resign endpoint here
-			endpoint = fmt.Sprintf("http://0.0.0.0:%d/claude/resume", port)
 
 			err = utils.CreateDockerContainer(projectID, port)
 			if err != nil {
-				fmt.Println(err.Error())
+				database.UpdateProjectStatus(projectID, "idle")
+				SendToUser(projectID, "error")
 				return
 			}
-			fmt.Println("@Docker container created")
+
+			err = database.UpdateProjectPort(projectID, port)
+			if err != nil {
+				database.UpdateProjectStatus(projectID, "idle")
+				SendToUser(projectID, "error")
+				utils.RmDockerContainer(p.ID)
+				return
+			}
+
+			endpoint = fmt.Sprintf("http://0.0.0.0:%d/claude/resume", port)
+			sessionID = ""
 
 			uniqueRepoID := fmt.Sprintf("project-%s", project.ID)
 			err = utils.DockerCloneRepo(uniqueRepoID, projectID)
 			if err != nil {
-				fmt.Println(err.Error())
-				return
-			}
-			fmt.Println("@Docker clone repo ok")
-			// end of pw on
-			sessionID = ""
-
-			err = database.UpdateProjectDockerRunning(projectID, !p.DockerRunning)
-			if err != nil {
-				fmt.Println(err.Error())
+				database.UpdateProjectStatus(projectID, "idle")
+				SendToUser(projectID, "error")
+				utils.RmDockerContainer(p.ID)
 				return
 			}
 
 		}
-
-		fmt.Println(" ✓ Container is ready to resume!")
 
 		err = utils.ResumeClaudeProject(payload.Prompt, payload.Model, webhookURL,
 			dockerProjectPath, sessionID, endpoint)
 		if err != nil {
-			fmt.Println(err.Error())
+			database.UpdateProjectStatus(projectID, "idle")
+			SendToUser(projectID, "error")
 			return
 		}
-
-		fmt.Println(" ✓ Resume project is ok!")
 
 		err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 		if err != nil {
-			fmt.Println(err.Error())
+			SendToUser(projectID, "error")
+			database.UpdateProjectStatus(projectID, "idle")
 			return
 		}
-		fmt.Println(" ✓ Message created!")
-		fmt.Println("End of go routine!")
 	}()
 
 	return c.SendStatus(200)
