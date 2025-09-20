@@ -111,7 +111,7 @@ func AuthLink(c *fiber.Ctx) error {
 		})
 	}
 
-	err = utils.SendEmail(token, payload.Email, "Welcome to AI Zustack")
+	err = utils.SendEmail(token, payload.Email, "Welcome to n73")
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
