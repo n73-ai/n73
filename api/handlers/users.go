@@ -38,7 +38,7 @@ func VerifyAuthLink(c *fiber.Ctx) error {
 
 	exists, err := database.UserExists(email)
 
-	secondsToByValid := 60 * 60 * 24
+	secondsToByValid := 60 * 60 * 24 * 30
 	expDuration := time.Duration(secondsToByValid) * time.Second
 	now := time.Now().UTC()
 	exp := now.Add(expDuration).Unix()

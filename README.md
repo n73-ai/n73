@@ -250,7 +250,7 @@ func main() {
   claims["email"] = "agustfricke@gmail.com"
   claims["iat"] = now.Unix()
   claims["nbf"] = now.Unix()
-  tokenString, err := tokenByte.SignedString([]byte("sodibg3obg48wb4ogbwsl4gjwnf4owbg9snkfbitbfwouebgiw893r83bf9uw3bsfeiugfiwbf4ifgw938hg9w74gfi4wubcwih39h0f038298yhw8beguiwebgiwbe=w-eto293ru2094tf-w=efwnoigb"))
+  tokenString, err := tokenByte.SignedString([]byte("secret_key"))
   if err != nil {
     panic(err)
   }
@@ -394,4 +394,10 @@ curl -i -X GET "https://n73.agustfricke.com/admin/projects" \
 check the logs
 ```bash
 curl -i -X GET "http://localhost:8080/logs" | jq
+```
+
+prod logs
+```bash
+curl -i -X GET "https://n73.agustfricke.com/logs" \
+  -H "Authorization: Bearer ${JWT}"
 ```

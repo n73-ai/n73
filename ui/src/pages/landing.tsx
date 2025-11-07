@@ -19,6 +19,7 @@ import { useAuthStore } from "@/store/auth";
 import { useModelStore } from "@/store/models";
 import { Textarea } from "@/components/ui/textarea";
 import LatestProjects from "@/components/latest_projects";
+import { usePromptStore } from "@/store/prompt";
 
 const models = [
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
@@ -28,7 +29,7 @@ const models = [
 ];
 
 export default function Landing() {
-  const [prompt, setPrompt] = useState("");
+  //const [prompt, setPrompt] = useState("");
   const [name, _] = useState("");
   const navigate = useNavigate();
   const { model, setModel } = useModelStore();
@@ -40,6 +41,7 @@ export default function Landing() {
   const selectedModel = models.find((m) => m.apiName === model) || models[0];
 
   const { isAuth } = useAuthStore();
+  const { prompt, setPrompt } = usePromptStore()
 
   const createProjectMut = useMutation({
     mutationFn: () => createProject(prompt, name, selectedModel.apiName),
