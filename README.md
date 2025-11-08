@@ -375,7 +375,28 @@ sudo service ai stop
 journalctl -u ai.service -n 50
 ```
 
-## Admin endpoints(only via api)
+---
+
+### Renew Certificate
+
+Check the status of the certificate:
+```bash
+sudo certbot certificates
+```
+
+Verify using DNS, then follow the instructions:
+```bash
+sudo certbot certonly --manual --preferred-challenges dns -d n73.agustfricke.com
+```
+
+If successful, reload Nginx:
+```bash
+sudo systemctl reload nginx
+```
+
+---
+
+### Admin endpoints(only via api)
 rm docker
 ```bash
 export JWT=""
