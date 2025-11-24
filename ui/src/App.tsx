@@ -5,6 +5,7 @@ import { PrivateRoute } from "./lib/private-routes";
 import NotFound from "./pages/not-found";
 import Project from "./pages/project";
 import Auth from "./pages/auth";
+import Verify from "./pages/verify";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="signup" element={<Auth />} />
         <Route path="login" element={<Auth />} />
+        <Route path="verify/:jwt" element={<Verify />} />
 
         <Route path="/" element={<Layout />}>
           <Route index element={<Landing />} />

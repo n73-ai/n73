@@ -188,7 +188,7 @@ func CreateProject(id, userID, name, slug string, port int) error {
 		if strings.Contains(err.Error(), `pq: duplicate key value violates unique constraint "projects_slug_key"`) {
 			slug = fmt.Sprintf("%s-%s", slug, id)
 			_, secondTryErr := DB.Exec(`
-		    INSERT INTO projects (id, user_id, status, name, slug, port) 
+		    INSERT INTO projects (id, user_id, status, name, slug, port)
         VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "new_pending", name, slug, port)
 			if secondTryErr != nil {
 				return secondTryErr

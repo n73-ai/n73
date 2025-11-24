@@ -6,34 +6,20 @@ import { useState } from "react";
 import ZustackLogo from "@/components/zustack-logo";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import { authLink, authVerify } from "@/api/users";
+import { authLink } from "@/api/users";
 import toast from "react-hot-toast";
 import type { ErrorResponse } from "@/lib/types";
-import { useAuthStore } from "@/store/auth";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
   const [step, setStep] = useState(0);
   const location = useLocation();
-  const { setAuthState } = useAuthStore();
   const navigate = useNavigate();
 
   const authLinkMutation = useMutation({
     mutationFn: () => authLink(email),
     onSuccess: () => {
       setStep(1);
-    },
-    onError: (error: ErrorResponse) => {
-      toast.error(error.response.data.error || "An unexpected error occurred.");
-    },
-  });
-
-  const authVerifyMutation = useMutation({
-    mutationFn: () => authVerify(otp),
-    onSuccess: (response) => {
-      setAuthState(response.token, response.exp, response.email, true);
-      navigate("/")
     },
     onError: (error: ErrorResponse) => {
       toast.error(error.response.data.error || "An unexpected error occurred.");
@@ -47,15 +33,6 @@ export default function Auth() {
       return;
     }
     authLinkMutation.mutate();
-  };
-
-  const handleSubmitAuthVerify = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (otp === "") {
-      toast.error("The One time password is required.");
-      return;
-    }
-    authVerifyMutation.mutate();
   };
 
   return (
@@ -72,10 +49,9 @@ export default function Auth() {
               </h1>
             )}
             <p className="text-muted-foreground mt-2">
-              {location.pathname === "/login" 
+              {location.pathname === "/login"
                 ? "Welcome back! Please sign in to your account"
-                : "Get started by creating your account"
-              }
+                : "Get started by creating your account"}
             </p>
           </div>
 
@@ -96,12 +72,19 @@ export default function Auth() {
                     className=""
                   />
                 </div>
-               <Button type="submit" variant="secondary" className="w-full" disabled={authLinkMutation.isPending}>
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  className="w-full"
+                  disabled={authLinkMutation.isPending}
+                >
                   {authLinkMutation.isPending ? (
                     <Spinner />
                   ) : (
                     <>
-                      {location.pathname === "/login" ? "Log in" : "Create account"}
+                      {location.pathname === "/login"
+                        ? "Log in"
+                        : "Create account"}
                     </>
                   )}
                 </Button>
@@ -109,40 +92,24 @@ export default function Auth() {
             )}
 
             {step === 1 && (
-              <form onSubmit={handleSubmitAuthVerify} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="otp" className="text-sm font-medium">
-                    Verification Code
-                  </Label>
-                  <Input
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    id="otp"
-                    type="text"
-                    placeholder="Enter one time password"
-                    required
-                    className=""
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Code sent to {email}
-                  </p>
-                </div>
-                <Button type="submit" variant="secondary" className="w-full" disabled={authVerifyMutation.isPending}>
-                  {authVerifyMutation.isPending ? (
-                    <Spinner />
-                  ) : (
-                    "Verify Code"
-                  )}
-                </Button>
-              </form>
+              <p>
+                We’ve sent you an email containing a link to complete your
+                authentication.
+              </p>
             )}
           </div>
 
           <div className="mt-8 space-y-4">
             {location.pathname === "/login" && step === 0 && (
               <div className="text-center">
-                <span className="text-sm text-muted-foreground">Don't have an account? </span>
-                <Button onClick={() => navigate("/signup")} variant="link" className="p-0 h-auto font-medium">
+                <span className="text-sm text-muted-foreground">
+                  Don't have an account?{" "}
+                </span>
+                <Button
+                  onClick={() => navigate("/signup")}
+                  variant="link"
+                  className="p-0 h-auto font-medium"
+                >
                   Sign up
                 </Button>
               </div>
@@ -150,8 +117,14 @@ export default function Auth() {
 
             {location.pathname === "/signup" && step === 0 && (
               <div className="text-center">
-                <span className="text-sm text-muted-foreground">Already have an account? </span>
-                <Button onClick={() => navigate("/login")} variant="link" className="p-0 h-auto font-medium">
+                <span className="text-sm text-muted-foreground">
+                  Already have an account?{" "}
+                </span>
+                <Button
+                  onClick={() => navigate("/login")}
+                  variant="link"
+                  className="p-0 h-auto font-medium"
+                >
                   Log in
                 </Button>
               </div>
@@ -160,22 +133,26 @@ export default function Auth() {
             {step === 1 && (
               <div className="space-y-3">
                 <div className="text-center">
-                  <span className="text-sm text-muted-foreground">Didn't receive the code? </span>
-                  <Button 
-                    onClick={() => authLinkMutation.mutate()} 
-                    variant="link" 
+                  <span className="text-sm text-muted-foreground">
+                    Didn't receive the email?{" "}
+                  </span>
+                  <Button
+                    onClick={() => authLinkMutation.mutate()}
+                    variant="link"
                     className="p-0 h-auto font-medium"
                     disabled={authLinkMutation.isPending}
                   >
                     {authLinkMutation.isPending ? "Sending..." : "Send again"}
                   </Button>
                 </div>
-                
+
                 <div className="text-center">
-                  <span className="text-sm text-muted-foreground">Wrong email? </span>
-                  <Button 
-                    onClick={() => setStep(0)} 
-                    variant="link" 
+                  <span className="text-sm text-muted-foreground">
+                    Wrong email?{" "}
+                  </span>
+                  <Button
+                    onClick={() => setStep(0)}
+                    variant="link"
                     className="p-0 h-auto font-medium"
                   >
                     Go back
@@ -186,7 +163,11 @@ export default function Auth() {
 
             <div className="pt-4 border-t border-border">
               <div className="text-center">
-                <Button onClick={() => navigate("/")} variant="ghost" className="text-sm text-muted-foreground">
+                <Button
+                  onClick={() => navigate("/")}
+                  variant="ghost"
+                  className="text-sm text-muted-foreground"
+                >
                   ← Back to Home
                 </Button>
               </div>
@@ -194,7 +175,7 @@ export default function Auth() {
           </div>
         </div>
       </div>
-      
+
       <div className="hidden lg:flex flex-1 min-h-screen items-center justify-center border-l border-dashed border-zinc-700">
         <ZustackLogo size={400} />
       </div>

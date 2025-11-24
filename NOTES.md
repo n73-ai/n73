@@ -1,4 +1,2 @@
 # notes
 just for me!
-
-
