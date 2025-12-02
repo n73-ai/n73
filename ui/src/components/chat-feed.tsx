@@ -33,10 +33,9 @@ import {
 import { Textarea } from "./ui/textarea";
 
 const models = [
+  { name: "Claude Sonnet 4.5", apiName: "claude-sonnet-4-5-20250929" },
   { name: "Claude Sonnet 4", apiName: "claude-sonnet-4-20250514" },
-  { name: "Claude Sonnet 3.7", apiName: "claude-3-7-sonnet-20250219" },
-  { name: "Claude Haiku 3.5", apiName: "claude-3-5-haiku-20241022" },
-  { name: "Claude Haiku 3", apiName: "claude-3-haiku-20240307" },
+  { name: "Claude Haiku 4.5", apiName: "claude-haiku-4-5-20251001" },
 ];
 
 export default function ChatFeed({ p }: { p: any }) {
@@ -246,7 +245,7 @@ export default function ChatFeed({ p }: { p: any }) {
 
         {(p.status == "new_pending" || p.status == "pending" || isLoading) && (
           <div className="flex items-center gap-2 text-muted-foreground pb-[20px]">
-            <Spinner />
+            <Spinner /> Loading...
           </div>
         )}
 

@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS users;
 CREATE TABLE users (
   id VARCHAR(255) PRIMARY KEY NOT NULL,
   email VARCHAR(55) NOT NULL UNIQUE,
@@ -8,6 +9,7 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+DROP TABLE IF EXISTS projects;
 CREATE TABLE projects (
     id VARCHAR(255) PRIMARY KEY NOT NULL,
     user_id VARCHAR(255) NOT NULL,
@@ -17,12 +19,16 @@ CREATE TABLE projects (
     domain VARCHAR(255) DEFAULT '',
     gh_repo VARCHAR(255) DEFAULT '',
     status VARCHAR(255) DEFAULT '',
-    port INTEGER DEFAULT 0,
+    -- port INTEGER DEFAULT 0,
     error_msg TEXT DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    fly_hostname VARCHAR(255) DEFAULT '',
+
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+DROP TABLE IF EXISTS messages;
 CREATE TABLE messages (
     id VARCHAR(255) PRIMARY KEY NOT NULL,
     project_id VARCHAR(255) NOT NULL,
@@ -36,6 +42,7 @@ CREATE TABLE messages (
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE   
 );
 
+DROP TABLE IF EXISTS logs;
 CREATE TABLE logs (
   id VARCHAR(255) PRIMARY KEY NOT NULL,
   error_scope VARCHAR(255) NOT NULL,

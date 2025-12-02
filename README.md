@@ -154,6 +154,7 @@ curl "localhost_url"
 ### Claude Code (Docker Build & Commit)
 
 ```bash
+cd claude
 docker build -t claude-server .
 
 docker run --network host -d  --name claude-server claude-server
@@ -161,6 +162,8 @@ docker run --network host -d  --name claude-server claude-server
 docker exec -it claude-server bash
 
 claude  
+# or
+claude setup-token 
 
 docker commit claude-server base:v1
 ```
@@ -279,7 +282,7 @@ docker exec -it my-postgres psql -U postgres -d mydb
 ```
 
 ```sql
-UPDATE users SET role = 'admin' WHERE email = 'your@admin.com';
+UPDATE users SET role = 'admin' WHERE email = 'agustfricke@gmail.com';
 UPDATE projects SET status = 'Deployed' WHERE id = 'd849fcf1-0e0f-4e47-b7e2-f078b9ef1099';
 ```
 

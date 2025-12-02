@@ -3,6 +3,14 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Spinner from "./spinner";
+import { FolderCode } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 
 export default function Projects() {
   const { data, isLoading, isError } = useQuery<any>({
@@ -21,14 +29,18 @@ export default function Projects() {
       {isLoading && <Spinner />}
       {isError && <p>An unexpected error occurred.</p>}
       {!data && !isLoading && !isError && (
-        <div className="border p-[20px] px-[25px] rounded-md">
-          <h1
-            className="text-center
-            tracking-tight text-balance text-muted-foreground"
-          >
-            You don't have any projects... yet!
-          </h1>
-        </div>
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <FolderCode />
+        </EmptyMedia>
+        <EmptyTitle>No Projects Yet</EmptyTitle>
+        <EmptyDescription>
+          You haven&apos;t created any projects yet. Get started by creating
+          your first project.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
       )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-[15px]">
         {data?.map((p: any) => (
@@ -50,3 +62,4 @@ export default function Projects() {
     </div>
   );
 }
+

@@ -3,9 +3,11 @@ package handlers
 import (
 	"ai-zustack/database"
 	"ai-zustack/utils"
+	"encoding/base64"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -22,6 +24,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 		Duration     int     `json:"duration"`
 		TotalCostUsd float64 `json:"total_cost_usd"`
 		SessionID    string  `json:"session_id"`
+    File string `json:"file"`
 	}{}
 
 	err := c.BodyParser(&payload)
@@ -62,17 +65,59 @@ func WebhookMessage(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
+    // === HANDLE BASE64 ZIP FILE ===
+    if payload.File == "" {
+      return c.Status(400).SendString("No file data provided")
+    }
 
-		err = utils.TryBuildProject(project.ID)
-		if err != nil {
+    var base64Data string
 
-			errP := database.UpdateProjectStatus(project.ID, "new_error")
-			if errP != nil {
-				database.CreateLog("projects", project.ID, err.Error())
-			}
+    // Handle both "data:application/zip;base64,XXXX" and raw base64
+    if strings.Contains(payload.File, "data:") {
+      parts := strings.SplitN(payload.File, ",", 2)
+      if len(parts) < 2 {
+        return c.Status(400).SendString("Invalid data URL format")
+      }
+      base64Data = parts[1]
+    } else {
+      base64Data = payload.File
+    }
 
-			errP = database.UpdateProjectErrorMsg(project.ID, err.Error())
+    // Decode base64
+    zipData, err := base64.StdEncoding.DecodeString(base64Data)
+    if err != nil {
+      database.CreateLog("projects", projectID, "Base64 decode error: "+err.Error())
+      return c.Status(400).SendString("Invalid base64 file data")
+    }
+
+    // Create temp zip file
+    tempZipPath := filepath.Join("/tmp", projectID+".zip")
+    err = os.WriteFile(tempZipPath, zipData, 0644)
+    if err != nil {
+      database.CreateLog("projects", projectID, "Failed to write zip file: "+err.Error())
+      return c.SendStatus(500)
+    }
+    defer os.Remove(tempZipPath) // Clean up after
+
+    // Unzip into projects directory
+    repositoriesPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
+    err = utils.Unzip(tempZipPath, repositoriesPath)
+    if err != nil {
+      database.CreateLog("projects", projectID, "Unzip failed: "+err.Error())
+      return c.Status(500).SendString("Failed to unzip project")
+    }
+
+    projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
+    frontendProjectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID, "project")
+
+    err = utils.TryBuildProject(frontendProjectPath)
+    if err != nil {
+      errP := database.UpdateProjectStatus(project.ID, "new_error")
+      if errP != nil {
+        database.CreateLog("projects", project.ID, err.Error())
+      }
+
+      errP = database.UpdateProjectErrorMsg(project.ID, err.Error())
 			if errP != nil {
 				database.CreateLog("projects", project.ID, err.Error())
 			}
@@ -95,6 +140,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 			pStatusErr = "internal_error"
 		}
 
+    /*
 		err = utils.CopyProjectToExisitingProject(project.ID)
 		if err != nil {
 			database.CreateLog("Copy Project error", project.ID, err.Error())
@@ -107,8 +153,9 @@ func WebhookMessage(c *fiber.Ctx) error {
 			SendToUser(projectID, "error")
 			return c.SendStatus(500)
 		}
+    */
 
-		err = utils.CfPush(project.Slug, projectPath)
+		err = utils.CfPush(project.Slug, frontendProjectPath)
 		if err != nil {
 			database.CreateLog("Cloudflare push error", project.ID, err.Error())
 

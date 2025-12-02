@@ -15,9 +15,11 @@ type Project struct {
 	Domain    string `json:"domain"`
 	GhRepo    string `json:"gh_repo"`
 	Status    string `json:"status"`
-	Port      int    `json:"port"`
+	// Port      int    `json:"port"`
 	ErrorMsg  string `json:"error_msg"`
 	CreatedAt string `json:"created_at"`
+
+  FlyHostname string `json:"fly_hostname"`
 }
 
 func GetProjects() ([]Project, error) {
@@ -140,14 +142,14 @@ func GetProjectByID(id string) (Project, error) {
     domain, 
     status, 
     gh_repo,
-    port,
     error_msg,
-    created_at 
+    created_at,
+    fly_hostname
     FROM projects WHERE id = $1`, id)
 
 	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug,
 		&p.Domain, &p.Status, &p.GhRepo,
-		&p.Port, &p.ErrorMsg, &p.CreatedAt); err != nil {
+		&p.ErrorMsg, &p.CreatedAt, &p.FlyHostname); err != nil {
 		if err == sql.ErrNoRows {
 			return p, fmt.Errorf("No project found with the id: %s", id)
 		}
@@ -180,16 +182,30 @@ func UpdateProjectSessionID(projectID, sessionID string) error {
 	return err
 }
 
-func CreateProject(id, userID, name, slug string, port int) error {
+func UpdateFlyHostname(projectID, flyHostname string) error {
+	result, err := DB.Exec(`
+		UPDATE projects SET fly_hostname = $1 WHERE id = $2;`,
+		flyHostname, projectID)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("No project found with the id %v", projectID)
+	}
+	return err
+}
+
+func CreateProject(id, userID, name, slug string) error {
 	_, err := DB.Exec(`
-		INSERT INTO projects (id, user_id, status, name, slug, port) 
-    VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "new_pending", name, slug, port)
+		INSERT INTO projects (id, user_id, status, name, slug) 
+    VALUES ($1, $2, $3, $4, $5)`, id, userID, "new_pending", name, slug)
 	if err != nil {
 		if strings.Contains(err.Error(), `pq: duplicate key value violates unique constraint "projects_slug_key"`) {
 			slug = fmt.Sprintf("%s-%s", slug, id)
 			_, secondTryErr := DB.Exec(`
-		    INSERT INTO projects (id, user_id, status, name, slug, port)
-        VALUES ($1, $2, $3, $4, $5, $6)`, id, userID, "new_pending", name, slug, port)
+		    INSERT INTO projects (id, user_id, status, name, slug)
+        VALUES ($1, $2, $3, $4, $5)`, id, userID, "new_pending", name, slug)
 			if secondTryErr != nil {
 				return secondTryErr
 			}

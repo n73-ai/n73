@@ -212,12 +212,21 @@ func CopyProjectToExisitingProject(projectID string) error {
 	return nil
 }
 
-func TryBuildProject(projectID string) error {
-	buildCmd := exec.Command("docker", "exec", projectID, "sh", "-c",
-		"cd /app/project && npm i && npm run build")
-	output, err := buildCmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("build failed: %s", string(output))
-	}
-	return nil
+func TryBuildProject(projectPath string) error {
+    cmd := exec.Command("npm", "i")
+    cmd.Dir = projectPath
+    output, err := cmd.CombinedOutput()
+    if err != nil {
+        return fmt.Errorf("npm install failed: %s", string(output))
+    }
+
+    // run build
+    cmd = exec.Command("npm", "run", "build")
+    cmd.Dir = projectPath
+    output, err = cmd.CombinedOutput()
+    if err != nil {
+        return fmt.Errorf("npm build failed: %s", string(output))
+    }
+
+    return nil
 }

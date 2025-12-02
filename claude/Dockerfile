@@ -1,31 +1,11 @@
-FROM python:3.10-slim
-
-RUN apt-get update && apt-get install -y \
-    wget \
-    xz-utils \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Variables para Node.js
-ARG NODE_VERSION=22.17.1
-
-RUN wget https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz \
-    && tar -xJf node-v${NODE_VERSION}-linux-x64.tar.xz \
-    && mv node-v${NODE_VERSION}-linux-x64 /usr/local/nodejs \
-    && rm node-v${NODE_VERSION}-linux-x64.tar.xz
-
-ENV PATH="/usr/local/nodejs/bin:$PATH"
+FROM nikolaik/python-nodejs:python3.10-nodejs22
 
 RUN npm install -g @anthropic-ai/claude-code
 
 WORKDIR /app
-
-COPY requirements.txt ./
-
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
-RUN pip install -r requirements.txt 
-
 EXPOSE 5000
-
 CMD ["./start.sh"]

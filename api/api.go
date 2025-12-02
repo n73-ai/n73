@@ -3,7 +3,7 @@ package api
 import (
 	"ai-zustack/api/handlers"
 	"ai-zustack/api/routes"
-	"os"
+	//"os"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -22,8 +22,10 @@ func RunServer() *fiber.App {
 		AllowCredentials: false,
 	}))
 
+  /*
 	app.Static("/", os.Getenv("ROOT_PATH")+"/ui/dist")
 	app.Static("/assets", os.Getenv("ROOT_PATH")+"/ui/dist/assets")
+  */
 
 	app.Use("/feed/chat", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
@@ -39,9 +41,11 @@ func RunServer() *fiber.App {
 	routes.UsersRoutes(app)
 	routes.LogsRoutes(app)
 
+  /*
 	app.All("*", func(c *fiber.Ctx) error {
 		return c.SendFile(os.Getenv("ROOT_PATH") + "/ui/dist/index.html")
 	})
+  */
 
 	return app
 }

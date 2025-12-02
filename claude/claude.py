@@ -1,8 +1,30 @@
 from claude_code_sdk import query, ClaudeCodeOptions
 import requests
 import asyncio
+import os
 from system_prompt import SYSTEM_PROMPT
+import zipfile
+import os
+from pathlib import Path
 
+def zip_directory(folder_path: str | Path, output_zip: str | Path):
+    folder_path = Path(folder_path).resolve()
+    output_zip = Path(output_zip)
+
+    if not folder_path.is_dir():
+        raise ValueError(f"Directory not found: {folder_path}")
+
+    with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(folder_path):
+            # --- EXCLUSION ---
+            if "node_modules" in dirs:
+                dirs.remove("node_modules")   # evita entrar a node_modules
+            # -----------------
+
+            for file in files:
+                file_path = Path(root) / file
+                arcname = file_path.relative_to(folder_path.parent)
+                zipf.write(file_path, arcname)
 
 async def post_json(url, json_data, jwt):
     headers = {
@@ -65,14 +87,25 @@ async def process_message(message, target_url, jwt):
     
     # Handle result messages
     elif message.__class__.__name__ == "ResultMessage":
+        zip_directory("/app/project", "project.zip")
+        
+        # Read zip file and encode as base64
+        import base64
+        with open("/app/project.zip", 'rb') as f:
+            zip_data = base64.b64encode(f.read()).decode('utf-8')
+        
         await post_json(target_url, {
+            "file": zip_data,
             "type": "result",
             "is_error": message.is_error,
             "duration": message.duration_ms,
             "session_id": message.session_id,
             "total_cost_usd": message.total_cost_usd,
         }, jwt)
-
+        
+        # Clean up zip file
+        if os.path.exists("/app/project.zip"):
+            os.remove("/app/project.zip")
 
 async def NewProject(prompt: str, model: str, workDir: str, target_url: str, jwt: str):
     options = ClaudeCodeOptions(

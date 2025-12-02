@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"ai-zustack/database"
+	"ai-zustack/fly"
 	"ai-zustack/utils"
 	"fmt"
 	"os"
@@ -11,42 +12,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
-
-func AdminDeleteDockerProject(c *fiber.Ctx) error {
-	projectID := c.Params("projectID")
-	_, err := database.GetProjectByID(projectID)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	err = utils.RmDockerContainer(projectID)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
-
-	if _, err := os.Stat(projectPath); err != nil {
-		if os.IsExist(err) {
-			err = os.RemoveAll(projectPath)
-			if err != nil {
-				return c.Status(500).JSON(fiber.Map{
-					"error": "Error removing project directory: " + err.Error(),
-				})
-			}
-			return c.SendStatus(200)
-		}
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Error checking project directory: " + err.Error(),
-		})
-	}
-
-	return c.SendStatus(200)
-}
 
 func AdminGetProjects(c *fiber.Ctx) error {
 	projects, err := database.GetProjects()
@@ -133,26 +98,18 @@ func DeleteProject(c *fiber.Ctx) error {
 		})
 	}
 
-	err = utils.DockerExists(projectID)
-	if err == nil {
-		err = utils.RmDockerContainer(projectID)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-	}
-
 	go func() {
-		err := utils.DeleteGhRepo(projectID)
+    err := fly.DeleteApp(projectID)
 		if err != nil {
-			fmt.Println("admin_delelete_gh_repo: ", err.Error())
-			return
+			fmt.Println("delete app: ", err.Error())
+		}
+		err = utils.DeleteGhRepo(projectID)
+		if err != nil {
+			fmt.Println("delete gh repo: ", err.Error())
 		}
 		err = utils.DeleteCfPage(projectID)
 		if err != nil {
-			fmt.Println("admin_cf_page: ", err.Error())
-			return
+			fmt.Println("cf page err: ", err.Error())
 		}
 	}()
 
@@ -211,39 +168,32 @@ func CreateProject(c *fiber.Ctx) error {
 	}
 
 	if len(payload.Model) > 55 {
-		payload.Model = "claude-3-7-sonnet-20250219"
+		payload.Model = "claude-sonnet-4-5-20250929"
 	}
 
 	if payload.Model == "" {
-		payload.Model = "claude-3-7-sonnet-20250219"
+		payload.Model = "claude-sonnet-4-5-20250929"
 	}
 
 	validModels := map[string]bool{
-		"claude-sonnet-4-20250514":   true,
-		"claude-3-7-sonnet-20250219": true,
-		"claude-3-5-haiku-20241022":  true,
-		"claude-3-haiku-20240307":    true,
+		"claude-sonnet-4-5-20250929":   true,
+		"claude-sonnet-4-20250514": true,
+		"claude-haiku-4-5-20251001":  true,
 	}
 
 	if !validModels[payload.Model] {
-		payload.Model = "claude-3-7-sonnet-20250219"
+		payload.Model = "claude-sonnet-4-5-20250929"
 	}
 
 	projectID := uuid.NewString()
 	payload.Name = "project-" + projectID
 	messageID := uuid.NewString()
-	webhookURL := fmt.Sprintf("http://%s:%s/webhook/messages/%s/%s", os.Getenv("IP"), os.Getenv("PORT"), projectID, payload.Model)
+	webhookURL := fmt.Sprintf("%s/webhook/messages/%s/%s", os.Getenv("DOMAIN"), projectID, payload.Model)
 	dockerProjectPath := filepath.Join("/app", "project")
 
-	port, err := utils.GetFreePort()
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
 	slug := strings.ToLower(strings.ReplaceAll(payload.Name, " ", "-"))
-	err = database.CreateProject(projectID, user.ID, payload.Name, slug, port)
+
+	err = database.CreateProject(projectID, user.ID, payload.Name, slug)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
@@ -259,20 +209,48 @@ func CreateProject(c *fiber.Ctx) error {
 
 	go func() {
 
-		err = utils.CreateDockerContainer(projectID, port)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
+    fmt.Println("creating fly app")
+    flyHostname, err := fly.CreateApp(projectID)
+    if err != nil {
+      fmt.Println(err.Error())
+      return
+    }
 
-		endpoint := fmt.Sprintf("http://0.0.0.0:%d/claude/new", port)
+    fmt.Println("updating fly hostname to: ", flyHostname)
+    err = database.UpdateFlyHostname(projectID, flyHostname)
+    if err != nil {
+      fmt.Println(err.Error())
+      return
+    }
 
+    fmt.Println("creating fly toml file")
+    // create the fly.toml file editing the appName by the projectID
+    err = fly.GenerateFlyToml(projectID)
+    if err != nil {
+      fmt.Println(err.Error())
+      return
+    }
+
+    fmt.Println("creating fly machine")
+    // flyConfigPath string
+    fileName := fmt.Sprintf("%s.toml", projectID)
+    flyTomlPath := filepath.Join(os.Getenv("ROOT_PATH"), "fly_configs", fileName)
+    err = fly.CreateMachine(flyTomlPath)
+    if err != nil {
+      fmt.Println(err.Error())
+      return
+    }
+
+    endpoint := fmt.Sprintf("https://%s/claude/new", flyHostname)
+
+    fmt.Println("creating claude project in remote machine")
 		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, dockerProjectPath, endpoint)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 
+    fmt.Println("creating github repo")
 		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 		err = utils.GhCreate(slug, projectPath)
 		if err != nil {
@@ -280,18 +258,21 @@ func CreateProject(c *fiber.Ctx) error {
 			return
 		}
 
+    fmt.Println("creating cloudflare page")
 		err = utils.CfCreate(slug)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 
+    fmt.Println("getting the domain fallback")
 		domain, err := utils.GetProjectDomainFallback(slug)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 
+    fmt.Println("Updating project domain in db")
 		err = database.UpdateProjectDomain(projectID, domain)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -299,6 +280,7 @@ func CreateProject(c *fiber.Ctx) error {
 		}
 
 		ghRepo := fmt.Sprintf("https://github.com/n73-projects/%s", slug)
+    fmt.Println("Updating github repo in db")
 		err = database.UpdateGhRepo(projectID, ghRepo)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -332,23 +314,22 @@ func ResumeProject(c *fiber.Ctx) error {
 		})
 	}
 
+	if len(payload.Model) > 55 {
+		payload.Model = "claude-sonnet-4-5-20250929"
+	}
+
 	if payload.Model == "" {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "The model is required.",
-		})
+		payload.Model = "claude-sonnet-4-5-20250929"
 	}
 
 	validModels := map[string]bool{
-		"claude-sonnet-4-20250514":   true,
-		"claude-3-7-sonnet-20250219": true,
-		"claude-3-5-haiku-20241022":  true,
-		"claude-3-haiku-20240307":    true,
+		"claude-sonnet-4-5-20250929":   true,
+		"claude-sonnet-4-20250514": true,
+		"claude-haiku-4-5-20251001":  true,
 	}
 
 	if !validModels[payload.Model] {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Invalid model. Please select a valid Claude model.",
-		})
+		payload.Model = "claude-sonnet-4-5-20250929"
 	}
 
 	project, err := database.GetProjectByID(projectID)
@@ -393,68 +374,28 @@ func ResumeProject(c *fiber.Ctx) error {
 
 	go func() {
 
-		messageID := uuid.NewString()
-		webhookURL := fmt.Sprintf("http://%s:%s/webhook/messages/%s/%s", os.Getenv("IP"), os.Getenv("PORT"), projectID, payload.Model)
-		dockerProjectPath := filepath.Join("/app", "project")
-		endpoint := fmt.Sprintf("http://0.0.0.0:%d/claude/resume", project.Port)
-		sessionID := project.SessionID
-
 		p, err := database.GetProjectByID(projectID)
 		if err != nil {
 			database.UpdateProjectStatus(projectID, "idle")
 			return
 		}
 
-		isReady := utils.IsServiceReady(p.Port)
+		messageID := uuid.NewString()
+    endpoint := fmt.Sprintf("https://%s/claude/resume", p.FlyHostname)
+	  webhookURL := fmt.Sprintf("%s/webhook/messages/%s/%s", os.Getenv("DOMAIN"), projectID, payload.Model)
+		sessionID := project.SessionID
 
-		if !isReady {
-
-			utils.RmDockerContainer(p.ID)
-
-			port, err := utils.GetFreePort()
-			if err != nil {
-				database.UpdateProjectStatus(projectID, "idle")
-				SendToUser(projectID, "error")
-				return
-			}
-
-			err = utils.CreateDockerContainer(projectID, port)
-			if err != nil {
-				database.UpdateProjectStatus(projectID, "idle")
-				SendToUser(projectID, "error")
-				return
-			}
-
-			err = database.UpdateProjectPort(projectID, port)
-			if err != nil {
-				database.UpdateProjectStatus(projectID, "idle")
-				SendToUser(projectID, "error")
-				utils.RmDockerContainer(p.ID)
-				return
-			}
-
-			endpoint = fmt.Sprintf("http://0.0.0.0:%d/claude/resume", port)
-			sessionID = ""
-
-			uniqueRepoID := fmt.Sprintf("project-%s", project.ID)
-			err = utils.DockerCloneRepo(uniqueRepoID, projectID)
-			if err != nil {
-				database.UpdateProjectStatus(projectID, "idle")
-				SendToUser(projectID, "error")
-				utils.RmDockerContainer(p.ID)
-				return
-			}
-
-		}
-
+    fmt.Println("resuming claude project")
 		err = utils.ResumeClaudeProject(payload.Prompt, payload.Model, webhookURL,
-			dockerProjectPath, sessionID, endpoint)
+			"/app/project", sessionID, endpoint)
 		if err != nil {
+      fmt.Println(err.Error())
 			database.UpdateProjectStatus(projectID, "idle")
 			SendToUser(projectID, "error")
 			return
 		}
 
+    fmt.Println("creating message")
 		err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 		if err != nil {
 			SendToUser(projectID, "error")
