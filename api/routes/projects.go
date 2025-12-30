@@ -8,8 +8,9 @@ import (
 )
 
 func ProjectsRoutes(app *fiber.App) {
-	app.Post("/admin/rm/docker/:projectID", middleware.Admin, handlers.AdminDeleteDockerProject)
 	app.Get("/admin/projects", middleware.Admin, handlers.AdminGetProjects)
+
+	app.Post("/projects/transfer/:projectID/:email", middleware.User, handlers.TransferProject)
 
 	app.Put("/projects/:projectID", middleware.User, handlers.UpdateProject)
 	app.Delete("/projects/:projectID", middleware.User, handlers.DeleteProject)

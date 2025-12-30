@@ -31,6 +31,8 @@ export default function Project() {
     retry: false,
   });
 
+  console.log(data);
+
   return (
     <div className="h-[100dvh] flex flex-col">
       <ProjectNavbar />
@@ -48,6 +50,7 @@ export default function Project() {
               <Stars status={data?.status} isIframeError={isErrorIframe} />
             )}
 
+            {/*
             {(data?.status == "pending" ||
               data?.status == "idle" ||
               data?.status == "internal_error" ||
@@ -63,17 +66,25 @@ export default function Project() {
                       <iframe
                         key={dataUpdatedAt}
                         className="w-full h-full block"
-                        src={data.domain}
+                        //src={`https://${data.fly_hostname}`}
+                        src="https://e1fb4217-7b30-49a5-9729-8c5f3edaf4e2.fly.dev/"
                       />
                     )}
                   </div>
                 </div>
               )}
+              */}
+
+            <iframe
+              key={dataUpdatedAt}
+              className="w-full h-full block"
+              src={`https://${data?.fly_hostname}`}
+            />
 
             {data?.status == "new_internal_error" && (
               <div className="relative z-10 flex items-center justify-center h-full">
                 <div className="flex gap-[5px] text-center text-muted-foreground">
-                <CloudOffIcon />
+                  <CloudOffIcon />
                   Oops, it looks like the project isn’t online.
                 </div>
               </div>

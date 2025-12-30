@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { useAuthStore } from "@/store/auth";
 import EditProject from "./edit-project";
 import DeleteProject from "./delete-project";
+import SettingsDialog from "./settings-dialog";
 
 export default function ProjectNavbar() {
   const { logout, email } = useAuthStore();
@@ -25,8 +26,7 @@ export default function ProjectNavbar() {
               <ChevronLeft />
             </Button>
           </Link>
-          <EditProject />
-          <DeleteProject />
+          <SettingsDialog />
         </div>
         <div className="flex gap-[10px]">
           <DropdownMenu>

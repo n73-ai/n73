@@ -63,7 +63,7 @@ const StarryBackground = ({
   }, []);
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden">
       <style>{`
         @keyframes twinkle {
           0% {

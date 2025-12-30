@@ -7,6 +7,11 @@ export const editProject = async (projectID: string, name: string) => {
   return response.data;
 };
 
+export const updateProjectOwner = async (projectID: string, newEmailOwner: string) => {
+  const response = await authAxios.post(`/projects/transfer/${projectID}/${newEmailOwner}`);
+  return response.data;
+};
+
 export const deleteProject = async (projectID: string) => {
   const response = await authAxios.delete(`/projects/${projectID}`);
   return response.data;

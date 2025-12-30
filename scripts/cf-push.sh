@@ -6,7 +6,7 @@ if [ "$#" -ne 2 ]; then
 fi
 
 NAME=$1
-PROJECT_PATH=$2 # ./dist
+PROJECT_PATH=$2 
 
 cd $PROJECT_PATH
 npm i

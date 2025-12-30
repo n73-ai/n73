@@ -25,7 +25,7 @@ export default function Navbar() {
             className="flex items-center gap-[10px] text-[25px] font-bold"
           >
             <ZustackLogo size={35} />
-            <span>n73</span>
+            <span>Aurora</span>
           </Link>
         </div>
         {isAuth ? (

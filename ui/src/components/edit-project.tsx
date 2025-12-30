@@ -61,20 +61,11 @@ export default function EditProject() {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Edit Project</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
                 Project name
               </Label>
-              {isError ? (
-                <div className="flex justify-center">
-                  <p>An unexpected error occurred.</p>
-                </div>
-              ) : isLoading ? (
-                <div className="flex justify-center">
-                  <Spinner />
-                </div>
-              ) : (
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -82,7 +73,6 @@ export default function EditProject() {
                   type="text"
                   placeholder="Project name"
                 />
-              )}
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

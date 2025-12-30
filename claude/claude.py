@@ -6,6 +6,7 @@ from system_prompt import SYSTEM_PROMPT
 import zipfile
 import os
 from pathlib import Path
+import subprocess
 
 def zip_directory(folder_path: str | Path, output_zip: str | Path):
     folder_path = Path(folder_path).resolve()
@@ -87,6 +88,11 @@ async def process_message(message, target_url, jwt):
     
     # Handle result messages
     elif message.__class__.__name__ == "ResultMessage":
+        subprocess.run(
+            ["npm", "run", "build"],
+            cwd="/app/project",        
+        )
+
         zip_directory("/app/project", "project.zip")
         
         # Read zip file and encode as base64

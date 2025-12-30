@@ -95,6 +95,7 @@ func CfCreate(slug string) error {
 func CfPush(slug, path string) error {
 	scriptPath := filepath.Join(os.Getenv("ROOT_PATH"), "scripts", "cf-push.sh")
 	cmd := exec.Command(scriptPath, slug, path)
+	fmt.Println("cmd: ", cmd)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s", string(output))

@@ -213,20 +213,19 @@ func CopyProjectToExisitingProject(projectID string) error {
 }
 
 func TryBuildProject(projectPath string) error {
-    cmd := exec.Command("npm", "i")
-    cmd.Dir = projectPath
-    output, err := cmd.CombinedOutput()
-    if err != nil {
-        return fmt.Errorf("npm install failed: %s", string(output))
-    }
+	cmd := exec.Command("npm", "i")
+	cmd.Dir = projectPath
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("npm install failed: %s", string(output))
+	}
 
-    // run build
-    cmd = exec.Command("npm", "run", "build")
-    cmd.Dir = projectPath
-    output, err = cmd.CombinedOutput()
-    if err != nil {
-        return fmt.Errorf("npm build failed: %s", string(output))
-    }
+	cmd = exec.Command("npm", "run", "build")
+	cmd.Dir = projectPath
+	output, err = cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("npm build failed: %s", string(output))
+	}
 
-    return nil
+	return nil
 }

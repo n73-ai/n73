@@ -19,7 +19,7 @@ type Project struct {
 	ErrorMsg  string `json:"error_msg"`
 	CreatedAt string `json:"created_at"`
 
-  FlyHostname string `json:"fly_hostname"`
+	FlyHostname string `json:"fly_hostname"`
 }
 
 func GetProjects() ([]Project, error) {
@@ -179,6 +179,20 @@ func UpdateProjectSessionID(projectID, sessionID string) error {
 		UPDATE projects SET session_id = $1 WHERE id = $2;`,
 		sessionID, projectID)
 
+	return err
+}
+
+func UpdateProjectOwner(projectID, userID string) error {
+	result, err := DB.Exec(`
+		UPDATE projects SET user_id = $1 WHERE id = $2;`,
+		userID, projectID)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("No project found with the id %v", projectID)
+	}
 	return err
 }
 

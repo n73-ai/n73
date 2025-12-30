@@ -200,22 +200,11 @@ export default function ChatFeed({ p }: { p: any }) {
         {data?.map((m: Message, i: number) => (
           <div key={i}>
             {m.role === "user" ? (
-              <>
-                <div className="flex justify-end pb-[30px]">
-                  <div className="bg-secondary/60 w-[75%] px-[15px] py-[10px] rounded-md">
-                    <p>{m.content}</p>
-                  </div>
+              <div className="flex justify-end pb-[30px]">
+                <div className="bg-secondary/60 w-[75%] px-[15px] py-[10px] rounded-md">
+                  <p>{m.content}</p>
                 </div>
-
-                <div className="flex flex-col gap-[10px] py-[20px]">
-                  <div className="flex items-center gap-5">
-                    <ZustackLogo size={35} />
-                    <p className="text-xl font-semibold text-secondary-foreground">
-                      n73
-                    </p>
-                  </div>
-                </div>
-              </>
+              </div>
             ) : (
               <>
                 <div className="py-[5px]">
@@ -297,7 +286,7 @@ export default function ChatFeed({ p }: { p: any }) {
             onKeyDown={handleKeyDown}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Reply to n73..."
+            placeholder="Ask Aurora..."
             className="resize-none"
           />
 

@@ -1,9 +1,10 @@
 #!/bin/bash
 
-mv .claude /root
-mv .claude.json /root
-mv .claude.json.backup /root
+mkdir /root/.claude
+cp .credentials.json /root/.claude/.credentials.json
 
-python keep_alive.py &
+python main.py &
 
-python main.py
+npm --prefix /app/project install
+npm --prefix /app/project run dev
+

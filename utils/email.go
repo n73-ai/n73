@@ -34,11 +34,17 @@ func SendEmail(token string, email string, subject string) error {
 		return fmt.Errorf("Error to execute template: %w.", err)
 	}
 
-	emailContent := fmt.Sprintf("To: %s\r\n"+
-		"Subject: %s\r\n"+
-		"Content-Type: text/html; charset=utf-8\r\n"+
-		"\r\n"+
-		"%s", email, subject, bodyContent.String())
+	from := "agustfricke@gmail.com"
+	emailContent := fmt.Sprintf(
+		"From: %s\r\n"+
+			"To: %s\r\n"+
+			"Subject: %s\r\n"+
+			"Content-Type: text/html; charset=utf-8\r\n\r\n%s",
+		from, // <---- ESTE CAMPO ES CLAVE
+		email,
+		subject,
+		bodyContent.String(),
+	)
 
 	if err := smtp.SendMail(
 		"smtp.gmail.com:587",

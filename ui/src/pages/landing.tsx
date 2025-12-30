@@ -95,7 +95,7 @@ export default function Landing() {
                 onKeyDown={handleKeyDown}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Ask n73 to build something cool"
+                placeholder="Ask Aurora to build..."
               />
             </div>
             <div className="flex justify-end gap-[10px] pt-[10px]">

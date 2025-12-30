@@ -7,22 +7,22 @@ import (
 )
 
 func DeleteApp(projectID string) error {
-  cmd := exec.Command("fly", "apps", "destroy", projectID, "-y")
+	cmd := exec.Command("fly", "apps", "destroy", projectID, "-y")
 
-  stdout, _ := cmd.StdoutPipe()
-  stderr, _ := cmd.StderrPipe()
+	stdout, _ := cmd.StdoutPipe()
+	stderr, _ := cmd.StderrPipe()
 
-  if err := cmd.Start(); err != nil {
-    return fmt.Errorf("failed to start command: %w", err)
-  }
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start command: %w", err)
+	}
 
-  outBytes, _ := io.ReadAll(stdout)
-  errBytes, _ := io.ReadAll(stderr)
+	outBytes, _ := io.ReadAll(stdout)
+	errBytes, _ := io.ReadAll(stderr)
 
-  if err := cmd.Wait(); err != nil {
-    return fmt.Errorf("command failed: %w\nstdout: %s\nstderr: %s",
-    err, outBytes, errBytes)
-  }
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("command failed: %w\nstdout: %s\nstderr: %s",
+			err, outBytes, errBytes)
+	}
 
-  return nil
+	return nil
 }

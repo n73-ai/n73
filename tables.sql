@@ -17,14 +17,12 @@ CREATE TABLE projects (
     name TEXT NOT NULL,
     slug TEXT NOT NULL UNIQUE,
     domain VARCHAR(255) DEFAULT '',
+    dev_domain VARCHAR(255) DEFAULT '',
     gh_repo VARCHAR(255) DEFAULT '',
     status VARCHAR(255) DEFAULT '',
-    -- port INTEGER DEFAULT 0,
     error_msg TEXT DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     fly_hostname VARCHAR(255) DEFAULT '',
-
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

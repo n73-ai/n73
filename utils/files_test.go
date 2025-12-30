@@ -6,8 +6,8 @@ import (
 )
 
 func TestUnzip(t *testing.T) {
-  err := utils.Unzip("/home/agust/some.zip", "/home/agust/personal")
-  if err != nil {
-    t.Errorf(err.Error())
-  }
+	err := utils.Unzip("/home/agust/some.zip", "/home/agust/personal")
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
