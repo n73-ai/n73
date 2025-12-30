@@ -181,7 +181,6 @@ docker run --name n73-database \
   -d postgres
 
 docker exec -it n73-database psql -U postgres -d mydb
-http://localhost:5173/verify/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFndXN0ZnJpY2tlQGdtYWlsLmNvbSIsImV4cCI6MTc2NjA2OTQ3MywiaWF0IjoxNzY2MDY4NTczLCJuYmYiOjE3NjYwNjg1NzN9.iiarveKdbE8xDKadITQgDT_Os4Cz4YJbLqbVy94mDdQ
 
 # or
 
