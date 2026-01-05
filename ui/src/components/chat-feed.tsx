@@ -30,7 +30,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Textarea } from "./ui/textarea";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
+import { Separator } from "./ui/separator";
 
 const models = [
   { name: "Claude Sonnet 4.5", apiName: "claude-sonnet-4-5-20250929" },
@@ -44,6 +50,7 @@ export default function ChatFeed({ p }: { p: any }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
+  const [stack, setStack] = useState("UI Only");
 
   const { model, setModel } = useModelStore();
 
@@ -234,7 +241,7 @@ export default function ChatFeed({ p }: { p: any }) {
 
         {(p.status == "new_pending" || p.status == "pending" || isLoading) && (
           <div className="flex items-center gap-2 text-muted-foreground pb-[20px]">
-            <Spinner /> Loading...
+            <Spinner /> Loading . . .
           </div>
         )}
 
@@ -280,63 +287,111 @@ export default function ChatFeed({ p }: { p: any }) {
       <div>
         <form
           onSubmit={handleSubmitResumeProject}
-          className="w-full space-y-[10px] p-[10px] bg-secondary/50"
+          className="w-full space-y-[10px] p-[10px]"
         >
-          <Textarea
-            onKeyDown={handleKeyDown}
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Ask Aurora..."
-            className="resize-none"
-          />
+          <InputGroup>
+            <InputGroupTextarea
+              onKeyDown={handleKeyDown}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Ask n73 to build . . ."
+            />
+            <InputGroupAddon align="block-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <InputGroupButton variant="ghost">
+                    {stack}
+                    <ChevronDown />
+                  </InputGroupButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="bottom"
+                  align="start"
+                  className="[--radius:0.95rem]"
+                >
+                  <DropdownMenuItem
+                    onClick={() => setStack("UI Only")}
+                    className={stack === "UI Only" ? "bg-accent" : ""}
+                  >
+                    UI Only
+                  </DropdownMenuItem>
 
-          <div className="flex justify-end gap-[5px]">
-            <a
-              className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
-              href={p?.domain}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <LinkIcon />
-            </a>
+                  <DropdownMenuItem
+                    onClick={() => setStack("Full Stack")}
+                    className={stack === "Full Stack" ? "bg-accent" : ""}
+                  >
+                    Full Stack
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-            {p?.gh_repo != "" && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <InputGroupButton variant="ghost">
+                    {selectedModel.name}
+                    <ChevronDown />
+                  </InputGroupButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="bottom"
+                  align="start"
+                  className="[--radius:0.95rem]"
+                >
+                  {models.map((model) => (
+                    <DropdownMenuItem
+                      key={model.apiName}
+                      onClick={() => handleModelSelect(model)}
+                      className={
+                        selectedModel.apiName === model.apiName
+                          ? "bg-accent"
+                          : ""
+                      }
+                    >
+                      {model.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <a
-                className="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[33px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50"
-                href={p.gh_repo}
+                href={`https://${p?.fly_hostname}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="ml-auto"
               >
-                <GithubIcon />
+                <InputGroupButton
+                  variant="outline"
+                  className="rounded-md"
+                  size="icon-sm"
+                >
+                  <LinkIcon />
+                </InputGroupButton>
               </a>
-            )}
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex gap-[5px]">
-                  {selectedModel.name}
-                  <ChevronDown />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {models.map((model) => (
-                  <DropdownMenuItem
-                    key={model.apiName}
-                    onClick={() => handleModelSelect(model)}
-                    className={
-                      selectedModel.apiName === model.apiName ? "bg-accent" : ""
-                    }
+              {p?.gh_repo != "" && (
+                <a href={p.gh_repo} target="_blank" rel="noopener noreferrer">
+                  <InputGroupButton
+                    size="icon-sm"
+                    variant="outline"
+                    className="rounded-md"
                   >
-                    {model.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button type="submit" variant="outline">
-              <span>Send</span>
-              {resumeProjectMutation.isPending ? <Spinner /> : <Send />}
-            </Button>
-          </div>
+                    <GithubIcon />
+                  </InputGroupButton>
+                </a>
+              )}
+
+              <Separator orientation="vertical" className="!h-4" />
+              <InputGroupButton
+                variant="outline"
+                className="rounded-md"
+                size="icon-sm"
+                type="submit"
+              >
+                {resumeProjectMutation.isPending ? <Spinner /> : <Send />}
+                <span className="sr-only">Send</span>
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
         </form>
       </div>
     </div>

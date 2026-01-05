@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -39,7 +40,7 @@ func TransferProject(c *fiber.Ctx) error {
 		})
 	}
 
-	return nil
+	return c.SendStatus(200)
 }
 
 func AdminGetProjects(c *fiber.Ctx) error {
@@ -220,7 +221,7 @@ func CreateProject(c *fiber.Ctx) error {
 	payload.Name = "project-" + projectID
 	messageID := uuid.NewString()
 	webhookURL := fmt.Sprintf("%s/webhook/messages/%s/%s", os.Getenv("DOMAIN"), projectID, payload.Model)
-	dockerProjectPath := filepath.Join("/app", "project")
+	projectPath := filepath.Join("/app", "ui-only")
 
 	slug := strings.ToLower(strings.ReplaceAll(payload.Name, " ", "-"))
 
@@ -268,8 +269,8 @@ func CreateProject(c *fiber.Ctx) error {
 
 		endpoint := fmt.Sprintf("http://%s.internal:5000/claude/new", projectID)
 
-		// time.Sleep(2 * time.Minute)
-		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, dockerProjectPath, endpoint)
+		time.Sleep(10 * time.Second)
+		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, projectPath, endpoint)
 		if err != nil {
 			fmt.Println(err.Error())
 			return

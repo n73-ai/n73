@@ -17,9 +17,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth";
 import { useModelStore } from "@/store/models";
-import { Textarea } from "@/components/ui/textarea";
 import LatestProjects from "@/components/latest_projects";
 import { usePromptStore } from "@/store/prompt";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
 
 const models = [
   { name: "Claude Sonnet 4.5", apiName: "claude-sonnet-4-5-20250929" },
@@ -32,6 +37,7 @@ export default function Landing() {
   const [name, _] = useState("");
   const navigate = useNavigate();
   const { model, setModel } = useModelStore();
+  const [stack, setStack] = useState("UI Only");
 
   const handleModelSelect = (modelObj: (typeof models)[0]) => {
     setModel(modelObj.apiName);
@@ -40,7 +46,7 @@ export default function Landing() {
   const selectedModel = models.find((m) => m.apiName === model) || models[0];
 
   const { isAuth } = useAuthStore();
-  const { prompt, setPrompt } = usePromptStore()
+  const { prompt, setPrompt } = usePromptStore();
 
   const createProjectMut = useMutation({
     mutationFn: () => createProject(prompt, name, selectedModel.apiName),
@@ -58,8 +64,8 @@ export default function Landing() {
       return;
     }
     if (!isAuth) {
-      navigate("/login")
-      return
+      navigate("/login");
+      return;
     }
     createProjectMut.mutate();
   };
@@ -83,50 +89,85 @@ export default function Landing() {
           <div className="hidden lg:block">
             <ZustackLogo size={50} />
           </div>
-          <h5 className="text-4xl font-extrabold">
-            Build. Preview. Ship 
-          </h5>
+          <h5 className="text-4xl font-extrabold">Build. Preview. Ship</h5>
         </div>
 
         <div className="flex justify-center">
           <form onSubmit={handleCreateProject} className="w-[700px]">
-            <div className="flex flex-col gap-[10px]">
-              <Textarea
+            <InputGroup>
+              <InputGroupTextarea
                 onKeyDown={handleKeyDown}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Ask Aurora to build..."
+                placeholder="Ask n73 to build . . ."
               />
-            </div>
-            <div className="flex justify-end gap-[10px] pt-[10px]">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex gap-[5px]">
-                    {selectedModel.name}
-                    <ChevronDown />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {models.map((model) => (
+              <InputGroupAddon align="block-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <InputGroupButton variant="ghost">
+                      {stack}
+                      <ChevronDown />
+                    </InputGroupButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="bottom"
+                    align="start"
+                    className="[--radius:0.95rem]"
+                  >
                     <DropdownMenuItem
-                      key={model.apiName}
-                      onClick={() => handleModelSelect(model)}
-                      className={
-                        selectedModel.apiName === model.apiName
-                          ? "bg-accent"
-                          : ""
-                      }
+                      onClick={() => setStack("UI Only")}
+                      className={stack === "UI Only" ? "bg-accent" : ""}
                     >
-                      {model.name}
+                      UI Only
                     </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button type="submit" variant="outline">
-                <span>Send</span>
-                {createProjectMut.isPending ? <Spinner /> : <Send />}
-              </Button>
-            </div>
+
+                    <DropdownMenuItem
+                      onClick={() => setStack("Full Stack")}
+                      className={stack === "Full Stack" ? "bg-accent" : ""}
+                    >
+                      Full Stack
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <InputGroupButton variant="ghost">
+                      {selectedModel.name}
+                      <ChevronDown />
+                    </InputGroupButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="bottom"
+                    align="start"
+                    className="[--radius:0.95rem]"
+                  >
+                    {models.map((model) => (
+                      <DropdownMenuItem
+                        key={model.apiName}
+                        onClick={() => handleModelSelect(model)}
+                        className={
+                          selectedModel.apiName === model.apiName
+                            ? "bg-accent"
+                            : ""
+                        }
+                      >
+                        {model.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <InputGroupButton
+                  variant="outline"
+                  className="rounded-md ml-auto"
+                  size="icon-sm"
+                  type="submit"
+                >
+                  {createProjectMut.isPending ? <Spinner /> : <Send />}
+                  <span className="sr-only">Send</span>
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
           </form>
         </div>
       </div>

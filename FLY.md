@@ -40,7 +40,7 @@ fly volumes create go_data --size 5 --region arn --app n73-app
 
 create the fly token:
 ```bash
-fly tokens create org --name "n73-app" --expiry 168h
+fly tokens create org --name "x73" --expiry 720h
 ```
 
 add the require enviroment variables

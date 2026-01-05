@@ -5,6 +5,6 @@ cp .credentials.json /root/.claude/.credentials.json
 
 python main.py &
 
-npm --prefix /app/project install
-npm --prefix /app/project run dev
+npm --prefix /app/ui-only install
+npm --prefix /app/ui-only run dev
 

@@ -15,10 +15,8 @@ type Project struct {
 	Domain    string `json:"domain"`
 	GhRepo    string `json:"gh_repo"`
 	Status    string `json:"status"`
-	// Port      int    `json:"port"`
 	ErrorMsg  string `json:"error_msg"`
 	CreatedAt string `json:"created_at"`
-
 	FlyHostname string `json:"fly_hostname"`
 }
 

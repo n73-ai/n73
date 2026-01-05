@@ -1,8 +1,13 @@
 # todos
 
 ### features 
-- [ ] create tokens for long period(fly, cloudflare, github)
+- [ ] add backend
 - [ ] publish btn feature 
+    - push frontend code to cloudflare
+    - create new fly machine, database, etc for backend
+- [ ] add own api key
+- [ ] opencode instead of claude code
+- [ ] create tokens for long period(fly, cloudflare, github)
 - [ ] upload images
 - [ ] better ui
     "https://reactbits.dev/get-started/index"

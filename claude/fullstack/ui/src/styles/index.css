@@ -189,12 +189,3 @@ div.spinner div.bar8 {
   transform: rotate(315deg) translate(0, -130%);
   animation-delay: -0.125s;
 }
-
-html, body {
-  scrollbar-width: thin;
-}
-
-body::-webkit-scrollbar {
-  width: 6px;
-}
-
