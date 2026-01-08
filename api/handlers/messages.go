@@ -70,8 +70,8 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 			// === HANDLE BASE64 ZIP FILE ===
 			if payload.File == "" {
-			  database.CreateLog("projects", projectID, "missing base64 zip file")
-        return
+				database.CreateLog("projects", projectID, "missing base64 zip file")
+				return
 			}
 
 			var base64Data string
@@ -80,8 +80,8 @@ func WebhookMessage(c *fiber.Ctx) error {
 			if strings.Contains(payload.File, "data:") {
 				parts := strings.SplitN(payload.File, ",", 2)
 				if len(parts) < 2 {
-			    database.CreateLog("projects", projectID, "Invalid data URL format")
-          return
+					database.CreateLog("projects", projectID, "Invalid data URL format")
+					return
 				}
 				base64Data = parts[1]
 			} else {
@@ -92,7 +92,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 			zipData, err := base64.StdEncoding.DecodeString(base64Data)
 			if err != nil {
 				database.CreateLog("projects", projectID, "Base64 decode error: "+err.Error())
-				return 
+				return
 			}
 
 			// Create temp zip file
@@ -100,7 +100,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 			err = os.WriteFile(tempZipPath, zipData, 0644)
 			if err != nil {
 				database.CreateLog("projects", projectID, "Failed to write zip file: "+err.Error())
-				return 
+				return
 			}
 			defer os.Remove(tempZipPath) // Clean up after
 
@@ -109,7 +109,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 			err = utils.Unzip(tempZipPath, repositoriesPath)
 			if err != nil {
 				database.CreateLog("projects", projectID, "Unzip failed: "+err.Error())
-				return 
+				return
 			}
 
 			projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
@@ -119,11 +119,11 @@ func WebhookMessage(c *fiber.Ctx) error {
 				database.CreateLog("GitHub push error", project.ID, err.Error())
 			}
 
-      // delete the directory to free disk
-      err = utils.DeleteProjectDirectory(projectPath)
-      if err != nil {
+			// delete the directory to free disk
+			err = utils.DeleteProjectDirectory(projectPath)
+			if err != nil {
 				database.CreateLog("Delete Project Directory error", project.ID, err.Error())
-      }
+			}
 
 		}()
 

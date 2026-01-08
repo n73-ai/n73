@@ -8,7 +8,7 @@ import (
 )
 
 func ProjectsRoutes(app *fiber.App) {
-  app.Post("/projects/publish/:projectID", middleware.User, handlers.PublishProject)
+	app.Post("/projects/publish/:projectID", middleware.User, handlers.PublishProject)
 	app.Get("/admin/projects", middleware.Admin, handlers.AdminGetProjects)
 	app.Post("/projects/transfer/:projectID/:email", middleware.User, handlers.TransferProject)
 	app.Put("/projects/:projectID", middleware.User, handlers.UpdateProject)

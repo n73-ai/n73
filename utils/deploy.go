@@ -102,19 +102,19 @@ func CfCreate(slug string) error {
 }
 
 func NpmRunBuild(path string) error {
-  installCmd := exec.Command("npm", "install")
-  installCmd.Dir = path
-  if err := installCmd.Run(); err != nil {
-    return fmt.Errorf("npm install failed: %w", err)
-  }
+	installCmd := exec.Command("npm", "install")
+	installCmd.Dir = path
+	if err := installCmd.Run(); err != nil {
+		return fmt.Errorf("npm install failed: %w", err)
+	}
 
-  buildCmd := exec.Command("npm", "run", "build")
-  buildCmd.Dir = path
-  if err := buildCmd.Run(); err != nil {
-      return fmt.Errorf("npm run build failed: %w", err)
-  }
+	buildCmd := exec.Command("npm", "run", "build")
+	buildCmd.Dir = path
+	if err := buildCmd.Run(); err != nil {
+		return fmt.Errorf("npm run build failed: %w", err)
+	}
 
-  return nil
+	return nil
 }
 
 func CfPush(slug, path string) error {
@@ -122,14 +122,14 @@ func CfPush(slug, path string) error {
 	cmd := exec.Command(scriptPath, slug, path)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-    fmt.Println(err.Error())
+		fmt.Println(err.Error())
 		return fmt.Errorf("%s", string(output))
 	}
 	return nil
 }
 
 func GhClone(repo, path, projectID string) error {
-  projectPath := filepath.Join(path, projectID)
+	projectPath := filepath.Join(path, projectID)
 	if _, err := os.Stat(projectPath); err == nil {
 		if err := os.RemoveAll(projectPath); err != nil {
 			return fmt.Errorf("no se pudo eliminar el directorio existente: %w", err)
@@ -138,7 +138,7 @@ func GhClone(repo, path, projectID string) error {
 
 	scriptPath := filepath.Join(os.Getenv("ROOT_PATH"), "scripts", "gh-clone.sh")
 	cmd := exec.Command(scriptPath, repo, path, projectID)
-  fmt.Println("gh clone cmd: ", cmd)
+	fmt.Println("gh clone cmd: ", cmd)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s", string(output))

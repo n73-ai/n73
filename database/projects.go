@@ -7,16 +7,16 @@ import (
 )
 
 type Project struct {
-	ID        string `json:"id"`
-	UserID    string `json:"user_id"`
-	SessionID string `json:"session_id"`
-	Name      string `json:"name"`
-	Slug      string `json:"slug"`
-	Domain    string `json:"domain"`
-	GhRepo    string `json:"gh_repo"`
-	Status    string `json:"status"`
-	ErrorMsg  string `json:"error_msg"`
-	CreatedAt string `json:"created_at"`
+	ID          string `json:"id"`
+	UserID      string `json:"user_id"`
+	SessionID   string `json:"session_id"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Domain      string `json:"domain"`
+	GhRepo      string `json:"gh_repo"`
+	Status      string `json:"status"`
+	ErrorMsg    string `json:"error_msg"`
+	CreatedAt   string `json:"created_at"`
 	FlyHostname string `json:"fly_hostname"`
 }
 

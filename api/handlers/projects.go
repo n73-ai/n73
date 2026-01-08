@@ -14,17 +14,16 @@ import (
 	"github.com/google/uuid"
 )
 
-
 func PublishProject(c *fiber.Ctx) error {
 	user := c.Locals("user").(*database.User)
 	projectID := c.Params("projectID")
 
 	project, err := database.GetProjectByID(projectID)
-  if err != nil {
+	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
+	}
 
 	if project.UserID != user.ID {
 		return c.Status(403).JSON(fiber.Map{
@@ -34,22 +33,22 @@ func PublishProject(c *fiber.Ctx) error {
 
 	slug := strings.ToLower(strings.ReplaceAll(project.Name, " ", "-"))
 
-  cloudflareProjectName := fmt.Sprintf("project-%s", projectID)
-  exists, err := utils.PageExists(cloudflareProjectName)
+	cloudflareProjectName := fmt.Sprintf("project-%s", projectID)
+	exists, err := utils.PageExists(cloudflareProjectName)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-  if !exists {
-    err = utils.CfCreate(slug)
-    if err != nil {
-      return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-      })
-    }
-  }
+	if !exists {
+		err = utils.CfCreate(slug)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+	}
 
 	domain, err := utils.GetProjectDomainFallback(slug)
 	if err != nil {
@@ -65,23 +64,23 @@ func PublishProject(c *fiber.Ctx) error {
 		})
 	}
 
-  projectsDir := filepath.Join(os.Getenv("ROOT_PATH"), "projects")
+	projectsDir := filepath.Join(os.Getenv("ROOT_PATH"), "projects")
 	err = utils.GhClone(project.GhRepo, projectsDir, project.ID)
 	if err != nil {
-    fmt.Println("gh error:", err.Error())
+		fmt.Println("gh error:", err.Error())
 		return c.Status(500).JSON(fiber.Map{
 			"error": "GitHub clone error",
 		})
 	}
 
-  projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
+	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
 
 	err = utils.NpmRunBuild(projectPath)
-  if err != nil {
+	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "npm run build err",
 		})
-  }
+	}
 
 	err = utils.CfPush(project.Slug, projectPath)
 	if err != nil {
@@ -90,15 +89,15 @@ func PublishProject(c *fiber.Ctx) error {
 		})
 	}
 
-  // delete the directory to free disk
-  err = utils.DeleteProjectDirectory(projectPath)
-  if err != nil {
+	// delete the directory to free disk
+	err = utils.DeleteProjectDirectory(projectPath)
+	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
+	}
 
-  return c.SendStatus(200)
+	return c.SendStatus(200)
 }
 
 func TransferProject(c *fiber.Ctx) error {
@@ -114,11 +113,11 @@ func TransferProject(c *fiber.Ctx) error {
 	}
 
 	project, err := database.GetProjectByID(projectID)
-  if err != nil {
+	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
-  }
+	}
 
 	if project.UserID != user.ID {
 		return c.Status(403).JSON(fiber.Map{
@@ -469,12 +468,12 @@ func ResumeProject(c *fiber.Ctx) error {
 		sessionID := project.SessionID
 
 		err = utils.ResumeClaudeProject(
-      payload.Prompt, 
-      payload.Model, 
-      webhookURL,
-			"/app/ui-only", 
-      sessionID, 
-      endpoint)
+			payload.Prompt,
+			payload.Model,
+			webhookURL,
+			"/app/ui-only",
+			sessionID,
+			endpoint)
 		if err != nil {
 			database.UpdateProjectStatus(projectID, "idle")
 			SendToUser(projectID, "error")
