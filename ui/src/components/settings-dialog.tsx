@@ -60,7 +60,6 @@ export default function SettingsDialog() {
     onSuccess: () => {
       setIsOpen(false);
       navigate("/");
-// http://localhost:5173/verify/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFndXN0ZnJpY2tlQHByb3Rvbm1haWwuY29tIiwiZXhwIjoxNzY1MjEzMTA5LCJpYXQiOjE3NjUyMTIyMDksIm5iZiI6MTc2NTIxMjIwOX0.SzNXk0xehMMahD3NC1s_CH3v1ONNR_9M_e_stcvvtqw
     },
     onError: (error: ErrorResponse) => {
       toast.error(error.response.data.error || "An unexpected error occurred.");
@@ -153,7 +152,7 @@ export default function SettingsDialog() {
                 onChange={(e) => setOwner(e.target.value)}
                 id="name"
                 type="text"
-                placeholder="agustfricke@gmail.com"
+                placeholder="name@domain.com"
               />
               <div className="flex justify-end">
                 <Button
@@ -195,8 +194,12 @@ export default function SettingsDialog() {
                   window.open(data?.domain, "_blank");
                 }}
               >
-                {data?.domain}
-                <SquareArrowOutUpRightIcon />
+                {data?.domain && (
+                  <>
+                  <span>{data.domain}</span>
+                  <SquareArrowOutUpRightIcon />
+                  </>
+                )}
               </Button>
             </div>
 

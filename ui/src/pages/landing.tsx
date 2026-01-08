@@ -122,10 +122,14 @@ export default function Landing() {
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
-                      onClick={() => setStack("Full Stack")}
-                      className={stack === "Full Stack" ? "bg-accent" : ""}
+                      onClick={() => setStack("Landing Page + Email Contact")}
+                      className={
+                        stack === "Landing Page + Email Contact"
+                          ? "bg-accent"
+                          : ""
+                      }
                     >
-                      Full Stack
+                      Landing Page + Email Contact
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

@@ -1,5 +1,10 @@
 import { authAxios, noAuthAxios } from "@/lib/axios-instance";
 
+export const publishProject = async (projectID: string) => {
+  const response = await authAxios.post(`/projects/publish/${projectID}`);
+  return response.data;
+};
+
 export const editProject = async (projectID: string, name: string) => {
   const response = await authAxios.put(`/projects/${projectID}`, {
     name,

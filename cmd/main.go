@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 )
 
 func main() {
@@ -39,17 +38,6 @@ func main() {
 		fmt.Printf("DB connection error: %v.", err)
 		os.Exit(1)
 	}
-
-	go func() {
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-		for range ticker.C {
-			fmt.Println("running the docker commit")
-			if err := utils.RefreshCommit(); err != nil {
-				fmt.Printf("Refresh Commit error: %v\n", err)
-			}
-		}
-	}()
 
 	app := api.RunServer()
 	port := fmt.Sprintf(":%v", os.Getenv("PORT"))

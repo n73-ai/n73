@@ -9,6 +9,53 @@ import (
 	"strings"
 )
 
+func DeleteProjectDirectory(path string) error {
+	root := os.Getenv("ROOT_PATH")
+	if root == "" {
+		return fmt.Errorf("ROOT_PATH environment variable is not set")
+	}
+
+	// Resolve absolute paths and clean ., .., etc.
+	rootAbs, err := filepath.Abs(root)
+	if err != nil {
+		return fmt.Errorf("failed to resolve ROOT_PATH: %w", err)
+	}
+
+	targetAbs, err := filepath.Abs(path)
+	if err != nil {
+		return fmt.Errorf("failed to resolve target path: %w", err)
+	}
+
+	projectsRoot := filepath.Join(rootAbs, "projects")
+
+	// 1. Must be inside $ROOT_PATH/projects
+	if !strings.HasPrefix(targetAbs, projectsRoot+string(os.PathSeparator)) {
+		return fmt.Errorf("path is not under allowed directory: %s", targetAbs)
+	}
+
+	// 2. Must be exactly one level below /projects
+	rel, err := filepath.Rel(projectsRoot, targetAbs)
+	if err != nil {
+		return fmt.Errorf("failed to compute relative path: %w", err)
+	}
+
+	if rel == "." || strings.Contains(rel, string(os.PathSeparator)) {
+		return fmt.Errorf("only /projects/{project} can be deleted, not: %s", targetAbs)
+	}
+
+	// 3. Extra safety: disallow symlinks
+	info, err := os.Lstat(targetAbs)
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("refusing to delete symlink")
+	}
+
+	// 4. Delete
+	return os.RemoveAll(targetAbs)
+}
+
 // Unzip extracts src zip file into dest directory.
 // It prevents ZipSlip by ensuring each target path is within dest.
 func Unzip(src string, dest string) error {

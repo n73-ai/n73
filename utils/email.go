@@ -12,7 +12,7 @@ func SendEmail(token string, email string, subject string) error {
 	secretPassword := os.Getenv("EMAIL_SECRET_KEY")
 	auth := smtp.PlainAuth(
 		"",
-		"agustfricke@gmail.com",
+		"agustfricke@gmail.com", // needs to be the gmail address for correct authentication
 		secretPassword,
 		"smtp.gmail.com",
 	)
@@ -34,13 +34,13 @@ func SendEmail(token string, email string, subject string) error {
 		return fmt.Errorf("Error to execute template: %w.", err)
 	}
 
-	from := "agustfricke@gmail.com"
+	from := "hej@agustfricke.com"
 	emailContent := fmt.Sprintf(
 		"From: %s\r\n"+
 			"To: %s\r\n"+
 			"Subject: %s\r\n"+
 			"Content-Type: text/html; charset=utf-8\r\n\r\n%s",
-		from, // <---- ESTE CAMPO ES CLAVE
+		from, // <---- any address on my gmail account
 		email,
 		subject,
 		bodyContent.String(),

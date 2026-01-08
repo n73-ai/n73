@@ -2,7 +2,7 @@ from claude_code_sdk import query, ClaudeCodeOptions
 import requests
 import asyncio
 import os
-from system_prompt import SYSTEM_PROMPT
+from system_prompt import SYSTEM_PROMPT, ASTRO_SYSTEM_PROMPT
 import zipfile
 import os
 from pathlib import Path
@@ -107,6 +107,7 @@ async def process_message(message, target_url, jwt):
 
 
 async def NewProject(prompt: str, model: str, workDir: str, target_url: str, jwt: str):
+    """if project_type == react; do SYSTEM_PROMPT; if go-astro do ASTRO_SYSYEM_PROMPT"""
     options = ClaudeCodeOptions(
         max_turns=50,
         model=model,

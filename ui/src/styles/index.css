@@ -190,11 +190,11 @@ div.spinner div.bar8 {
   animation-delay: -0.125s;
 }
 
-html, body {
+* {
   scrollbar-width: thin;
 }
 
-body::-webkit-scrollbar {
+* ::-webkit-scrollbar {
   width: 6px;
 }
 

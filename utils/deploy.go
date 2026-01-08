@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -49,19 +50,6 @@ func DeleteCfPage(projectID string) error {
 	return nil
 }
 
-/*
-// remove this function and test if it works
-func DeleteRemote(projectID string) error {
-	scriptPath := filepath.Join(os.Getenv("ROOT_PATH"), "scripts", "delete-remote.sh")
-	cmd := exec.Command(scriptPath, projectID)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s", string(output))
-	}
-	return nil
-}
-*/
-
 func GhCreate(slug, projectPath string) error {
 	scriptPath := filepath.Join(os.Getenv("ROOT_PATH"), "scripts", "gh-create.sh")
 	cmd := exec.Command(scriptPath, slug, projectPath)
@@ -82,6 +70,27 @@ func GhPush(path string) error {
 	return nil
 }
 
+func PageExists(projectName string) (bool, error) {
+	cmd := exec.Command("wrangler", "pages", "project", "list")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	if err := cmd.Run(); err != nil {
+		return false, fmt.Errorf("error exec wrangler: %s", out.String())
+	}
+
+	output := out.String()
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, projectName) {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func CfCreate(slug string) error {
 	scriptPath := filepath.Join(os.Getenv("ROOT_PATH"), "scripts", "cf-create.sh")
 	cmd := exec.Command(scriptPath, slug)
@@ -92,10 +101,44 @@ func CfCreate(slug string) error {
 	return nil
 }
 
+func NpmRunBuild(path string) error {
+  installCmd := exec.Command("npm", "install")
+  installCmd.Dir = path
+  if err := installCmd.Run(); err != nil {
+    return fmt.Errorf("npm install failed: %w", err)
+  }
+
+  buildCmd := exec.Command("npm", "run", "build")
+  buildCmd.Dir = path
+  if err := buildCmd.Run(); err != nil {
+      return fmt.Errorf("npm run build failed: %w", err)
+  }
+
+  return nil
+}
+
 func CfPush(slug, path string) error {
 	scriptPath := filepath.Join(os.Getenv("ROOT_PATH"), "scripts", "cf-push.sh")
 	cmd := exec.Command(scriptPath, slug, path)
-	fmt.Println("cmd: ", cmd)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+    fmt.Println(err.Error())
+		return fmt.Errorf("%s", string(output))
+	}
+	return nil
+}
+
+func GhClone(repo, path, projectID string) error {
+  projectPath := filepath.Join(path, projectID)
+	if _, err := os.Stat(projectPath); err == nil {
+		if err := os.RemoveAll(projectPath); err != nil {
+			return fmt.Errorf("no se pudo eliminar el directorio existente: %w", err)
+		}
+	}
+
+	scriptPath := filepath.Join(os.Getenv("ROOT_PATH"), "scripts", "gh-clone.sh")
+	cmd := exec.Command(scriptPath, repo, path, projectID)
+  fmt.Println("gh clone cmd: ", cmd)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s", string(output))

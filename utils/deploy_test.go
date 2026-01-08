@@ -2,25 +2,20 @@ package utils_test
 
 import (
 	"ai-zustack/utils"
+	"fmt"
 	"testing"
 )
 
-func TestDeleteGhRepo(t *testing.T) {
-	t.Run("delete remote github repository", func(t *testing.T) {
-		projectID := "7504268a-69df-413e-baac-1d13158fd3cb"
-		err := utils.DeleteGhRepo(projectID)
-		if err != nil {
-			t.Errorf("DeleteGhRepo() faild because of: %v", err.Error())
-		}
-	})
-}
+func TestPageExist(t *testing.T) {
+  cloudflarePageName := "project-8cf17d28-c45d-40df-9a24-bcb0967bc363"
+  exist, err := utils.PageExists(cloudflarePageName)
+  if err != nil {
+		t.Errorf(err.Error())
+  }
+  if exist {
+    fmt.Println("page exist")
+  } else {
+    fmt.Println("page do not exist")
+  }
 
-func TestDeleteCfPage(t *testing.T) {
-	t.Run("delete remote cloudflare page", func(t *testing.T) {
-		projectID := "7504268a-69df-413e-baac-1d13158fd3cb"
-		err := utils.DeleteCfPage(projectID)
-		if err != nil {
-			t.Errorf("DeleteGhRepo() faild because of: %v", err.Error())
-		}
-	})
 }

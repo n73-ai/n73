@@ -1,8 +1,19 @@
 # todos
 
+### deploy to bunny.net
+get api key
+https://dash.bunny.net/account/api-key
+- [ ] create storage zone "https://docs.bunny.net/reference/storagezonepublic_add"
+- [ ] upload files to storage zone "https://docs.bunny.net/reference/put_-storagezonename-path-filename"
+- [ ] create pull zone(cdn) "https://docs.bunny.net/reference/pullzonepublic_add"
+- [ ] add custom domain via CNAME "https://docs.bunny.net/reference/pullzonepublic_addhostname"
+- [ ] create edge rule to 301 to custom domain
+
 ### features 
-- [ ] add backend
-- [ ] publish btn feature 
+- [ ] list of commit history
+- [ ] rollback to commit
+- [ ] publish btn feature(ui-only to cloudflare) 
+- [ ] add astro + go 
     - push frontend code to cloudflare
     - create new fly machine, database, etc for backend
 - [ ] add own api key

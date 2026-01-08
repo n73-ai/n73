@@ -113,60 +113,18 @@ func WebhookMessage(c *fiber.Ctx) error {
 			}
 
 			projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
-			// frontendProjectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID, "project")
-
-			/*
-			    err = utils.TryBuildProject(frontendProjectPath)
-			    if err != nil {
-			      errP := database.UpdateProjectStatus(project.ID, "new_error")
-			      if errP != nil {
-			        database.CreateLog("projects", project.ID, err.Error())
-			      }
-
-			      errP = database.UpdateProjectErrorMsg(project.ID, err.Error())
-						if errP != nil {
-							database.CreateLog("projects", project.ID, err.Error())
-						}
-
-						isFirstBuild := project.Status == "new_pending"
-						if isFirstBuild {
-							SendToUser(projectID, "new_error")
-						} else {
-							SendToUser(projectID, "error")
-						}
-
-						return c.SendStatus(500)
-					}
-			*/
-
-			/*
-				isFirstBuild := project.Status == "new_pending"
-				var pStatusErr string
-				if isFirstBuild {
-					pStatusErr = "new_internal_error"
-				} else {
-					pStatusErr = "internal_error"
-				}
-
-				err = utils.CfPush(project.Slug, frontendProjectPath)
-				if err != nil {
-					database.CreateLog("Cloudflare push error", project.ID, err.Error())
-
-					err := database.UpdateProjectStatus(project.ID, pStatusErr)
-					if err != nil {
-						database.CreateLog("projects", project.ID, err.Error())
-					}
-
-					SendToUser(projectID, "error")
-					return nil
-				}
-			*/
 
 			err = utils.GhPush(projectPath)
 			if err != nil {
 				database.CreateLog("GitHub push error", project.ID, err.Error())
 			}
-			// here ends go func()
+
+      // delete the directory to free disk
+      err = utils.DeleteProjectDirectory(projectPath)
+      if err != nil {
+				database.CreateLog("Delete Project Directory error", project.ID, err.Error())
+      }
+
 		}()
 
 		err = database.UpdateProjectStatus(projectID, "idle")

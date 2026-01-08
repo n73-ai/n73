@@ -240,7 +240,7 @@ export default function ChatFeed({ p }: { p: any }) {
         ))}
 
         {(p.status == "new_pending" || p.status == "pending" || isLoading) && (
-          <div className="flex items-center gap-2 text-muted-foreground pb-[20px]">
+          <div className="flex items-center gap-2 text-muted-foreground py-[20px]">
             <Spinner /> Loading . . .
           </div>
         )}

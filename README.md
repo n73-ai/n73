@@ -13,6 +13,11 @@ All pending items (bugs, features, and tasks) are tracked in the TODO.md file.
 > Questions, feedback, or just interested? Hit me up at my email 
 **[hej@agustfricke.com](mailto:hej@agustfricke.com)** your input is always appreciated.
 
+## Tests
+```bash
+go test -v ./utils -run TestPageExist
+```
+
 ## Local Setup (Ubuntu 22.04)
 
 ### Dependencies

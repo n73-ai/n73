@@ -32,9 +32,6 @@ ENV PATH=/root/.fly/bin:$PATH
 
 RUN curl -L https://fly.io/install.sh | sh
 
-# RUN mkdir /data/projects
-# RUN mkdir /data/fly_configs
-
 RUN ln -s /data/projects /app/projects
 RUN ln -s /data/fly_configs /app/fly_configs
 
