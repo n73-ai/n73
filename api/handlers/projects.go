@@ -31,6 +31,30 @@ func PublishProject(c *fiber.Ctx) error {
 		})
 	}
 
+  storageZoneID, storageZonepassword, err = utils.CreateStorageZone(project.ID)
+  if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+  }
+
+  // zonePassword, storageZoneName, path string
+  utils.UploadDirectory(storageZonepassword, project.ID, "/path/2/files")
+
+  pullZoneID := utils.CreatePullZone()
+
+  utils.AddCustomHostname()
+  utils.LoadFreeCertificate()
+  utils.EnableForceSSL()
+  utils.AddRedirectEdgeRule()
+
+  /*
+  si no es la primera vez que hace un publish:
+  utils.PurgePullZoneCache()
+  */
+
+
+  /*
 	slug := strings.ToLower(strings.ReplaceAll(project.Name, " ", "-"))
 
 	cloudflareProjectName := fmt.Sprintf("project-%s", projectID)
@@ -63,6 +87,7 @@ func PublishProject(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+  */
 
 	projectsDir := filepath.Join(os.Getenv("ROOT_PATH"), "projects")
 	err = utils.GhClone(project.GhRepo, projectsDir, project.ID)

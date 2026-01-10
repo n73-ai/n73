@@ -12,6 +12,83 @@ import (
 	"time"
 )
 
+func DeleteAllFilesInStorageZone(storageZoneName, password string) error {
+	region := "se"
+	baseURL := fmt.Sprintf("https://%s.storage.bunnycdn.com/%s", region, storageZoneName)
+	accessKey := password
+
+	if accessKey == "" {
+		return fmt.Errorf("password is empty (use your Storage Zone password)")
+	}
+
+	client := &http.Client{Timeout: 60 * time.Second}
+
+	listURL := baseURL + "/"
+	req, err := http.NewRequest("GET", listURL, nil)
+	if err != nil {
+		return fmt.Errorf("error creating GET list request: %w", err)
+	}
+	req.Header.Set("AccessKey", accessKey)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error listing files: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("error listing (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	// Minimal type just for decoding (no full struct)
+	var objects []map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&objects); err != nil {
+		return fmt.Errorf("error parsing JSON list: %w", err)
+	}
+
+	if len(objects) == 0 {
+		fmt.Println("The Storage Zone is already empty.")
+		return nil
+	}
+
+	// Step 2: Delete each object (files and folders)
+	for _, obj := range objects {
+		objectName, _ := obj["ObjectName"].(string)
+		isDirectory, _ := obj["IsDirectory"].(bool)
+
+		relativePath := objectName
+		if isDirectory && !strings.HasSuffix(relativePath, "/") {
+			relativePath += "/"
+		}
+
+		deleteURL := baseURL + "/" + relativePath
+
+		delReq, err := http.NewRequest("DELETE", deleteURL, nil)
+		if err != nil {
+			fmt.Printf("Error creating DELETE request for %s: %v\n", relativePath, err)
+			continue
+		}
+		delReq.Header.Set("AccessKey", accessKey)
+
+		delResp, err := client.Do(delReq)
+		if err != nil {
+			fmt.Printf("Error sending DELETE to %s: %v\n", relativePath, err)
+			continue
+		}
+		delResp.Body.Close()
+
+		if delResp.StatusCode == http.StatusNoContent || delResp.StatusCode == http.StatusOK {
+			fmt.Printf("✓ Deleted: %s (%s)\n", relativePath,
+				map[bool]string{true: "folder", false: "file"}[isDirectory])
+		} else {
+			fmt.Printf("✗ Failed to delete %s (status %d)\n", relativePath, delResp.StatusCode)
+		}
+	}
+
+	return nil
+}
+
 func PurgePullZoneCache(pullZoneID int64) error {
 	const apiBase = "https://api.bunny.net"
 	apiKey := os.Getenv("BUNNYNET_ACCESS_KEY")
@@ -297,12 +374,10 @@ func CreatePullZone() error {
 	return nil
 }
 
-func UploadDirectory() error {
+func UploadDirectory(zonePassword, storageZoneName, path string) error {
 	const localDir = "/home/agust/dist"
-	const storageZoneName = "kool-name"
 	const region = "se"
-	const baseURL = "https://" + region + ".storage.bunnycdn.com/" + storageZoneName + "/"
-	const zonePassword = "af5ae962-dc68-48c9-af576a5ee87d-78ca-45cd"
+	var baseURL = "https://" + region + ".storage.bunnycdn.com/" + storageZoneName + "/"
 
 	client := &http.Client{
 		Timeout: 60 * time.Second,

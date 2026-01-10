@@ -5,6 +5,14 @@ import (
 	"testing"
 )
 
+func TestDeleteAllFilesInStorageZone(t *testing.T) {
+  storageZone := "kool-name"
+  password := ""
+	if err := utils.DeleteAllFilesInStorageZone(storageZone, password); err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
 func TestPurgePullZoneCache(t *testing.T) {
 	pullZoneID := int64(5117718) 
 	if err := utils.PurgePullZoneCache(pullZoneID); err != nil {
@@ -53,7 +61,10 @@ func TestCreatePullZone(t *testing.T) {
 }
 
 func TestUploadDirectory(t *testing.T) {
-	err := utils.UploadDirectory()
+  path := "/home/agust/project-0bf76df7-cb4f-4a3b-a869-1aeac745f4f5/ui-only/dist"
+  storageZone := "kool-name"
+  password := ""
+	err := utils.UploadDirectory(password, storageZone, path)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
