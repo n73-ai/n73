@@ -61,6 +61,8 @@ fly secrets set DOMAIN=***** --app n73-app
 fly secrets set FLY_API_TOKEN="****" --app x73-app
 fly secrets set CLOUDFLARE_API_TOKEN="****" --app n73-app
 fly secrets set GH_TOKEN="****" --app n73-app
+
+fly secrets set BUNNYNET_ACCESS_KEY="*****" --app n73-app
 ```
 
 deploy the app(ha==high avilability, just 1 machine)

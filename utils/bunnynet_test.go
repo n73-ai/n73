@@ -6,24 +6,24 @@ import (
 )
 
 func TestDeleteAllFilesInStorageZone(t *testing.T) {
-  storageZone := "kool-name"
-  password := ""
+	storageZone := "kool-name"
+	password := ""
 	if err := utils.DeleteAllFilesInStorageZone(storageZone, password); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestPurgePullZoneCache(t *testing.T) {
-	pullZoneID := int64(5117718) 
+	pullZoneID := int64(5117718)
 	if err := utils.PurgePullZoneCache(pullZoneID); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAddRedirectEdgeRule(t *testing.T) {
-	pullZoneID := int64(5118328)               
-	bunnyHostname := "kool-pullzone.b-cdn.net" 
-	customDomain := "hello.agustfricke.com"    
+	pullZoneID := int64(5118328)
+	bunnyHostname := "kool-pullzone.b-cdn.net"
+	customDomain := "hello.agustfricke.com"
 
 	if err := utils.AddRedirectEdgeRule(pullZoneID, bunnyHostname, customDomain); err != nil {
 		t.Errorf(err.Error())
@@ -31,23 +31,23 @@ func TestAddRedirectEdgeRule(t *testing.T) {
 }
 
 func TestLoadFreeCertificate(t *testing.T) {
-	customHostname := "hello.agustfricke.com" 
+	customHostname := "hello.agustfricke.com"
 	if err := utils.LoadFreeCertificate(customHostname); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestEnableForceSSL(t *testing.T) {
-	pullZoneID := int64(5118328)              
-	customHostname := "hello.agustfricke.com" 
+	pullZoneID := int64(5118328)
+	customHostname := "hello.agustfricke.com"
 	if err := utils.EnableForceSSL(pullZoneID, customHostname); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestAddCustomHostname(t *testing.T) {
-	pullZoneID := int64(5118328)              
-	customHostname := "hello.agustfricke.com" 
+	pullZoneID := int64(5118328)
+	customHostname := "hello.agustfricke.com"
 	if err := utils.AddCustomHostname(pullZoneID, customHostname); err != nil {
 		t.Errorf(err.Error())
 	}
@@ -61,9 +61,9 @@ func TestCreatePullZone(t *testing.T) {
 }
 
 func TestUploadDirectory(t *testing.T) {
-  path := "/home/agust/project-0bf76df7-cb4f-4a3b-a869-1aeac745f4f5/ui-only/dist"
-  storageZone := "kool-name"
-  password := ""
+	path := "/home/agust/project-0bf76df7-cb4f-4a3b-a869-1aeac745f4f5/ui-only/dist"
+	storageZone := "kool-name"
+	password := ""
 	err := utils.UploadDirectory(password, storageZone, path)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -71,7 +71,7 @@ func TestUploadDirectory(t *testing.T) {
 }
 
 func TestCreateStorageZone(t *testing.T) {
-  name := "foo"
+	name := "foo"
 	err := utils.CreateStorageZone(name)
 	if err != nil {
 		t.Errorf(err.Error())

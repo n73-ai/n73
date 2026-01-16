@@ -23,6 +23,21 @@ CREATE TABLE projects (
     error_msg TEXT DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fly_hostname VARCHAR(255) DEFAULT '',
+
+    -- new
+    bunny_status TEXT CHECK (bunny_status IN ('storage_zone', 'upload', 'pullzone', 'success')) DEFAULT 'storage_zone' NOT NULL,
+    storage_zone_id VARCHAR(255) DEFAULT '',
+    storage_zone_region VARCHAR(255) DEFAULT '',
+    storage_zone_password VARCHAR(255) DEFAULT '',
+    pullzone_id VARCHAR(255) DEFAULT '',
+
+    bunny_eu BOOLEAN DEFAULT false,
+    bunny_us BOOLEAN DEFAULT false,
+    bunny_asia BOOLEAN DEFAULT false,
+    bunny_sa BOOLEAN DEFAULT false,
+    bunny_af BOOLEAN DEFAULT false,
+    -- end new
+    
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

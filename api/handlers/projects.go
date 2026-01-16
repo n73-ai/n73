@@ -14,6 +14,10 @@ import (
 	"github.com/google/uuid"
 )
 
+func AddCustomDomain(c *fiber.Ctx) error {
+  return c.SendStatus(200)
+}
+
 func PublishProject(c *fiber.Ctx) error {
 	user := c.Locals("user").(*database.User)
 	projectID := c.Params("projectID")
@@ -31,68 +35,9 @@ func PublishProject(c *fiber.Ctx) error {
 		})
 	}
 
-  storageZoneID, storageZonepassword, err = utils.CreateStorageZone(project.ID)
-  if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-  }
-
-  // zonePassword, storageZoneName, path string
-  utils.UploadDirectory(storageZonepassword, project.ID, "/path/2/files")
-
-  pullZoneID := utils.CreatePullZone()
-
-  utils.AddCustomHostname()
-  utils.LoadFreeCertificate()
-  utils.EnableForceSSL()
-  utils.AddRedirectEdgeRule()
-
-  /*
-  si no es la primera vez que hace un publish:
-  utils.PurgePullZoneCache()
-  */
-
-
-  /*
-	slug := strings.ToLower(strings.ReplaceAll(project.Name, " ", "-"))
-
-	cloudflareProjectName := fmt.Sprintf("project-%s", projectID)
-	exists, err := utils.PageExists(cloudflareProjectName)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	if !exists {
-		err = utils.CfCreate(slug)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-	}
-
-	domain, err := utils.GetProjectDomainFallback(slug)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	err = database.UpdateProjectDomain(projectID, domain)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-  */
-
 	projectsDir := filepath.Join(os.Getenv("ROOT_PATH"), "projects")
 	err = utils.GhClone(project.GhRepo, projectsDir, project.ID)
 	if err != nil {
-		fmt.Println("gh error:", err.Error())
 		return c.Status(500).JSON(fiber.Map{
 			"error": "GitHub clone error",
 		})
@@ -100,27 +45,215 @@ func PublishProject(c *fiber.Ctx) error {
 
 	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
 
-	err = utils.NpmRunBuild(projectPath)
+	err = utils.NpmRunBuild(projectPath + "/ui-only")
 	if err != nil {
+    fmt.Println("npm err: ", err.Error())
 		return c.Status(500).JSON(fiber.Map{
 			"error": "npm run build err",
 		})
 	}
 
-	err = utils.CfPush(project.Slug, projectPath)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Deploy error to Cloudflare",
-		})
-	}
+	if project.BunnyStatus == "storage_zone" {
+		// name, region string
+    mainRegion := "SE"
+		storageZoneID, storageZonePassword, err := utils.CreateStorageZone(project.ID, mainRegion)
+		if err != nil {
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
 
-	// delete the directory to free disk
-	err = utils.DeleteProjectDirectory(projectPath)
-	if err != nil {
+    // here update project.bunny_region
+		err = database.UpdateProjectStorageZone(project.ID, storageZoneID, storageZonePassword, "upload", "se")
+		if err != nil {
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+    // zonePassword, storageZoneName, distPath, region string
+    distDir := filepath.Join(projectPath, "ui-only", "dist")
+		err = utils.UploadDirectory(storageZonePassword, project.ID, distDir, project.StorageZoneRegion)
+    if err != nil {
+      err2 := database.UpdateBunnyStatus(project.ID, "upload")
+      if err2 != nil {
+        // log the error
+        fmt.Println(err2.Error())
+      }
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+    }
+
+    eu := true
+    na := false
+    asia := false
+    sa := false
+    af := false
+		pullZoneID, domain, err := utils.CreatePullZone(storageZoneID, project.ID, eu, na, asia, sa, af)
+		if err != nil {
+      err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
+      if err2 != nil {
+        // log the error
+        fmt.Println(err2.Error())
+      }
+      // update the project.bunny_status == 'create_pull_zone'
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+		err = database.UpdateProjectPullZoneID(project.ID, pullZoneID)
+		if err != nil {
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+		err = database.UpdateProjectDomain(domain, project.ID)
+		if err != nil {
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+		err = utils.DeleteProjectDirectory(projectPath)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		return c.SendStatus(200)
+
+  } else if project.BunnyStatus == "upload" {
+
+    // zonePassword, storageZoneName, distPath, region string
+    distDir := filepath.Join(projectPath, "ui-only", "dist")
+		err = utils.UploadDirectory(project.StorageZonePassword, project.ID, distDir, project.StorageZoneRegion)
+    if err != nil {
+      err2 := database.UpdateBunnyStatus(project.ID, "upload")
+      if err2 != nil {
+        // log the error
+        fmt.Println(err2.Error())
+      }
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+    }
+
+    eu := true
+    na := false
+    asia := false
+    sa := false
+    af := false
+		pullZoneID, domain, err := utils.CreatePullZone(project.StorageZoneID, project.ID, eu, na, asia, sa, af)
+		if err != nil {
+      err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
+      if err2 != nil {
+        // log the error
+        fmt.Println(err2.Error())
+      }
+      // update the project.bunny_status == 'create_pull_zone'
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+		err = database.UpdateProjectPullZoneID(project.ID, pullZoneID)
+		if err != nil {
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+		err = database.UpdateProjectDomain(domain, project.ID)
+		if err != nil {
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+		err = utils.DeleteProjectDirectory(projectPath)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		return c.SendStatus(200)
+
+  } else if project.BunnyStatus == "pullzone" {
+
+    eu := true
+    na := false
+    asia := false
+    sa := false
+    af := false
+		pullZoneID, domain, err := utils.CreatePullZone(project.StorageZoneID, project.ID, eu, na, asia, sa, af)
+		if err != nil {
+      err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
+      if err2 != nil {
+        // log the error
+        fmt.Println(err2.Error())
+      }
+      // update the project.bunny_status == 'create_pull_zone'
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+		err = database.UpdateProjectPullZoneID(project.ID, pullZoneID)
+		if err != nil {
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+		err = database.UpdateProjectDomain(domain, project.ID)
+		if err != nil {
+		  return c.Status(500).JSON(fiber.Map{
+        "error": err.Error(),
+		  })
+		}
+
+		err = utils.DeleteProjectDirectory(projectPath)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		return c.SendStatus(200)
+
+  } else if project.BunnyStatus == "success" {
+	  err := utils.DeleteAllFilesInStorageZone(project.StorageZonePassword, project.StorageZoneID)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+		err = utils.UploadDirectory(project.StorageZonePassword, project.ID, projectPath, project.StorageZoneRegion)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+
+	  err = utils.PurgePullZoneCache(project.PullZoneID)
+    if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+    }
+
+  } else {
+    fmt.Println("Bunny Status unknow")
 		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
+			"error": "Bunny Status unknow",
 		})
-	}
+  }
 
 	return c.SendStatus(200)
 }

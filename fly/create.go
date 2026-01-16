@@ -93,9 +93,9 @@ primary_region = 'arn'
   min_machines_running = 0
 
 [[vm]]
-  memory = '2gb'
+  memory = '4gb'
   cpu_kind = 'shared'
-  cpus = 1
+  cpus = 2
 `, projectID)
 
 	fileName := fmt.Sprintf("%s.toml", projectID)

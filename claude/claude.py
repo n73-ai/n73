@@ -2,7 +2,7 @@ from claude_code_sdk import query, ClaudeCodeOptions
 import requests
 import asyncio
 import os
-from system_prompt import SYSTEM_PROMPT, ASTRO_SYSTEM_PROMPT
+from system_prompt import SYSTEM_PROMPT
 import zipfile
 import os
 from pathlib import Path

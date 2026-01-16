@@ -89,7 +89,7 @@ func DeleteAllFilesInStorageZone(storageZoneName, password string) error {
 	return nil
 }
 
-func PurgePullZoneCache(pullZoneID int64) error {
+func PurgePullZoneCache(pullZoneID string) error {
 	const apiBase = "https://api.bunny.net"
 	apiKey := os.Getenv("BUNNYNET_ACCESS_KEY")
 	if apiKey == "" {
@@ -98,7 +98,7 @@ func PurgePullZoneCache(pullZoneID int64) error {
 
 	client := &http.Client{Timeout: 30 * time.Second}
 
-	url := fmt.Sprintf("%s/pullzone/%d/purgeCache", apiBase, pullZoneID)
+	url := fmt.Sprintf("%s/pullzone/%s/purgeCache", apiBase, pullZoneID)
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
 		return fmt.Errorf("error sending request: %w", err)
@@ -314,76 +314,88 @@ func AddCustomHostname(pullZoneID int64, customHostname string) error {
 	return nil
 }
 
-func CreatePullZone() error {
+func CreatePullZone(storageZoneID, name string, eu, us, asia, sa, af bool) (id, defaultHostname string, err error) {
 	const apiBase = "https://api.bunny.net"
+
 	apiKey := os.Getenv("BUNNYNET_ACCESS_KEY")
 	if apiKey == "" {
-		return fmt.Errorf("BUNNYNET_ACCESS_KEY is not set")
+		return "", "", fmt.Errorf("BUNNYNET_ACCESS_KEY environment variable is not set")
 	}
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
 
-	createPayload := map[string]any{
-		"Name":              "kool-pullzone",
+	payload := map[string]any{
+		"Name":              name,
 		"Type":              0,
 		"OriginType":        2,
-		"StorageZoneId":     1326407,
-		"EnableGeoZoneEU":   true,
-		"EnableGeoZoneUS":   false,
-		"EnableGeoZoneASIA": false,
-		"EnableGeoZoneSA":   false,
-		"EnableGeoZoneAF":   false,
+		"StorageZoneId":     storageZoneID,
+		"EnableGeoZoneEU":   eu,
+		"EnableGeoZoneUS":   us,
+		"EnableGeoZoneASIA": asia,
+		"EnableGeoZoneSA":   sa,
+		"EnableGeoZoneAF":   af,
 	}
 
-	jsonData, err := json.Marshal(createPayload)
+	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("error marshaling create payload: %w", err)
+		return "", "", fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", apiBase+"/pullzone", bytes.NewReader(jsonData))
 	if err != nil {
-		return fmt.Errorf("error creating request: %w", err)
+		return "", "", fmt.Errorf("failed to create request: %w", err)
 	}
+
 	req.Header.Set("AccessKey", apiKey)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("error sending request: %w", err)
+		return "", "", fmt.Errorf("failed to send request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("error reading respuesta: %w", err)
+		return "", "", fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("error creating pull zone (status %d): %s", resp.StatusCode, string(body))
+		return "", "", fmt.Errorf("failed to create Pull Zone (status %d): %s", resp.StatusCode, string(body))
 	}
 
-	var pullZoneResp struct {
-		ID int64 `json:"Id"`
+	var result struct {
+		ID        int64 `json:"Id"`
+		Hostnames []struct {
+			Value string `json:"Value"`
+		} `json:"Hostnames"`
 	}
-	if err := json.Unmarshal(body, &pullZoneResp); err != nil {
-		return fmt.Errorf("error parsing respuesta: %w", err)
-	}
-	// pullZoneID := pullZoneResp.ID
 
-	return nil
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", "", fmt.Errorf("failed to parse JSON response: %w\nRaw body: %s", err, string(body))
+	}
+
+	if len(result.Hostnames) == 0 {
+		return "", "", fmt.Errorf("no hostnames found in response")
+	}
+
+	defaultHostname = result.Hostnames[0].Value
+  pullZoneID := fmt.Sprintf("%d", result.ID)
+
+	return pullZoneID, defaultHostname, nil
 }
 
-func UploadDirectory(zonePassword, storageZoneName, path string) error {
-	const localDir = "/home/agust/dist"
-	const region = "se"
-	var baseURL = "https://" + region + ".storage.bunnycdn.com/" + storageZoneName + "/"
+func UploadDirectory(zonePassword, storageZoneName, distPath, region string) error {
+	var baseURL = "https://" + "se" + ".storage.bunnycdn.com/" + storageZoneName + "/"
 
 	client := &http.Client{
 		Timeout: 60 * time.Second,
 	}
 
-	err := filepath.Walk(localDir, func(localPath string, info os.FileInfo, err error) error {
+	err := filepath.Walk(distPath, func(localPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -391,7 +403,7 @@ func UploadDirectory(zonePassword, storageZoneName, path string) error {
 			return nil
 		}
 
-		relPath, err := filepath.Rel(localDir, localPath)
+		relPath, err := filepath.Rel(distPath, localPath)
 		if err != nil {
 			return fmt.Errorf("error calculation relative route: %w", err)
 		}
@@ -436,24 +448,24 @@ func UploadDirectory(zonePassword, storageZoneName, path string) error {
 	return nil
 }
 
-func CreateStorageZone(name string) error {
+func CreateStorageZone(name, region string) (string, string, error) {
 	url := "https://api.bunny.net/storagezone"
 
 	payload := map[string]any{
 		"Name":            name,
-		"Region":          "SE",
+		"Region":          region,
 		"StorageZoneType": 0,
 		"ZoneTier":        "Standard",
 	}
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("error marshaling create payload: %w", err)
+		return "", "", fmt.Errorf("error marshaling create payload: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonData))
 	if err != nil {
-		return fmt.Errorf("error creating request: %w", err)
+		return "", "", fmt.Errorf("error creating request: %w", err)
 	}
 
 	req.Header.Set("Accept", "application/json")
@@ -466,18 +478,29 @@ func CreateStorageZone(name string) error {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("error sending request: %w", err)
+		return "", "", fmt.Errorf("error sending request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("error reading request: %w", err)
+		return "", "", fmt.Errorf("error reading request: %w", err)
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("API error (status %d): %s", resp.StatusCode, string(body))
+		return "", "", fmt.Errorf("API error (status %d): %s", resp.StatusCode, string(body))
 	}
 
-	return nil
+	var result struct {
+		ID       int64  `json:"Id"`
+		Password string `json:"Password"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", "", fmt.Errorf("error parsing JSON response: %w\nRaw body: %s", err, string(body))
+	}
+
+  storageZoneID := fmt.Sprintf("%d", result.ID)
+
+	return storageZoneID, result.Password, nil
 }
