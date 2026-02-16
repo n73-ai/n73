@@ -59,6 +59,9 @@ fly secrets set ADMIN_JWT=***** --app n73-app
 fly secrets set DOMAIN=***** --app n73-app
 
 fly secrets set FLY_API_TOKEN="****" --app x73-app
+
+fly secrets set FLY_API_TOKEN="****" --app x73-app
+# dont need cf anymore
 fly secrets set CLOUDFLARE_API_TOKEN="****" --app n73-app
 fly secrets set GH_TOKEN="****" --app n73-app
 

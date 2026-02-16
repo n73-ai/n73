@@ -1,5 +1,63 @@
 # notes
 
+# take screenshots
+
+crear apps en fly manualmente para ver si funciona con: 
+
+1:
+```Dockerfile
+FROM debian:bullseye-slim
+
+# Instalar dependencias mínimas
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    unzip \
+    curl \
+    ca-certificates \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# Instalar Chrome
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# Instalar ChromeDriver
+RUN CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
+    wget -q "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" && \
+    unzip chromedriver_linux64.zip && \
+    mv chromedriver /usr/local/bin/ && \
+    chmod +x /usr/local/bin/chromedriver && \
+    rm chromedriver_linux64.zip
+
+WORKDIR /app
+
+# Si usas Python/Selenium
+RUN apt-get update && apt-get install -y python3 python3-pip && \
+pip3 install selenium
+
+CMD ["/bin/bash"]
+```
+
+2: 
+```Dockerfile
+FROM zenika/alpine-chrome:with-chromedriver
+
+WORKDIR /app
+COPY . .
+
+# Ya trae Chrome + ChromeDriver
+```
+
+
+---
+
+checkout typescript: 
+    "https://platform.claude.com/docs/en/agent-sdk/quickstart#typescript"
+
 error uploading directory: 
 error uploading assets/Geist-Black-DyTs4Xsi.woff2: status 401, 
 body: {"HttpCode":401,"Message":"Unauthorized"}

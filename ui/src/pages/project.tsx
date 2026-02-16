@@ -23,9 +23,9 @@ export default function Project() {
   });
 
   const { isError: isErrorIframe } = useQuery({
-    queryKey: ["iframe-status", data?.domain],
+    queryKey: ["iframe-status", data?.fly_hostname],
     queryFn: async () => {
-      const res = await axios.head(data?.domain);
+      const res = await axios.head(`https://${data?.fly_hostname}`);
       return res.status;
     },
     retry: false,
@@ -76,10 +76,10 @@ export default function Project() {
               */}
 
             <iframe
-              key={dataUpdatedAt}
-              className="w-full h-full block"
-              src={`https://${data?.fly_hostname}`}
-            />
+            key={dataUpdatedAt}
+            className="w-full h-full block"
+            src={`https://${data?.fly_hostname}`}
+              />
 
             {data?.status == "new_internal_error" && (
               <div className="relative z-10 flex items-center justify-center h-full">

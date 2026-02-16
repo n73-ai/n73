@@ -34,7 +34,7 @@ def new_endpoint():
     if not valid:
         return jsonify({"error": error}), 400
 
-    start_background_task(NewProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["jwt"])
+    start_background_task(NewProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["jwt"], data["project_id"])
     return jsonify({"status": "processing"}), 200
 
 
@@ -45,7 +45,7 @@ def resume_endpoint():
     if not valid:
         return jsonify({"error": error}), 400
 
-    start_background_task(ResumeProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["session_id"], data["jwt"])
+    start_background_task(ResumeProject, data["prompt"], data["model"], data["work_dir"], data["webhook_url"], data["session_id"], data["jwt"], data["project_id"])
     return jsonify({"status": "processing"}), 200
 
 

@@ -10,6 +10,8 @@ export default function LatestProjects() {
     queryFn: () => getLatestProjects(),
   });
 
+  if (data == null) return <></>
+
   return (
     <div className="py-[100px]">
       <h1

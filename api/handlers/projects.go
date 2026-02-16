@@ -39,7 +39,7 @@ func PublishProject(c *fiber.Ctx) error {
 	err = utils.GhClone(project.GhRepo, projectsDir, project.ID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
-			"error": "GitHub clone error",
+			"error": err.Error(),
 		})
 	}
 
@@ -183,7 +183,7 @@ func PublishProject(c *fiber.Ctx) error {
 
 		return c.SendStatus(200)
 
-  } else if project.BunnyStatus == "pullzone" {
+  } else if project.BunnyStatus == "pull_zone" {
 
     eu := true
     na := false
@@ -519,8 +519,8 @@ func CreateProject(c *fiber.Ctx) error {
 
 		endpoint := fmt.Sprintf("http://%s.internal:5000/claude/new", projectID)
 
-		time.Sleep(10 * time.Second)
-		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, projectPath, endpoint)
+		time.Sleep(5 * time.Second)
+		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, projectPath, endpoint, projectID)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -631,7 +631,7 @@ func ResumeProject(c *fiber.Ctx) error {
 			webhookURL,
 			"/app/ui-only",
 			sessionID,
-			endpoint)
+			endpoint, projectID)
 		if err != nil {
 			database.UpdateProjectStatus(projectID, "idle")
 			SendToUser(projectID, "error")

@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 import subprocess
 import base64
-
+# from screenshot import take_screenshot
 
 def zip_directory(folder_path: str | Path, output_zip: str | Path):
     folder_path = Path(folder_path).resolve()
@@ -53,60 +53,104 @@ async def post_json(url, json_data, jwt):
         raise Exception(f"HTTP request failed: {e}")
 
 
-async def process_message(message, target_url, jwt):
+async def process_message(message, target_url, jwt, project_id):
     """Process a single message and handle file operations and text content."""
     print(message)
-    
+
     if hasattr(message, "content") and isinstance(message.content, list):
         for block in message.content:
             if hasattr(block, "name") and hasattr(block, "input"):
                 if block.name == "Write":
                     file_path = block.input.get("file_path", "unknown")
-                    clean_path = file_path.replace("../../ui/", "").replace("../ui/", "")
-                    await post_json(target_url, {
-                       "type": "text", 
-                        "text": f"Created **{clean_path}**"
-                    }, jwt)
+                    clean_path = (
+                        file_path
+                        .replace("../../ui-only/", "")
+                        .replace("../ui-only/", "")
+                    )
+                    await post_json(
+                        target_url,
+                        {
+                            "type": "text",
+                            "text": f"Created **{clean_path}**",
+                        },
+                        jwt,
+                    )
+
                 elif block.name == "Edit":
                     file_path = block.input.get("file_path", "unknown")
-                    clean_path = file_path.replace("../../ui/", "").replace("../ui/", "")
-                    await post_json(target_url, {
-                        "type": "text", 
-                        "text": f"Edited **{clean_path}**"
-                    }, jwt)
-            
+                    clean_path = (
+                        file_path
+                        .replace("../../ui-only/", "")
+                        .replace("../ui-only/", "")
+                    )
+                    await post_json(
+                        target_url,
+                        {
+                            "type": "text",
+                            "text": f"Edited **{clean_path}**",
+                        },
+                        jwt,
+                    )
+
             if hasattr(block, "text"):
                 text = block.text
-                await post_json(target_url, {
-                    "type": "text", 
-                    "text": text
-                }, jwt)
-    
+                await post_json(
+                    target_url,
+                    {
+                        "type": "text",
+                        "text": text,
+                    },
+                    jwt,
+                )
+
     elif message.__class__.__name__ == "ResultMessage":
-        subprocess.run(
-            ["npm", "run", "build"],
-            cwd="/app/ui-only",        
+        is_build_error = False
+        build_error_msg = None
+        # take_screenshot(f"https://{project_id}.fly.dev")
+
+        try:
+            subprocess.run(
+                ["npm", "run", "build"],
+                cwd="/app/ui-only",
+                check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            is_build_error = True
+            build_error_msg = str(e)
+
+        zip_data = None
+
+        if not is_build_error:
+            zip_directory("/app/ui-only", "project.zip")
+
+            with open("/app/project.zip", "rb") as f:
+                zip_data = base64.b64encode(f.read()).decode("utf-8")
+
+        '''
+        with open("/app/screenshot.png", "rb") as image:
+            image_base_64 = base64.b64encode(image.read()).decode("utf-8")
+        '''
+
+        await post_json(
+            target_url,
+            {
+                "type": "result",
+                "build_error": is_build_error,
+                "build_error_msg": build_error_msg if is_build_error else None,
+                "file": zip_data,  # None if fails
+                "duration": message.duration_ms,
+                "session_id": message.session_id,
+                "total_cost_usd": message.total_cost_usd,
+                # "image": image_base_64,
+            },
+            jwt,
         )
 
-        zip_directory("/app/ui-only", "project.zip")
-        
-        with open("/app/project.zip", 'rb') as f:
-            zip_data = base64.b64encode(f.read()).decode('utf-8')
-        
-        await post_json(target_url, {
-            "file": zip_data,
-            "type": "result",
-            "is_error": message.is_error,
-            "duration": message.duration_ms,
-            "session_id": message.session_id,
-            "total_cost_usd": message.total_cost_usd,
-        }, jwt)
-        
         if os.path.exists("/app/project.zip"):
             os.remove("/app/project.zip")
 
 
-async def NewProject(prompt: str, model: str, workDir: str, target_url: str, jwt: str):
+async def NewProject(prompt: str, model: str, workDir: str, target_url: str, jwt: str, project_id):
     """if project_type == react; do SYSTEM_PROMPT; if go-astro do ASTRO_SYSYEM_PROMPT"""
     options = ClaudeCodeOptions(
         max_turns=50,
@@ -121,10 +165,10 @@ async def NewProject(prompt: str, model: str, workDir: str, target_url: str, jwt
     )
     
     async for message in query(prompt=prompt, options=options):
-        await process_message(message, target_url, jwt)
+        await process_message(message, target_url, jwt, project_id)
 
 
-async def ResumeProject(prompt: str, model: str, workDir: str, target_url: str, session_id: str, jwt: str):
+async def ResumeProject(prompt: str, model: str, workDir: str, target_url: str, session_id: str, jwt: str, project_id):
     options = ClaudeCodeOptions(
         continue_conversation=True,
         resume=session_id,
@@ -140,4 +184,4 @@ async def ResumeProject(prompt: str, model: str, workDir: str, target_url: str, 
     )
     
     async for message in query(prompt=prompt, options=options):
-        await process_message(message, target_url, jwt)
+        await process_message(message, target_url, jwt, project_id)

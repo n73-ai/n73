@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID, endpoint string) error {
+func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID, endpoint, projectID string) error {
 	payload := map[string]string{
 		"work_dir":    path,
 		"prompt":      prompt,
@@ -16,6 +16,7 @@ func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID, endpoint st
 		"webhook_url": webhookURL,
 		"session_id":  sessionID,
 		"jwt":         os.Getenv("ADMIN_JWT"),
+		"project_id":         projectID,
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -44,13 +45,14 @@ func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID, endpoint st
 	return nil
 }
 
-func CreateClaudeProject(prompt, model, webhookURL, path, endpoint string) error {
+func CreateClaudeProject(prompt, model, webhookURL, path, endpoint, projectID string) error {
 	payload := map[string]string{
 		"work_dir":    path,
 		"prompt":      prompt,
 		"model":       model,
 		"webhook_url": webhookURL,
 		"jwt":         os.Getenv("ADMIN_JWT"),
+		"project_id": projectID,
 	}
 
 	jsonData, err := json.Marshal(payload)
