@@ -19,16 +19,16 @@ func WebhookMessage(c *fiber.Ctx) error {
 	model := c.Params("model")
 
 	payload := struct {
-		Type         string  `json:"type"`
-		IsError      bool    `json:"is_error"`
-		Text         string  `json:"text"`
-		Duration     int     `json:"duration"`
-		TotalCostUsd float64 `json:"total_cost_usd"`
-		SessionID    string  `json:"session_id"`
-		File         string  `json:"file"`
-    BuildError bool `json:"build_error"`
-    BuildErrorMsg string `json:"build_error_msg"`
-    Image string `json:"image"`
+		Type          string  `json:"type"`
+		IsError       bool    `json:"is_error"`
+		Text          string  `json:"text"`
+		Duration      int     `json:"duration"`
+		TotalCostUsd  float64 `json:"total_cost_usd"`
+		SessionID     string  `json:"session_id"`
+		File          string  `json:"file"`
+		BuildError    bool    `json:"build_error"`
+		BuildErrorMsg string  `json:"build_error_msg"`
+		Image         string  `json:"image"`
 	}{}
 
 	err := c.BodyParser(&payload)
@@ -36,6 +36,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 		database.CreateLog("messages", projectID, err.Error())
 		return c.SendStatus(500)
 	}
+
 
 	switch payload.Type {
 	case "text":
@@ -48,6 +49,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 		SendToUser(projectID, id)
 
 	case "result":
+
 		id := uuid.NewString()
 		err := database.CreateMessage(id, projectID, "metadata", "", model, payload.Duration, payload.IsError, payload.TotalCostUsd)
 		if err != nil {
@@ -69,104 +71,123 @@ func WebhookMessage(c *fiber.Ctx) error {
 			return c.SendStatus(500)
 		}
 
-    // start image
-        var base64Image string
+		// start image
+		var base64Image string
 
-        // Handle both "data:application/zip;base64,XXXX" and raw base64
-        if strings.Contains(payload.File, "data:") {
-          parts := strings.SplitN(payload.File, ",", 2)
-          if len(parts) < 2 {
-            fmt.Println("image err.")
-          }
-          base64Image = parts[1]
-        } else {
-          base64Image = payload.Image
-        }
+		// Handle both "data:application/zip;base64,XXXX" and raw base64
+		if strings.Contains(payload.File, "data:") {
+			parts := strings.SplitN(payload.File, ",", 2)
+			if len(parts) < 2 {
+				fmt.Println("image err.")
+			}
+			base64Image = parts[1]
+		} else {
+			base64Image = payload.Image
+		}
 
-        // Decode base64
-        imageData, err := base64.StdEncoding.DecodeString(base64Image)
-        if err != nil {
-            fmt.Println("image err: ", err.Error())
-        }
+		// Decode base64
+		imageData, err := base64.StdEncoding.DecodeString(base64Image)
+		if err != nil {
+			fmt.Println("image err: ", err.Error())
+		}
 
-        // Create temp zip file
-        tempImageDataPath := filepath.Join("/tmp", "image.png")
-        err = os.WriteFile(tempImageDataPath, imageData, 0644)
-        if err != nil {
-            fmt.Println("image err: ", err.Error())
-        }
-        defer os.Remove(tempImageDataPath) // Clean up after
-
-    // end image
-
+		// Create temp zip file
+		tempImageDataPath := filepath.Join("/tmp", "screenshot.png")
+		err = os.WriteFile(tempImageDataPath, imageData, 0644)
+		if err != nil {
+			fmt.Println("image err: ", err.Error())
+		}
+		defer os.Remove(tempImageDataPath) // Clean up after
+		// end image
 
 		// here starts go func()
 		go func() {
 
-      if payload.BuildError {
-        error2fix := fmt.Sprintf("build-error: %s", payload.BuildErrorMsg)
-        SendToUser(projectID, error2fix)
+	    fmt.Println("buildError: ", payload.BuildError)
+	    fmt.Println("error msg: ", payload.BuildErrorMsg)
 
-      } else {
+			if payload.BuildError {
+        // database.UpdateProjectErrorMsg() // do this!
+				error2fix := fmt.Sprintf("build-error: %s", payload.BuildErrorMsg)
+				SendToUser(projectID, error2fix)
 
-        // === HANDLE BASE64 ZIP FILE ===
-        if payload.File == "" {
-          database.CreateLog("projects", projectID, "missing base64 zip file")
-          return
-        }
+			} else {
 
-        var base64Data string
+				// === HANDLE BASE64 ZIP FILE ===
+				if payload.File == "" {
+					database.CreateLog("projects", projectID, "missing base64 zip file")
+					return
+				}
 
-        // Handle both "data:application/zip;base64,XXXX" and raw base64
-        if strings.Contains(payload.File, "data:") {
-          parts := strings.SplitN(payload.File, ",", 2)
-          if len(parts) < 2 {
-            database.CreateLog("projects", projectID, "Invalid data URL format")
-            return
-          }
-          base64Data = parts[1]
-        } else {
-          base64Data = payload.File
-        }
+				var base64Data string
 
-        // Decode base64
-        zipData, err := base64.StdEncoding.DecodeString(base64Data)
+				// Handle both "data:application/zip;base64,XXXX" and raw base64
+				if strings.Contains(payload.File, "data:") {
+					parts := strings.SplitN(payload.File, ",", 2)
+					if len(parts) < 2 {
+						database.CreateLog("projects", projectID, "Invalid data URL format")
+						return
+					}
+					base64Data = parts[1]
+				} else {
+					base64Data = payload.File
+				}
+
+				// Decode base64
+				zipData, err := base64.StdEncoding.DecodeString(base64Data)
+				if err != nil {
+					database.CreateLog("projects", projectID, "Base64 decode error: "+err.Error())
+					return
+				}
+
+				// Create temp zip file
+				tempZipPath := filepath.Join("/tmp", projectID+".zip")
+				err = os.WriteFile(tempZipPath, zipData, 0644)
+				if err != nil {
+					fmt.Println("write file err: ", err.Error())
+					database.CreateLog("projects", projectID, "Failed to write zip file: "+err.Error())
+					return
+				}
+				defer os.Remove(tempZipPath) // Clean up after
+
+				// Unzip into projects directory
+				repositoriesPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
+				err = utils.Unzip(tempZipPath, repositoriesPath)
+				if err != nil {
+					fmt.Println("unzip err: ", err.Error())
+					database.CreateLog("projects", projectID, "Unzip failed: "+err.Error())
+					return
+				}
+
+				//projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
+
+	      projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
+
+        // do a npm i && npm run build
+        fmt.Println("[x]starting npm run build.")
+	      err = utils.NpmRunBuild(projectPath)
+	      if err != nil {
+		      fmt.Println("npm err: ", err.Error())
+          return 
+	      }
+        fmt.Println("[x]end npm run build.")
+
+        fmt.Println("[x]starting upload2bunny.")
+        err = utils.Upload2Bunny(project)
         if err != nil {
-          database.CreateLog("projects", projectID, "Base64 decode error: "+err.Error())
-          return
+          fmt.Println(err.Error())
         }
+        fmt.Println("[x]ended upload2bunny.")
 
-        // Create temp zip file
-        tempZipPath := filepath.Join("/tmp", projectID+".zip")
-        err = os.WriteFile(tempZipPath, zipData, 0644)
-        if err != nil {
-          database.CreateLog("projects", projectID, "Failed to write zip file: "+err.Error())
-          return
-        }
-        defer os.Remove(tempZipPath) // Clean up after
+					// delete the directory to free disk
+          /*
+					err = utils.DeleteProjectDirectory(projectPath)
+					if err != nil {
+						database.CreateLog("Delete Project Directory error", project.ID, err.Error())
+					}
+          */
 
-        // Unzip into projects directory
-        repositoriesPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
-        err = utils.Unzip(tempZipPath, repositoriesPath)
-        if err != nil {
-          database.CreateLog("projects", projectID, "Unzip failed: "+err.Error())
-          return
-        }
-
-        projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
-
-        err = utils.GhPush(projectPath)
-        if err != nil {
-          database.CreateLog("GitHub push error", project.ID, err.Error())
-        }
-
-        // delete the directory to free disk
-        err = utils.DeleteProjectDirectory(projectPath)
-        if err != nil {
-          database.CreateLog("Delete Project Directory error", project.ID, err.Error())
-        }
-
-      }
+			}
 
 		}()
 

@@ -1,6 +1,5 @@
 import { createProject } from "@/api/projects";
 import Spinner from "@/components/spinner";
-import { Button } from "@/components/ui/button";
 import ZustackLogo from "@/components/zustack-logo";
 import type { ErrorResponse } from "@/lib/types";
 import { useMutation } from "@tanstack/react-query";
@@ -33,11 +32,9 @@ const models = [
 ];
 
 export default function Landing() {
-  //const [prompt, setPrompt] = useState("");
   const [name, _] = useState("");
   const navigate = useNavigate();
   const { model, setModel } = useModelStore();
-  const [stack, setStack] = useState("UI Only");
 
   const handleModelSelect = (modelObj: (typeof models)[0]) => {
     setModel(modelObj.apiName);
@@ -85,11 +82,12 @@ export default function Landing() {
   return (
     <section className="container mx-auto px-[10px] 2xl:px-[200px] pt-[150px]">
       <div className="flex flex-col gap-[20px]">
-        <div className="flex justify-center items-center gap-[10px] ">
+
+        <div className="flex justify-center items-center gap-[10px]">
           <div className="hidden lg:block">
             <ZustackLogo size={50} />
           </div>
-          <h5 className="text-4xl font-extrabold">Build. Preview. Ship</h5>
+          <h5 className="text-4xl font-bold">Build. Preview. Ship</h5>
         </div>
 
         <div className="flex justify-center">
@@ -102,6 +100,7 @@ export default function Landing() {
                 placeholder="Ask n73 to build . . ."
               />
               <InputGroupAddon align="block-end">
+                {/*
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <InputGroupButton variant="ghost">
@@ -133,6 +132,7 @@ export default function Landing() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+               */}
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -161,15 +161,26 @@ export default function Landing() {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <InputGroupButton
-                  variant="outline"
-                  className="rounded-md ml-auto"
-                  size="icon-sm"
-                  type="submit"
-                >
-                  {createProjectMut.isPending ? <Spinner /> : <Send />}
-                  <span className="sr-only">Send</span>
-                </InputGroupButton>
+                {createProjectMut.isPending ? (
+                  <InputGroupButton
+                    variant="ghost"
+                    className="rounded-md ml-auto"
+                    size="icon-sm"
+                    type="submit"
+                  >
+                    <Spinner />
+                  </InputGroupButton>
+                ) : (
+                  <InputGroupButton
+                    variant="outline"
+                    className="rounded-md ml-auto"
+                    size="icon-sm"
+                    type="submit"
+                  >
+                    <Send />
+                    <span className="sr-only">Send</span>
+                  </InputGroupButton>
+                )}
               </InputGroupAddon>
             </InputGroup>
           </form>

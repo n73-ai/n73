@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"ai-zustack/database"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,190 @@ import (
 	"strings"
 	"time"
 )
+
+// update bunny status correctly, after each {}, current status, but is success
+func Upload2Bunny(project database.Project) error {
+	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
+
+	if project.BunnyStatus == "storage_zone" {
+		// name, region string
+		mainRegion := "SE"
+		storageZoneID, storageZonePassword, err := CreateStorageZone(project.ID, mainRegion)
+		if err != nil {
+			return err
+		}
+
+		// here update project.bunny_region
+		err = database.UpdateProjectStorageZone(project.ID, storageZoneID, storageZonePassword, "upload", "se")
+		if err != nil {
+			return err
+		}
+
+		// zonePassword, storageZoneName, distPath, region string
+		distDir := filepath.Join(projectPath, "dist")
+		err = UploadDirectory(storageZonePassword, project.ID, distDir, project.StorageZoneRegion)
+		if err != nil {
+			err2 := database.UpdateBunnyStatus(project.ID, "upload")
+			if err2 != nil {
+				return err2
+			}
+			return err
+		}
+
+		eu := true
+		na := false
+		asia := false
+		sa := false
+		af := false
+		pullZoneID, domain, err := CreatePullZone(storageZoneID, project.ID, eu, na, asia, sa, af)
+		if err != nil {
+			err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
+			if err2 != nil {
+				return err2
+			}
+			return err
+		}
+
+		err = database.UpdateProjectPullZoneID(project.ID, pullZoneID)
+		if err != nil {
+			return err
+		}
+
+		err = database.UpdateProjectDomain(domain, project.ID)
+		if err != nil {
+			return err
+		}
+
+		err = database.UpdateBunnyStatus(project.ID, "success")
+		if err != nil {
+			return err
+		}
+
+    /*
+		err = DeleteProjectDirectory(projectPath)
+		if err != nil {
+			return err
+		}
+    */
+
+		return nil
+
+	} else if project.BunnyStatus == "upload" {
+
+		// zonePassword, storageZoneName, distPath, region string
+		distDir := filepath.Join(projectPath, "dist")
+		err := UploadDirectory(project.StorageZonePassword, project.ID, distDir, project.StorageZoneRegion)
+		if err != nil {
+			err2 := database.UpdateBunnyStatus(project.ID, "upload")
+			if err2 != nil {
+				return err2
+			}
+			return err
+		}
+
+		eu := true
+		na := false
+		asia := false
+		sa := false
+		af := false
+		pullZoneID, domain, err := CreatePullZone(project.StorageZoneID, project.ID, eu, na, asia, sa, af)
+		if err != nil {
+			err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
+			if err2 != nil {
+				return err2
+			}
+			return err
+		}
+
+		err = database.UpdateProjectPullZoneID(project.ID, pullZoneID)
+		if err != nil {
+			return err
+		}
+
+		err = database.UpdateProjectDomain(domain, project.ID)
+		if err != nil {
+			return err
+		}
+
+    /*
+		err = DeleteProjectDirectory(projectPath)
+		if err != nil {
+			return err
+		}
+    */
+
+		err = database.UpdateBunnyStatus(project.ID, "success")
+		if err != nil {
+			return err
+		}
+
+		return nil
+
+	} else if project.BunnyStatus == "pull_zone" {
+
+		eu := true
+		na := false
+		asia := false
+		sa := false
+		af := false
+		pullZoneID, domain, err := CreatePullZone(project.StorageZoneID, project.ID, eu, na, asia, sa, af)
+		if err != nil {
+			err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
+			if err2 != nil {
+				return err2
+			}
+			return err
+		}
+
+		err = database.UpdateProjectPullZoneID(project.ID, pullZoneID)
+		if err != nil {
+			return err
+		}
+
+		err = database.UpdateProjectDomain(domain, project.ID)
+		if err != nil {
+			return err
+		}
+
+    /*
+		err = DeleteProjectDirectory(projectPath)
+		if err != nil {
+			return err
+		}
+    */
+
+		err = database.UpdateBunnyStatus(project.ID, "success")
+		if err != nil {
+			return err
+		}
+
+		return nil
+
+	} else if project.BunnyStatus == "success" {
+    fmt.Printf("storage zone id: %s, storage zone password: %s", project.StorageZoneID, project.StorageZonePassword)
+    err := DeleteAllFilesInStorageZone(project.ID, project.StorageZonePassword)
+		if err != nil {
+			return err
+		}
+
+		distDir := filepath.Join(projectPath, "dist")
+		err = UploadDirectory(project.StorageZonePassword, project.ID, distDir, project.StorageZoneRegion)
+		if err != nil {
+			return err
+		}
+
+		err = PurgePullZoneCache(project.PullZoneID)
+		if err != nil {
+			return err
+		}
+
+    return nil
+
+	} 
+
+  return fmt.Errorf("Error: project.bunny_status unknow.")
+
+}
 
 func DeleteAllFilesInStorageZone(storageZoneName, password string) error {
 	region := "se"
@@ -383,7 +568,7 @@ func CreatePullZone(storageZoneID, name string, eu, us, asia, sa, af bool) (id, 
 	}
 
 	defaultHostname = result.Hostnames[0].Value
-  pullZoneID := fmt.Sprintf("%d", result.ID)
+	pullZoneID := fmt.Sprintf("%d", result.ID)
 
 	return pullZoneID, defaultHostname, nil
 }
@@ -500,7 +685,7 @@ func CreateStorageZone(name, region string) (string, string, error) {
 		return "", "", fmt.Errorf("error parsing JSON response: %w\nRaw body: %s", err, string(body))
 	}
 
-  storageZoneID := fmt.Sprintf("%d", result.ID)
+	storageZoneID := fmt.Sprintf("%d", result.ID)
 
 	return storageZoneID, result.Password, nil
 }

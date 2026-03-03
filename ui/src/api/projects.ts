@@ -37,6 +37,7 @@ export const resumeProject = async (
   model: string,
   projectID: string
 ) => {
+  console.log("projectID: ", projectID)
   const response = await authAxios.post(`/projects/resume/${projectID}`, {
     prompt,
     model,

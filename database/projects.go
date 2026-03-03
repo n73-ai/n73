@@ -18,7 +18,7 @@ type Project struct {
 	ErrorMsg    string `json:"error_msg"`
 	FlyHostname string `json:"fly_hostname"`
 
-  BunnyStatus string `json:"bunny_status"`
+	BunnyStatus         string `json:"bunny_status"`
 	StorageZoneID       string `json:"storage_zone_id"`
 	StorageZoneRegion   string `json:"storage_zone_region"`
 	StorageZonePassword string `json:"storage_zone_password"`
@@ -63,7 +63,7 @@ func UpdateProjectStorageZone(projectID, storageZoneID, storageZonePassword, sta
 
 func UpdateBunnyStatus(projectID, status string) error {
 	result, err := DB.Exec(`
-		UPDATE projects SET status = $1 WHERE id = $2;`,
+		UPDATE projects SET bunny_status = $1 WHERE id = $2;`,
 		status, projectID)
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
@@ -141,11 +141,21 @@ func DeleteProject(projectID string) error {
 	return nil
 }
 
-func UpdateProjectDomain(projectID, domain string) error {
-	_, err := DB.Exec(`
+func UpdateProjectDomain(domain, projectID string) error {
+	result, err := DB.Exec(`
 		UPDATE projects SET domain = $1 WHERE id = $2;`,
 		domain, projectID)
-	return err
+	if err != nil {
+		return err
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return fmt.Errorf("project not found: %s", projectID)
+	}
+	return nil
 }
 
 func UpdateProjectPort(projectID string, port int) error {
@@ -208,9 +218,9 @@ func GetProjectByID(id string) (Project, error) {
 	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug,
 		&p.Domain, &p.Status, &p.GhRepo,
 		&p.ErrorMsg, &p.CreatedAt, &p.FlyHostname,
-    &p.BunnyStatus,
-    &p.StorageZoneID, &p.StorageZoneRegion, &p.StorageZonePassword, &p.PullZoneID,
-  ); err != nil {
+		&p.BunnyStatus,
+		&p.StorageZoneID, &p.StorageZoneRegion, &p.StorageZonePassword, &p.PullZoneID,
+	); err != nil {
 		if err == sql.ErrNoRows {
 			return p, fmt.Errorf("No project found with the id: %s", id)
 		}
@@ -228,11 +238,17 @@ func UpdateProjectErrorMsg(projectID, msg string) error {
 }
 
 func UpdateProjectStatus(projectID, status string) error {
-	_, err := DB.Exec(`
+	result, err := DB.Exec(`
 		UPDATE projects SET status = $1 WHERE id = $2;`,
 		status, projectID)
-
-	return err
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("No project found with the id %v", projectID)
+	}
+	return nil
 }
 
 func UpdateProjectSessionID(projectID, sessionID string) error {
@@ -254,7 +270,7 @@ func UpdateProjectOwner(projectID, userID string) error {
 	if rowsAffected == 0 {
 		return fmt.Errorf("No project found with the id %v", projectID)
 	}
-	return err
+	return nil
 }
 
 func UpdateFlyHostname(projectID, flyHostname string) error {
@@ -268,7 +284,7 @@ func UpdateFlyHostname(projectID, flyHostname string) error {
 	if rowsAffected == 0 {
 		return fmt.Errorf("No project found with the id %v", projectID)
 	}
-	return err
+	return nil
 }
 
 func CreateProject(id, userID, name, slug string) error {

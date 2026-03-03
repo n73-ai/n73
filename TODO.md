@@ -1,5 +1,10 @@
 # todos
 
+- [ ] hacer deploy desde project machine
+- [ ] arreglar status (Deploying) 
+- [ ] screenshot y upload desde project machine
+- [ ] fix delete: delete project in database, delete bunny project
+
 google-chrome --headless --disable-gpu \
   --screenshot=page.png \
   --window-size=1920,1080 \
@@ -7,6 +12,12 @@ google-chrome --headless --disable-gpu \
   https://n73.agustfricke.com
 
 ### features 
+--- 
+
+--- 
+
+
+- [ ] delete bunny.net after delete project
 - [ ] add custom domain 
 
 - [ ] responsive mobile ui

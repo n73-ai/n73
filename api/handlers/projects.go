@@ -15,7 +15,7 @@ import (
 )
 
 func AddCustomDomain(c *fiber.Ctx) error {
-  return c.SendStatus(200)
+	return c.SendStatus(200)
 }
 
 func PublishProject(c *fiber.Ctx) error {
@@ -47,7 +47,7 @@ func PublishProject(c *fiber.Ctx) error {
 
 	err = utils.NpmRunBuild(projectPath + "/ui-only")
 	if err != nil {
-    fmt.Println("npm err: ", err.Error())
+		fmt.Println("npm err: ", err.Error())
 		return c.Status(500).JSON(fiber.Map{
 			"error": "npm run build err",
 		})
@@ -55,66 +55,66 @@ func PublishProject(c *fiber.Ctx) error {
 
 	if project.BunnyStatus == "storage_zone" {
 		// name, region string
-    mainRegion := "SE"
+		mainRegion := "SE"
 		storageZoneID, storageZonePassword, err := utils.CreateStorageZone(project.ID, mainRegion)
 		if err != nil {
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
-    // here update project.bunny_region
+		// here update project.bunny_region
 		err = database.UpdateProjectStorageZone(project.ID, storageZoneID, storageZonePassword, "upload", "se")
 		if err != nil {
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
-    // zonePassword, storageZoneName, distPath, region string
-    distDir := filepath.Join(projectPath, "ui-only", "dist")
+		// zonePassword, storageZoneName, distPath, region string
+		distDir := filepath.Join(projectPath, "ui-only", "dist")
 		err = utils.UploadDirectory(storageZonePassword, project.ID, distDir, project.StorageZoneRegion)
-    if err != nil {
-      err2 := database.UpdateBunnyStatus(project.ID, "upload")
-      if err2 != nil {
-        // log the error
-        fmt.Println(err2.Error())
-      }
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
-    }
+		if err != nil {
+			err2 := database.UpdateBunnyStatus(project.ID, "upload")
+			if err2 != nil {
+				// log the error
+				fmt.Println(err2.Error())
+			}
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
 
-    eu := true
-    na := false
-    asia := false
-    sa := false
-    af := false
+		eu := true
+		na := false
+		asia := false
+		sa := false
+		af := false
 		pullZoneID, domain, err := utils.CreatePullZone(storageZoneID, project.ID, eu, na, asia, sa, af)
 		if err != nil {
-      err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
-      if err2 != nil {
-        // log the error
-        fmt.Println(err2.Error())
-      }
-      // update the project.bunny_status == 'create_pull_zone'
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
+			if err2 != nil {
+				// log the error
+				fmt.Println(err2.Error())
+			}
+			// update the project.bunny_status == 'create_pull_zone'
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
 		err = database.UpdateProjectPullZoneID(project.ID, pullZoneID)
 		if err != nil {
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
 		err = database.UpdateProjectDomain(domain, project.ID)
 		if err != nil {
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
 		err = utils.DeleteProjectDirectory(projectPath)
@@ -126,52 +126,52 @@ func PublishProject(c *fiber.Ctx) error {
 
 		return c.SendStatus(200)
 
-  } else if project.BunnyStatus == "upload" {
+	} else if project.BunnyStatus == "upload" {
 
-    // zonePassword, storageZoneName, distPath, region string
-    distDir := filepath.Join(projectPath, "ui-only", "dist")
+		// zonePassword, storageZoneName, distPath, region string
+		distDir := filepath.Join(projectPath, "ui-only", "dist")
 		err = utils.UploadDirectory(project.StorageZonePassword, project.ID, distDir, project.StorageZoneRegion)
-    if err != nil {
-      err2 := database.UpdateBunnyStatus(project.ID, "upload")
-      if err2 != nil {
-        // log the error
-        fmt.Println(err2.Error())
-      }
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
-    }
+		if err != nil {
+			err2 := database.UpdateBunnyStatus(project.ID, "upload")
+			if err2 != nil {
+				// log the error
+				fmt.Println(err2.Error())
+			}
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
 
-    eu := true
-    na := false
-    asia := false
-    sa := false
-    af := false
+		eu := true
+		na := false
+		asia := false
+		sa := false
+		af := false
 		pullZoneID, domain, err := utils.CreatePullZone(project.StorageZoneID, project.ID, eu, na, asia, sa, af)
 		if err != nil {
-      err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
-      if err2 != nil {
-        // log the error
-        fmt.Println(err2.Error())
-      }
-      // update the project.bunny_status == 'create_pull_zone'
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
+			if err2 != nil {
+				// log the error
+				fmt.Println(err2.Error())
+			}
+			// update the project.bunny_status == 'create_pull_zone'
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
 		err = database.UpdateProjectPullZoneID(project.ID, pullZoneID)
 		if err != nil {
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
 		err = database.UpdateProjectDomain(domain, project.ID)
 		if err != nil {
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
 		err = utils.DeleteProjectDirectory(projectPath)
@@ -183,38 +183,38 @@ func PublishProject(c *fiber.Ctx) error {
 
 		return c.SendStatus(200)
 
-  } else if project.BunnyStatus == "pull_zone" {
+	} else if project.BunnyStatus == "pull_zone" {
 
-    eu := true
-    na := false
-    asia := false
-    sa := false
-    af := false
+		eu := true
+		na := false
+		asia := false
+		sa := false
+		af := false
 		pullZoneID, domain, err := utils.CreatePullZone(project.StorageZoneID, project.ID, eu, na, asia, sa, af)
 		if err != nil {
-      err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
-      if err2 != nil {
-        // log the error
-        fmt.Println(err2.Error())
-      }
-      // update the project.bunny_status == 'create_pull_zone'
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			err2 := database.UpdateBunnyStatus(project.ID, "pull_zone")
+			if err2 != nil {
+				// log the error
+				fmt.Println(err2.Error())
+			}
+			// update the project.bunny_status == 'create_pull_zone'
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
 		err = database.UpdateProjectPullZoneID(project.ID, pullZoneID)
 		if err != nil {
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
 		err = database.UpdateProjectDomain(domain, project.ID)
 		if err != nil {
-		  return c.Status(500).JSON(fiber.Map{
-        "error": err.Error(),
-		  })
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
 
 		err = utils.DeleteProjectDirectory(projectPath)
@@ -226,8 +226,8 @@ func PublishProject(c *fiber.Ctx) error {
 
 		return c.SendStatus(200)
 
-  } else if project.BunnyStatus == "success" {
-	  err := utils.DeleteAllFilesInStorageZone(project.StorageZonePassword, project.StorageZoneID)
+	} else if project.BunnyStatus == "success" {
+		err := utils.DeleteAllFilesInStorageZone(project.StorageZonePassword, project.StorageZoneID)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
@@ -241,19 +241,19 @@ func PublishProject(c *fiber.Ctx) error {
 			})
 		}
 
-	  err = utils.PurgePullZoneCache(project.PullZoneID)
-    if err != nil {
+		err = utils.PurgePullZoneCache(project.PullZoneID)
+		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
 			})
-    }
+		}
 
-  } else {
-    fmt.Println("Bunny Status unknow")
+	} else {
+		fmt.Println("Bunny Status unknow")
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Bunny Status unknow",
 		})
-  }
+	}
 
 	return c.SendStatus(200)
 }
@@ -383,37 +383,27 @@ func DeleteProject(c *fiber.Ctx) error {
 		if err != nil {
 			fmt.Println("delete app: ", err.Error())
 		}
+    /*
 		err = utils.DeleteGhRepo(projectID)
 		if err != nil {
 			fmt.Println("delete gh repo: ", err.Error())
 		}
-		err = utils.DeleteCfPage(projectID)
-		if err != nil {
-			fmt.Println("cf page err: ", err.Error())
-		}
+    */
 	}()
 
 	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 
 	if _, err := os.Stat(projectPath); err != nil {
 		if os.IsNotExist(err) {
-			err = database.DeleteProject(projectID)
-			if err != nil {
-				return c.Status(500).JSON(fiber.Map{
-					"error": err.Error(),
-				})
-			}
-			return c.SendStatus(200)
+      err = utils.DeleteProjectDirectory(projectPath)
+      if err != nil {
+        return c.Status(500).JSON(fiber.Map{
+          "error": err.Error(),
+        })
+      }
 		}
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Error checking project directory: " + err.Error(),
-		})
-	}
-
-	err = os.RemoveAll(projectPath)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": "Error removing project directory: " + err.Error(),
 		})
 	}
 
@@ -517,7 +507,7 @@ func CreateProject(c *fiber.Ctx) error {
 			return
 		}
 
-		endpoint := fmt.Sprintf("http://%s.internal:5000/claude/new", projectID)
+		endpoint := fmt.Sprintf("https://%s.fly.dev/claude/new", projectID)
 
 		time.Sleep(5 * time.Second)
 		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, projectPath, endpoint, projectID)
@@ -526,12 +516,14 @@ func CreateProject(c *fiber.Ctx) error {
 			return
 		}
 
+    /*
 		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 		err = utils.GhCreate(slug, projectPath)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
+    */
 
 		ghRepo := fmt.Sprintf("https://github.com/n73-projects/%s", slug)
 		err = database.UpdateGhRepo(projectID, ghRepo)
@@ -599,7 +591,7 @@ func ResumeProject(c *fiber.Ctx) error {
 	}
 
 	if project.Status == "new_error" || project.Status == "new_internal_error" {
-		err = database.UpdateProjectStatus(projectID, "new_pending")
+    err := database.UpdateProjectStatus(projectID, "new_pending")
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
@@ -610,7 +602,7 @@ func ResumeProject(c *fiber.Ctx) error {
 	if project.Status == "error" ||
 		project.Status == "internal_error" ||
 		project.Status == "idle" {
-		err = database.UpdateProjectStatus(projectID, "pending")
+    err := database.UpdateProjectStatus(projectID, "pending")
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
@@ -621,11 +613,11 @@ func ResumeProject(c *fiber.Ctx) error {
 	go func() {
 
 		messageID := uuid.NewString()
-		endpoint := fmt.Sprintf("http://%s.internal:5000/claude/new", projectID)
+		endpoint := fmt.Sprintf("https://%s.fly.dev/claude/resume", projectID)
 		webhookURL := fmt.Sprintf("%s/webhook/messages/%s/%s", os.Getenv("DOMAIN"), projectID, payload.Model)
 		sessionID := project.SessionID
 
-		err = utils.ResumeClaudeProject(
+    err := utils.ResumeClaudeProject(
 			payload.Prompt,
 			payload.Model,
 			webhookURL,
@@ -633,13 +625,18 @@ func ResumeProject(c *fiber.Ctx) error {
 			sessionID,
 			endpoint, projectID)
 		if err != nil {
+      fmt.Println("resume claude project: ", err.Error())
 			database.UpdateProjectStatus(projectID, "idle")
 			SendToUser(projectID, "error")
 			return
 		}
 
-		err = database.CreateMessage(messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
+    fmt.Println("projectID: ", projectID)
+    fmt.Println("project.ID: ", project.ID)
+    // err create message:  pq: insert or update on table "messages" violates foreign key constraint "messages_project_id_fkey"
+		err = database.CreateMessage(messageID, project.ID, "user", payload.Prompt, payload.Model, 0, false, 0.0)
 		if err != nil {
+      fmt.Println("err create message: ", err.Error())
 			SendToUser(projectID, "error")
 			database.UpdateProjectStatus(projectID, "idle")
 			return

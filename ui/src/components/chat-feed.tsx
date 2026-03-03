@@ -1,12 +1,10 @@
 import {
   AlertCircleIcon,
   ChevronDown,
-  GithubIcon,
   LinkIcon,
   Send,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import ZustackLogo from "./zustack-logo";
 import Spinner from "./spinner";
 import Markdown from "./markdown";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -50,7 +48,6 @@ export default function ChatFeed({ p }: { p: any }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
-  const [stack, setStack] = useState("UI Only");
 
   const { model, setModel } = useModelStore();
 
@@ -241,7 +238,7 @@ export default function ChatFeed({ p }: { p: any }) {
 
         {(p.status == "new_pending" || p.status == "pending" || isLoading) && (
           <div className="flex items-center gap-2 text-muted-foreground py-[20px]">
-            <Spinner /> Thinking . . .
+            <Spinner /> Thinking
           </div>
         )}
 
@@ -294,9 +291,10 @@ export default function ChatFeed({ p }: { p: any }) {
               onKeyDown={handleKeyDown}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Ask n73 to build . . ."
+              placeholder="Ask n83..."
             />
             <InputGroupAddon align="block-end">
+              {/*
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <InputGroupButton variant="ghost">
@@ -324,6 +322,7 @@ export default function ChatFeed({ p }: { p: any }) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              */}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -353,43 +352,44 @@ export default function ChatFeed({ p }: { p: any }) {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <a
-                href={`https://${p?.fly_hostname}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-auto"
-              >
-                <InputGroupButton
-                  variant="outline"
-                  className="rounded-md"
-                  size="icon-sm"
+              {p?.domain != "" && (
+                <a
+                  href={`https://${p.domain}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className=""
                 >
-                  <LinkIcon />
-                </InputGroupButton>
-              </a>
-
-              {p?.gh_repo != "" && (
-                <a href={p.gh_repo} target="_blank" rel="noopener noreferrer">
                   <InputGroupButton
-                    size="icon-sm"
                     variant="outline"
-                    className="rounded-md"
+                    className="rounded-md ml-auto"
+                    size="icon-sm"
                   >
-                    <GithubIcon />
+                    <LinkIcon />
                   </InputGroupButton>
                 </a>
               )}
 
-              <Separator orientation="vertical" className="!h-4" />
-              <InputGroupButton
-                variant="outline"
-                className="rounded-md"
-                size="icon-sm"
-                type="submit"
-              >
-                {resumeProjectMutation.isPending ? <Spinner /> : <Send />}
-                <span className="sr-only">Send</span>
-              </InputGroupButton>
+              {resumeProjectMutation.isPending ? (
+                <InputGroupButton
+                  variant="ghost"
+                  className="rounded-md ml-auto"
+                  size="icon-sm"
+                  type="submit"
+                >
+                  <Spinner />
+                  <span className="sr-only">Spinner</span>
+                </InputGroupButton>
+              ) : (
+                <InputGroupButton
+                  variant="outline"
+                  className="rounded-md ml-auto"
+                  size="icon-sm"
+                  type="submit"
+                >
+                  <Send />
+                  <span className="sr-only">Send</span>
+                </InputGroupButton>
+              )}
             </InputGroupAddon>
           </InputGroup>
         </form>

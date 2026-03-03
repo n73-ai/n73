@@ -16,7 +16,7 @@ func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID, endpoint, p
 		"webhook_url": webhookURL,
 		"session_id":  sessionID,
 		"jwt":         os.Getenv("ADMIN_JWT"),
-		"project_id":         projectID,
+		"project_id":  projectID,
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -52,7 +52,7 @@ func CreateClaudeProject(prompt, model, webhookURL, path, endpoint, projectID st
 		"model":       model,
 		"webhook_url": webhookURL,
 		"jwt":         os.Getenv("ADMIN_JWT"),
-		"project_id": projectID,
+		"project_id":  projectID,
 	}
 
 	jsonData, err := json.Marshal(payload)

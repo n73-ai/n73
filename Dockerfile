@@ -45,6 +45,7 @@ COPY --from=builder /app/x73-app /app/x73-app
 COPY --from=builder /app/templates /app/templates
 COPY --from=builder /app/claude /app/claude
 COPY --from=builder /app/scripts /app/scripts
+COPY --from=builder /app/ts-claude /app/ts-claude
 
 EXPOSE 8080
 

@@ -2,7 +2,44 @@
 
 # take screenshots
 
+then edit readme.md and replace the word food for cat.",
+c55ef272-d033-4814-8860-9b1afe9ecfdd
+
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+
+- [ ] create app (fly/create.go)
+- [ ] deploy manual (fly/create.go)
+
 crear apps en fly manualmente para ver si funciona con: 
+0: old-current
+```bash
+FROM nikolaik/python-nodejs:python3.10-nodejs22
+
+RUN npm install -g @anthropic-ai/claude-code
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+
+EXPOSE 5173
+EXPOSE 5000
+
+CMD ["./start.sh"]
+
+---
+
+#!/bin/bash
+
+mkdir /root/.claude
+cp .credentials.json /root/.claude/.credentials.json
+
+python main.py &
+
+npm --prefix /app/ui-only install
+npm run --prefix /app/ui-only build
+python3 -m http.server 5173 --directory /app/ui-only/dist
+```
 
 1:
 ```Dockerfile

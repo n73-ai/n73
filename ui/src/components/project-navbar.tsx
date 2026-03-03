@@ -41,15 +41,6 @@ export default function ProjectNavbar() {
             </Button>
           </Link>
           <SettingsDialog />
-          <Button 
-            variant="outline"
-            onClick={() => publishProjectMutation.mutate()}
-            >
-            Publish
-            {publishProjectMutation.isPending && (
-              <Spinner />
-            )}
-          </Button>
         </div>
         <div className="flex gap-[10px]">
           <DropdownMenu>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>n73 project</title>
+    <style>
+      div.spinner {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        display: inline-block;
+      }
+
+      div.spinner div {
+        width: 6%;
+        height: 16%;
+        background: #fff;
+        position: absolute;
+        left: 49%;
+        top: 43%;
+        opacity: 0;
+        border-radius: 50px;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+        animation: fade 1s linear infinite;
+      }
+
+      @keyframes fade {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0.25;
+        }
+      }
+
+      div.spinner div.bar1 {
+        transform: rotate(0deg) translate(0, -130%);
+        animation-delay: 0s;
+      }
+
+      div.spinner div.bar2 {
+        transform: rotate(45deg) translate(0, -130%);
+        animation-delay: -0.875s;
+      }
+
+      div.spinner div.bar3 {
+        transform: rotate(90deg) translate(0, -130%);
+        animation-delay: -0.75s;
+      }
+
+      div.spinner div.bar4 {
+        transform: rotate(135deg) translate(0, -130%);
+        animation-delay: -0.625s;
+      }
+
+      div.spinner div.bar5 {
+        transform: rotate(180deg) translate(0, -130%);
+        animation-delay: -0.5s;
+      }
+
+      div.spinner div.bar6 {
+        transform: rotate(225deg) translate(0, -130%);
+        animation-delay: -0.375s;
+      }
+
+      div.spinner div.bar7 {
+        transform: rotate(270deg) translate(0, -130%);
+        animation-delay: -0.25s;
+      }
+
+      div.spinner div.bar8 {
+        transform: rotate(315deg) translate(0, -130%);
+        animation-delay: -0.125s;
+      }
+    </style>
+  </head>
+  <body>
+    <div className="spinner" id="spinner-start">
+      <div className="bar1"></div>
+      <div className="bar2"></div>
+      <div className="bar3"></div>
+      <div className="bar4"></div>
+      <div className="bar5"></div>
+      <div className="bar6"></div>
+      <div className="bar7"></div>
+      <div className="bar8"></div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

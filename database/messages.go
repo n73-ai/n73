@@ -54,6 +54,7 @@ func GetMessagesByProjectID(projectID string) ([]Message, error) {
 	return messages, nil
 }
 
+// messageID, projectID, "user", payload.Prompt, payload.Model, 0, false, 0.0
 func CreateMessage(id, projectID, role, content, model string, duration int,
 	isError bool, totalCostUsd float64) error {
 	_, err := DB.Exec(`

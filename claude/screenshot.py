@@ -15,3 +15,5 @@ def take_screenshot(url):
     # save the url in project.image
     driver.save_screenshot("/app/screenshot.png")
     driver.quit()
+
+take_screenshot("https://project-d88c4024-e85e-4928-850d-a52fc4b2d01a.pages.dev/")

@@ -1,4 +1,4 @@
-app = "n73-test"
+app = "elliot-4200"
 primary_region = 'arn'
 
 [http_service]

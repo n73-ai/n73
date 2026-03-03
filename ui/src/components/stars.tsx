@@ -1,221 +1,115 @@
-import { useState, useEffect } from "react";
-import Spinner from "./spinner";
-import { AlertCircleIcon } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 interface Star {
-  id: number;
-  x: number;
-  y: number;
+  angle: number;
+  radius: number;
+  speed: number;
   size: number;
-  opacity: number;
-  minOpacity: number;
-  maxOpacity: number;
-  twinkleDelay: number;
-  duration: number;
-  appearDelay: number;
 }
 
-const StarryBackground = ({
-  isIframeError,
-  status,
-}: {
-  isIframeError: boolean;
-  status: string;
-}) => {
-  const [stars, setStars] = useState<Star[]>([]);
-  const [mounted, setMounted] = useState<boolean>(false);
+interface ShootingStar {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  initialLife: number;
+}
+
+export default function Stars() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const generateStars = (): void => {
-      const newStars: Star[] = [];
-      const numberOfStars = 450;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let stars: Star[] = [];
+    let shootingStars: ShootingStar[] = [];
+    const numStars = 360;
+    let animationId;
 
-      for (let i = 0; i < numberOfStars; i++) {
-        const baseOpacity = Math.random() * 0.4 + 0.6;
-        const animationDelay = Math.random() * 8;
-        const animationDuration = 6 + Math.random() * 4;
-        const appearDelay = i * 0.08 + Math.random() * 4;
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initStars();
+    }
 
-        newStars.push({
-          id: i,
-          x: Math.random() * 100,
-          y: Math.random() * 100,
-          size: Math.random() * 3 + 1,
-          opacity: baseOpacity,
-          minOpacity: baseOpacity * 0.7,
-          maxOpacity: baseOpacity,
-          twinkleDelay: animationDelay,
-          duration: animationDuration,
-          appearDelay: appearDelay,
+    function initStars() {
+      stars = Array.from({ length: numStars }, () => ({
+        angle: Math.random() * Math.PI * 2,
+        radius: Math.random() * Math.sqrt(canvas.width ** 2 + canvas.height ** 2),
+        speed: Math.random() * 0.0003 + 0.00015,
+        size: Math.random() * 1.2 + 0.5,
+      }));
+    }
+
+    function spawnShootingStar() {
+      if (shootingStars.length === 0 && Math.random() < 0.01) {
+        shootingStars.push({
+          x: Math.random() * canvas.width * 0.5,
+          y: Math.random() * canvas.height * 0.5,
+          vx: 3 + Math.random() * 2,
+          vy: 1 + Math.random() * 1.5,
+          life: 80,
+          initialLife: 80,
         });
       }
+    }
 
-      setStars(newStars);
+    function animate() {
+      const centerX = canvas.width;
+      const centerY = canvas.height;
+
+      ctx.fillStyle = "oklch(0.1913 0 0)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      stars.forEach((star, i) => {
+        star.angle += star.speed;
+        const x = centerX + star.radius * Math.cos(star.angle);
+        const y = centerY + star.radius * Math.sin(star.angle);
+        const flicker = 0.4 + Math.abs(Math.sin(Date.now() * 0.0015 + i)) * 0.5;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255, 255, 255, ${flicker})`;
+        ctx.arc(x, y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      spawnShootingStar();
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const s = shootingStars[i];
+        const opacity = s.life / s.initialLife;
+        const grad = ctx.createLinearGradient(s.x, s.y, s.x - s.vx * 35, s.y - s.vy * 35);
+        grad.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
+        grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - s.vx * 18, s.y - s.vy * 18);
+        ctx.stroke();
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life -= 1;
+        if (s.life <= 0) shootingStars.splice(i, 1);
+      }
+
+      animationId = requestAnimationFrame(animate);
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      cancelAnimationFrame(animationId);
     };
-
-    generateStars();
-
-    const timer = setTimeout(() => {
-      setMounted(true);
-    }, 500);
-
-    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      <style>{`
-        @keyframes twinkle {
-          0% {
-            opacity: calc(
-              var(--min-opacity) + (var(--max-opacity) - var(--min-opacity)) *
-                0.5 + (var(--max-opacity) - var(--min-opacity)) * 0.5 *
-                sin(0deg)
-            );
-            transform: scale(1);
-          }
-          25% {
-            opacity: var(--max-opacity);
-            transform: scale(1.1);
-          }
-          50% {
-            opacity: calc(
-              var(--min-opacity) + (var(--max-opacity) - var(--min-opacity)) *
-                0.5 + (var(--max-opacity) - var(--min-opacity)) * 0.5 *
-                sin(180deg)
-            );
-            transform: scale(1);
-          }
-          75% {
-            opacity: var(--max-opacity);
-            transform: scale(1.1);
-          }
-          100% {
-            opacity: calc(
-              var(--min-opacity) + (var(--max-opacity) - var(--min-opacity)) *
-                0.5 + (var(--max-opacity) - var(--min-opacity)) * 0.5 *
-                sin(360deg)
-            );
-            transform: scale(1);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: scale(0.3);
-          }
-          to {
-            opacity: var(--target-opacity);
-            transform: scale(1);
-          }
-        }
-
-@keyframes skyMovement {
-  0% { transform: translateX(100vw) translateY(-3vh) rotate(1deg); }
-  10% { transform: translateX(85vw) translateY(2vh) rotate(-0.5deg); }
-  20% { transform: translateX(70vw) translateY(-1vh) rotate(0.8deg); }
-  30% { transform: translateX(55vw) translateY(3vh) rotate(-0.3deg); }
-  40% { transform: translateX(40vw) translateY(-2vh) rotate(0.6deg); }
-  50% { transform: translateX(25vw) translateY(2.5vh) rotate(-0.7deg); }
-  60% { transform: translateX(10vw) translateY(-1.5vh) rotate(0.4deg); }
-  70% { transform: translateX(-5vw) translateY(3vh) rotate(-0.8deg); }
-  80% { transform: translateX(-20vw) translateY(-2vh) rotate(0.5deg); }
-  90% { transform: translateX(-35vw) translateY(2vh) rotate(-0.6deg); }
-  100% { transform: translateX(-100vw) translateY(-3vh) rotate(1deg); }
-}
-
-        .sky-container {
-          animation: skyMovement 260s linear infinite;
-          width: 300vw;
-          height: 110%;
-          position: absolute;
-          top: -5%;
-          left: -100vw;
-        }
-
-        .star {
-          opacity: 0;
-          animation: twinkle 4s ease-in-out infinite;
-        }
-
-        .star.visible {
-          animation:
-            fadeIn 2.5s ease-out forwards,
-            twinkle 4s ease-in-out infinite;
-        }
-      `}</style>
-      <div className="sky-container">
-        {stars.map((star) => (
-          <div
-            key={star.id}
-            className={`absolute rounded-full bg-zinc-400 star ${mounted ? "visible" : ""}`}
-            style={
-              {
-                left: `${star.x}%`,
-                top: `${star.y}%`,
-                width: `${star.size}px`,
-                height: `${star.size}px`,
-                "--min-opacity": star.minOpacity,
-                "--max-opacity": star.maxOpacity,
-                "--target-opacity": star.maxOpacity,
-                animationDelay: `${star.appearDelay}s, ${star.twinkleDelay + star.appearDelay + 2.5}s`,
-                animationDuration: `2.5s, ${star.duration}s`,
-                boxShadow: `0 0 ${star.size * 1.5}px rgba(255, 255, 255, ${star.opacity * 0.3})`,
-              } as React.CSSProperties
-            }
-          />
-        ))}
-
-        {stars.slice(0, 20).map((star) => (
-          <div
-            key={`bright-${star.id}`}
-            className={`absolute rounded-full bg-zinc-200 star ${mounted ? "visible" : ""}`}
-            style={
-              {
-                left: `${star.x}%`,
-                top: `${star.y}%`,
-                width: `${star.size + 1}px`,
-                height: `${star.size + 1}px`,
-                "--min-opacity": star.minOpacity,
-                "--max-opacity": star.maxOpacity,
-                "--target-opacity": star.maxOpacity,
-                animationDelay: `${star.appearDelay + 1}s, ${star.twinkleDelay + star.appearDelay + 3.5}s`,
-                animationDuration: `2.5s, ${star.duration + 1}s`,
-                boxShadow: `0 0 ${star.size * 2}px rgba(255, 255, 255, 0.4)`,
-              } as React.CSSProperties
-            }
-          />
-        ))}
-      </div>
-
-      <div className="relative z-10 flex items-center justify-center h-full">
-        <div className="text-center text-white">
-          {status == "new_error" && (
-            <div className="text-xl flex items-center gap-2 text-destructive py-[30px]">
-              <AlertCircleIcon />
-              Code compilation failed
-            </div>
-          )}
-
-          {isIframeError && status != "new_pending" && status != "new_error" && (
-            <div className="text-xl flex items-center gap-2 text-destructive py-[30px]">
-              <AlertCircleIcon />
-              Your website looks it's not online
-            </div>
-          )}
-
-          {status == "new_pending" && (
-            <div className="text-xl flex items-center gap-2 text-muted-foreground py-[30px]">
-              <Spinner />
-              Building your project
-            </div>
-          )}
-
-        </div>
-      </div>
-    </div>
+    <canvas
+      ref={canvasRef}
+    />
   );
-};
-
-export default StarryBackground;
+}

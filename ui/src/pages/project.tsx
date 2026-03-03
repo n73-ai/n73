@@ -12,9 +12,11 @@ import { getProjectByID } from "@/api/projects";
 import Stars from "@/components/stars";
 import axios from "axios";
 import { CloudOffIcon } from "lucide-react";
+import { useState } from "react";
 
 export default function Project() {
   const { projectID } = useParams();
+  const [iframeIsLoading, setIsLoading] = useState(true);
 
   const { data, isLoading, isError, dataUpdatedAt } = useQuery({
     queryKey: ["project", projectID],
@@ -25,19 +27,21 @@ export default function Project() {
   const { isError: isErrorIframe } = useQuery({
     queryKey: ["iframe-status", data?.fly_hostname],
     queryFn: async () => {
-      const res = await axios.head(`https://${data?.fly_hostname}`);
+      const res = await axios.head(`https://${data?.domain}`);
       return res.status;
     },
     retry: false,
   });
 
-  console.log(data);
-
   return (
     <div className="h-[100dvh] flex flex-col">
       <ProjectNavbar />
       {isError && <p>An unexpected error occurred.</p>}
-      {isLoading && <Spinner />}
+      {isLoading && (
+        <div className="flex items-center gap-2 text-muted-foreground py-[20px]">
+          <Spinner /> Loading chat
+        </div>
+      )}
       <div className="flex-1 min-h-0">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={40}>
@@ -47,39 +51,34 @@ export default function Project() {
 
           <ResizablePanel className="hidden lg:block">
             {(data?.status == "new_pending" || data?.status == "new_error") && (
-              <Stars status={data?.status} isIframeError={isErrorIframe} />
+              <div className="relative w-full h-full">
+                <Stars />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <h5 className="text-xl flex items-center gap-2 text-muted-foreground py-[30px]">
+                    <Spinner />
+                    Building your project
+                  </h5>
+                </div>
+              </div>
             )}
 
-            {/*
-            {(data?.status == "pending" ||
-              data?.status == "idle" ||
-              data?.status == "internal_error" ||
-              data?.status == "error") &&
-              !isErrorIframe && (
-                <div className="flex flex-col h-full">
-                  <div className="flex-1">
-                    {data?.domain == "" ? (
-                      <p className="text-center mt-[400px]">
-                        The project is deployed but not domain name was found.
-                      </p>
-                    ) : (
-                      <iframe
-                        key={dataUpdatedAt}
-                        className="w-full h-full block"
-                        //src={`https://${data.fly_hostname}`}
-                        src="https://e1fb4217-7b30-49a5-9729-8c5f3edaf4e2.fly.dev/"
-                      />
-                    )}
-                  </div>
+            {iframeIsLoading && (
+              <div className="relative z-10 flex items-center justify-center h-full">
+                <div className="text-xl flex items-center gap-2 text-muted-foreground py-[30px]">
+                  <Spinner />
                 </div>
-              )}
-              */}
+              </div>
+            )}
 
-            <iframe
-            key={dataUpdatedAt}
-            className="w-full h-full block"
-            src={`https://${data?.fly_hostname}`}
+            {data?.domain && (
+              <iframe
+                key={dataUpdatedAt}
+                onLoad={() => setIsLoading(false)}
+                style={{ display: iframeIsLoading ? "none" : "block" }}
+                className="w-full h-full block"
+                src={`https://${data.domain}?_t=${dataUpdatedAt}`}
               />
+            )}
 
             {data?.status == "new_internal_error" && (
               <div className="relative z-10 flex items-center justify-center h-full">

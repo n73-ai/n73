@@ -26,7 +26,7 @@ export default function Projects() {
       >
         Your Projects
       </h1>
-      <div className="bg-secondary/80 rounded-lg p-[10px]">
+      <div className="bg-secondary/50 rounded-lg p-[10px]">
         {isLoading && <Spinner />}
         {isError && <p>An unexpected error occurred.</p>}
         {!data && !isLoading && !isError && (
@@ -37,8 +37,7 @@ export default function Projects() {
               </EmptyMedia>
               <EmptyTitle>No Projects Yet</EmptyTitle>
               <EmptyDescription>
-                You haven&apos;t created any projects yet. Get started by
-                creating your first project.
+                You haven&apos;t created any projects yet.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -51,7 +50,7 @@ export default function Projects() {
                   <CardTitle className="pb-[10px]">{p.name}</CardTitle>
                   <div className="hidden xl:block relative overflow-hidden w-full h-48 rounded-md">
                     <iframe
-                      src={p.domain}
+                      src={`https://${p.domain}`}
                       className="absolute top-0 left-0 w-[1280px] h-[800px] scale-[0.25] origin-top-left pointer-events-none"
                     />
                   </div>

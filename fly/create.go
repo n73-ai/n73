@@ -62,8 +62,28 @@ func getHostname(appName string) (string, error) {
 	return resp.Hostname, nil
 }
 
+func AllocateV6(projectID string) error {
+	projectDir := filepath.Join(os.Getenv("ROOT_PATH"), "ts-claude")
+
+	cmd := exec.Command("fly", "ips", "allocate-v6", "--private", "-a", projectID)
+	cmd.Dir = projectDir
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		output := stdout.String() + stderr.String()
+		return fmt.Errorf("fly allocate v6 failed: %w\n--- Output ---\n%s", err, output)
+	}
+
+	return nil
+}
+
 func CreateMachine(flyConfigPath string) error {
-	projectDir := filepath.Join(os.Getenv("ROOT_PATH"), "claude")
+	projectDir := filepath.Join(os.Getenv("ROOT_PATH"), "ts-claude")
+
+	// fly ips allocate-v6 --private
 
 	cmd := exec.Command("flyctl", "deploy", "--config", flyConfigPath, "--ha=false")
 	cmd.Dir = projectDir
@@ -86,7 +106,7 @@ app = "%s"
 primary_region = 'arn'
 
 [http_service]
-  internal_port = 5173
+  internal_port = 5000
   force_https = true
   auto_stop_machines = 'suspend'
   auto_start_machines = true
