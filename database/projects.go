@@ -230,11 +230,17 @@ func GetProjectByID(id string) (Project, error) {
 }
 
 func UpdateProjectErrorMsg(projectID, msg string) error {
-	_, err := DB.Exec(`
+	result, err := DB.Exec(`
 		UPDATE projects SET error_msg = $1 WHERE id = $2;`,
 		msg, projectID)
-
-	return err
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("No project found with the id %v", projectID)
+	}
+	return nil
 }
 
 func UpdateProjectStatus(projectID, status string) error {

@@ -103,11 +103,11 @@ func WebhookMessage(c *fiber.Ctx) error {
 		// here starts go func()
 		go func() {
 
-	    fmt.Println("buildError: ", payload.BuildError)
-	    fmt.Println("error msg: ", payload.BuildErrorMsg)
-
 			if payload.BuildError {
-        // database.UpdateProjectErrorMsg() // do this!
+				err := database.UpdateProjectErrorMsg(project.ID, payload.BuildErrorMsg) // do this!
+				if err != nil {
+					fmt.Println("error UpdateProjectErrorMsg(): ", err.Error())
+				}
 				error2fix := fmt.Sprintf("build-error: %s", payload.BuildErrorMsg)
 				SendToUser(projectID, error2fix)
 

@@ -1,5 +1,6 @@
 # todos
 
+- [ ] login to claude-code and generate long life token
 - [ ] hacer deploy desde project machine
 - [ ] arreglar status (Deploying) 
 - [ ] screenshot y upload desde project machine

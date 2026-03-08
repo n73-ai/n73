@@ -391,8 +391,9 @@ func DeleteProject(c *fiber.Ctx) error {
     */
 	}()
 
-	projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
+	//projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
 
+	/*
 	if _, err := os.Stat(projectPath); err != nil {
 		if os.IsNotExist(err) {
       err = utils.DeleteProjectDirectory(projectPath)
@@ -406,6 +407,7 @@ func DeleteProject(c *fiber.Ctx) error {
 			"error": "Error checking project directory: " + err.Error(),
 		})
 	}
+	*/
 
 	err = database.DeleteProject(projectID)
 	if err != nil {

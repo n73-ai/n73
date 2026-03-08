@@ -10,6 +10,7 @@ export default function LatestProjects() {
     queryFn: () => getLatestProjects(),
   });
 
+
   if (data == null) return <></>
 
   return (
