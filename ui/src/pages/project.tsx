@@ -36,15 +36,16 @@ export default function Project() {
   return (
     <div className="h-[100dvh] flex flex-col">
       <ProjectNavbar />
-      {isError && <p>An unexpected error occurred.</p>}
-      {isLoading && (
-        <div className="flex items-center gap-2 text-muted-foreground py-[20px]">
-          <Spinner /> Loading chat
-        </div>
-      )}
+
       <div className="flex-1 min-h-0">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={40}>
+            {isError && <p>An unexpected error occurred.</p>}
+            {isLoading && (
+              <div className="flex items-center gap-2 text-muted-foreground py-[20px]">
+                <Spinner /> Loading chat
+              </div>
+            )}
             {data && <ChatFeed p={data} />}
           </ResizablePanel>
           <ResizableHandle />
