@@ -383,12 +383,20 @@ func DeleteProject(c *fiber.Ctx) error {
 		if err != nil {
 			fmt.Println("delete app: ", err.Error())
 		}
-    /*
-		err = utils.DeleteGhRepo(projectID)
-		if err != nil {
-			fmt.Println("delete gh repo: ", err.Error())
+
+		if project.PullZoneID != "" {
+			err = utils.DeletePullZone(project.PullZoneID)
+			if err != nil {
+				fmt.Println("delete pull zone: ", err.Error())
+			}
 		}
-    */
+
+		if project.StorageZoneID != "" {
+			err = utils.DeleteStorageZone(project.StorageZoneID)
+			if err != nil {
+				fmt.Println("delete storage zone: ", err.Error())
+			}
+		}
 	}()
 
 	//projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
@@ -518,22 +526,6 @@ func CreateProject(c *fiber.Ctx) error {
 			return
 		}
 
-    /*
-		projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
-		err = utils.GhCreate(slug, projectPath)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-    */
-
-		ghRepo := fmt.Sprintf("https://github.com/n73-projects/%s", slug)
-		err = database.UpdateGhRepo(projectID, ghRepo)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-
 	}()
 
 	return c.Status(200).JSON(fiber.Map{
@@ -610,6 +602,11 @@ func ResumeProject(c *fiber.Ctx) error {
 				"error": err.Error(),
 			})
 		}
+	}
+
+	err = database.UpdateProjectErrorMsg(project.ID, "") 
+	if err != nil {
+		fmt.Println("error UpdateProjectErrorMsg(): ", err.Error())
 	}
 
 	go func() {

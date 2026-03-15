@@ -633,6 +633,68 @@ func UploadDirectory(zonePassword, storageZoneName, distPath, region string) err
 	return nil
 }
 
+func DeletePullZone(pullZoneID string) error {
+	const apiBase = "https://api.bunny.net"
+	apiKey := os.Getenv("BUNNYNET_ACCESS_KEY")
+	if apiKey == "" {
+		return fmt.Errorf("BUNNYNET_ACCESS_KEY is not set")
+	}
+
+	client := &http.Client{Timeout: 30 * time.Second}
+
+	url := fmt.Sprintf("%s/pullzone/%s", apiBase, pullZoneID)
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return fmt.Errorf("error creating request: %w", err)
+	}
+
+	req.Header.Set("AccessKey", apiKey)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("error deleting pull zone (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+func DeleteStorageZone(storageZoneID string) error {
+	const apiBase = "https://api.bunny.net"
+	apiKey := os.Getenv("BUNNYNET_ACCESS_KEY")
+	if apiKey == "" {
+		return fmt.Errorf("BUNNYNET_ACCESS_KEY is not set")
+	}
+
+	client := &http.Client{Timeout: 30 * time.Second}
+
+	url := fmt.Sprintf("%s/storagezone/%s", apiBase, storageZoneID)
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return fmt.Errorf("error creating request: %w", err)
+	}
+
+	req.Header.Set("AccessKey", apiKey)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("error deleting storage zone (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
 func CreateStorageZone(name, region string) (string, string, error) {
 	url := "https://api.bunny.net/storagezone"
 

@@ -261,7 +261,7 @@ export default function ChatFeed({ p }: { p: any }) {
             variant="destructive"
           >
             <div className="flex gap-[5px] items-center">
-              <AlertCircleIcon />
+             <AlertCircleIcon />
               <AlertTitle>Code compilation failed</AlertTitle>
             </div>
             <AlertDescription>
