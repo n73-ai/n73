@@ -1,5 +1,20 @@
 # notes
 
+fix this errors and add this new features:
+- cuando sale el error try to fix, donde va el website iframe, sigue cargando
+esto esta mal, deberia decir algo como, el primer deployment fallo
+click try to fix to ask n83 to fix the error
+- i need to do an npm install on ts-claude/ui-only to do a npm run build
+it need to be fast so do the install while the project is being generated
+
+  1. spawn the Vite dev server (npm run dev -- --host 0.0.0.0 --port 5173) in the background
+  2. Poll http://0.0.0.0:5173 every 500ms (up to 30s) until it responds
+  3. Take the screenshot
+  4. devServer.kill() in finally — always killed regardless of success/failure
+  5. npm run build → copy screenshot into dist → zip → upload to bunny
+
+#### ==
+
 # take screenshots
 
 then edit readme.md and replace the word food for cat.",

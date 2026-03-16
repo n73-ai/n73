@@ -1,0 +1,10 @@
+- [ ] show images on landing
+- [ ] supabase
+- [ ] list of commit history
+- [ ] rollback to commit
+- [ ] add own api key
+- [ ] add opencode
+- [ ] upload images
+- [ ] block new messages if ai is coding
+- [ ] Create buffer of machines for fast code generation at first prompt(also, give claude some context of the project)
+- [ ] visual edits

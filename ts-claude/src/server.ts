@@ -20,22 +20,22 @@ interface Payload {
   webhook_url: string;
   session_id: string;
   jwt: string;
+  project_id: string;
+  storage_zone_password: string;
 }
 
 // GET all users
 app.post("/claude/new", async (c) => {
   const body = await c.req.json<Payload>();
 
-  const { prompt, model, work_dir, webhook_url, jwt } = body;
+  const { prompt, model, work_dir, webhook_url, jwt, project_id, storage_zone_password } = body;
 
   // validate required fields
   if (!prompt || !model || !jwt) {
     return c.json({ error: "Missing required fields" }, 400);
   }
 
-  // call agent here
-  // console.log({ prompt, model, work_dir, webhook_url, jwt });
-  newProject(prompt, model, work_dir, webhook_url, jwt)
+  newProject(prompt, model, work_dir, webhook_url, jwt, project_id, storage_zone_password)
 
   return c.json({ status: "ok" });
 });
@@ -43,16 +43,14 @@ app.post("/claude/new", async (c) => {
 app.post("/claude/resume", async (c) => {
   const body = await c.req.json<Payload>();
 
-  const { prompt, model, work_dir, webhook_url, session_id, jwt } = body;
+  const { prompt, model, work_dir, webhook_url, session_id, jwt, project_id, storage_zone_password } = body;
 
   // validate required fields
   if (!prompt || !model || !session_id || !jwt) {
     return c.json({ error: "Missing required fields" }, 400);
   }
 
-  // call agent here
-  // console.log({ prompt, model, work_dir, webhook_url, session_id, jwt });
-  resumeProject(prompt, model, work_dir, webhook_url, jwt, session_id)
+  resumeProject(prompt, model, work_dir, webhook_url, jwt, session_id, project_id, storage_zone_password)
 
   return c.json({ status: "ok", session_id });
 });

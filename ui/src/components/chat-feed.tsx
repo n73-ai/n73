@@ -63,7 +63,8 @@ export default function ChatFeed({ p }: { p: any }) {
   });
 
   const resumeProjectMutation = useMutation({
-    mutationFn: () => resumeProject(prompt, selectedModel.apiName, projectID!),
+    mutationFn: (promptOverride?: string) =>
+      resumeProject(promptOverride ?? prompt, selectedModel.apiName, projectID!),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["project"] });
       setPrompt("");
@@ -172,6 +173,13 @@ export default function ChatFeed({ p }: { p: any }) {
             queryClient.invalidateQueries({ queryKey: ["project"] });
             return;
           }
+          if (event.data === "deployed") {
+            queryClient.setQueryData(
+              ["iframe-reload", projectID],
+              (old: number = 0) => old + 1
+            );
+            return;
+          }
           getMessageByIDMutation.mutate(event.data);
         }
       };
@@ -267,8 +275,9 @@ export default function ChatFeed({ p }: { p: any }) {
             <AlertDescription>
               <Button
                 onClick={() => {
-                  setPrompt(`Fix this build error: ${p.error_msg}`);
-                  resumeProjectMutation.mutate();
+                  resumeProjectMutation.mutate(
+                    `Fix this build error: ${p.error_msg}`
+                  );
                 }}
                 variant="outline"
               >

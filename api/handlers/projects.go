@@ -517,10 +517,52 @@ func CreateProject(c *fiber.Ctx) error {
 			return
 		}
 
+		mainRegion := "SE"
+		storageZoneID, storageZonePassword, err := utils.CreateStorageZone(projectID, mainRegion)
+		if err != nil {
+			fmt.Println("create storage zone: ", err.Error())
+			return
+		}
+
+		err = database.UpdateProjectStorageZone(projectID, storageZoneID, storageZonePassword, "upload", "se")
+		if err != nil {
+			fmt.Println("update storage zone: ", err.Error())
+			return
+		}
+
+		eu := true
+		na := false
+		asia := false
+		sa := false
+		af := false
+		pullZoneID, domain, err := utils.CreatePullZone(storageZoneID, projectID, eu, na, asia, sa, af)
+		if err != nil {
+			fmt.Println("create pull zone: ", err.Error())
+			return
+		}
+
+		err = database.UpdateProjectPullZoneID(projectID, pullZoneID)
+		if err != nil {
+			fmt.Println("update pull zone id: ", err.Error())
+			return
+		}
+
+		err = database.UpdateProjectDomain(domain, projectID)
+		if err != nil {
+			fmt.Println("update domain: ", err.Error())
+			return
+		}
+
+		err = database.UpdateBunnyStatus(projectID, "success")
+		if err != nil {
+			fmt.Println("update bunny status: ", err.Error())
+			return
+		}
+
 		endpoint := fmt.Sprintf("https://%s.fly.dev/claude/new", projectID)
 
 		time.Sleep(5 * time.Second)
-		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, projectPath, endpoint, projectID)
+		err = utils.CreateClaudeProject(payload.Prompt, payload.Model, webhookURL, projectPath, endpoint, projectID, storageZonePassword)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -622,7 +664,10 @@ func ResumeProject(c *fiber.Ctx) error {
 			webhookURL,
 			"/app/ui-only",
 			sessionID,
-			endpoint, projectID)
+			endpoint,
+			projectID,
+			project.StorageZonePassword,
+		)
 		if err != nil {
       fmt.Println("resume claude project: ", err.Error())
 			database.UpdateProjectStatus(projectID, "idle")

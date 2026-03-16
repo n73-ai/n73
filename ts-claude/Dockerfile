@@ -17,10 +17,8 @@ ENV CHROME_BIN=/usr/bin/chromium-browser \
 WORKDIR /app
 COPY . .
 
-# Build en imagen, no en runtime
-# RUN npm --prefix /app install
-# RUN npm --prefix /app/ui-only install
-# RUN npm run --prefix /app/ui-only build
+RUN npm --prefix /app install
+RUN npm --prefix /app/ui-only install --include=dev
 
 EXPOSE 5000
 CMD ["./init.sh"]

@@ -1,9 +1,21 @@
-import { execSync } from "child_process";
-import { readFileSync, existsSync, unlinkSync } from "fs";
+import { execSync, spawn } from "child_process";
+import { readFileSync, existsSync, unlinkSync, copyFileSync } from "fs";
 import type { Message } from "@anthropic-ai/sdk/resources/messages";
 import { postJson } from "./postJson";
 import { zipDir } from "./zipDir";
-import { deploy2bunny, uploadScreenshot } from "./deploy2bunny";
+import { deploy2bunny } from "./deploy2bunny";
+
+async function waitForServer(url: string, timeoutMs = 30000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(1000) });
+      if (res.ok) return;
+    } catch {}
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  throw new Error(`Server at ${url} did not start within ${timeoutMs}ms`);
+}
 
 interface ResultMessage {
   type: "result";
@@ -15,7 +27,10 @@ interface ResultMessage {
 export async function processMessage(
   message: Message | ResultMessage,
   targetUrl: string,
-  jwt: string
+  jwt: string,
+  projectId: string,
+  storageZonePassword: string,
+  npmInstallPromise?: Promise<void>
 ): Promise<void> {
   if (message.type === "assistant" && message.message?.content) {
     for (const block of message.message.content) {
@@ -44,12 +59,29 @@ export async function processMessage(
   } else if (message.type === "result") {
     const result = message as ResultMessage;
 
-    execSync("/app/src/scripts/screenshot http://0.0.0.0:5173", {
-      stdio: "pipe",
-    });
+    const devServer = spawn(
+      "npm",
+      ["run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"],
+      { cwd: "/app/ui-only", stdio: "pipe" }
+    );
 
     let isBuildError = false;
     let buildErrorMsg: string | null = null;
+
+    try {
+      await waitForServer("http://0.0.0.0:5173");
+      execSync("/app/src/scripts/screenshot http://0.0.0.0:5173", {
+        stdio: "pipe",
+      });
+    } catch (e) {
+      console.error("screenshot failed:", e);
+    } finally {
+      devServer.kill();
+    }
+
+    if (npmInstallPromise) {
+      await npmInstallPromise;
+    }
 
     try {
       execSync("npm run build", { cwd: "/app/ui-only", stdio: "pipe" });
@@ -60,6 +92,7 @@ export async function processMessage(
 
     let zipData: string | null = null;
     if (!isBuildError) {
+      copyFileSync("/app/screenshot.png", "/app/ui-only/dist/screenshot.png");
       await zipDir("/app/ui-only", "/app/project.zip");
       zipData = readFileSync("/app/project.zip").toString("base64");
     }
@@ -81,27 +114,9 @@ export async function processMessage(
       jwt
     );
 
-    // if else depends of bunny status!!
-    const isNewProject = true;
-    if (isNewProject) {
-      // need to know if the creation of storage and pull zone has been created successfully
-      // after than do the upload
-      // upload()
-    } else {
-      // delete()
-      // upload()
-      // purge()
+    if (!isBuildError && storageZonePassword) {
+      await deploy2bunny(storageZonePassword, projectId, "/app/ui-only/dist");
     }
-
-    // here do the deploy of dist dir to bunny net 
-    const distDir = "~/ui-only/dist"
-    // this comes from http request
-    const bunnyStorageZonePassword = ""
-    deploy2bunny(bunnyStorageZonePassword, distDir)
-
-    // here do upload of screenshot to bunny net
-    const imagePath = "~/screenshot.png"
-    uploadScreenshot(bunnyStorageZonePassword, imagePath)
 
     if (existsSync("/app/project.zip")) unlinkSync("/app/project.zip");
   }

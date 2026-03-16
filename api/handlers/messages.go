@@ -65,12 +65,6 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		SendToUser(projectID, id)
 
-		project, err := database.GetProjectByID(projectID)
-		if err != nil {
-			database.CreateLog("projects", projectID, err.Error())
-			return c.SendStatus(500)
-		}
-
 		// start image
 		var base64Image string
 
@@ -100,11 +94,19 @@ func WebhookMessage(c *fiber.Ctx) error {
 		defer os.Remove(tempImageDataPath) // Clean up after
 		// end image
 
+		// Update status to idle immediately so the UI stops showing "Thinking"
+		err = database.UpdateProjectStatus(projectID, "idle")
+		if err != nil {
+			database.CreateLog("projects", projectID, err.Error())
+			return nil
+		}
+		SendToUser(projectID, "idle")
+
 		// here starts go func()
 		go func() {
 
 			if payload.BuildError {
-				err := database.UpdateProjectErrorMsg(project.ID, payload.BuildErrorMsg) // do this!
+				err := database.UpdateProjectErrorMsg(projectID, payload.BuildErrorMsg)
 				if err != nil {
 					fmt.Println("error UpdateProjectErrorMsg(): ", err.Error())
 				}
@@ -148,7 +150,7 @@ func WebhookMessage(c *fiber.Ctx) error {
 					database.CreateLog("projects", projectID, "Failed to write zip file: "+err.Error())
 					return
 				}
-				defer os.Remove(tempZipPath) // Clean up after
+				defer os.Remove(tempZipPath)
 
 				// Unzip into projects directory
 				repositoriesPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", projectID)
@@ -159,45 +161,19 @@ func WebhookMessage(c *fiber.Ctx) error {
 					return
 				}
 
-				//projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
-
-	      projectPath := filepath.Join(os.Getenv("ROOT_PATH"), "projects", project.ID)
-
-        // do a npm i && npm run build
-        fmt.Println("[x]starting npm run build.")
-	      err = utils.NpmRunBuild(projectPath)
-	      if err != nil {
-		      fmt.Println("npm err: ", err.Error())
-          return 
-	      }
-        fmt.Println("[x]end npm run build.")
-
-        fmt.Println("[x]starting upload2bunny.")
-        err = utils.Upload2Bunny(project)
-        if err != nil {
-          fmt.Println(err.Error())
-        }
-        fmt.Println("[x]ended upload2bunny.")
-
-					// delete the directory to free disk
-          /*
-					err = utils.DeleteProjectDirectory(projectPath)
-					if err != nil {
-						database.CreateLog("Delete Project Directory error", project.ID, err.Error())
+				// Purge Bunny CDN cache so changes are visible immediately
+				project, err := database.GetProjectByID(projectID)
+				if err == nil && project.PullZoneID != "" {
+					if err := utils.PurgePullZoneCache(project.PullZoneID); err != nil {
+						fmt.Println("cache purge err: ", err.Error())
 					}
-          */
+				}
 
+				// Signal the frontend to reload the iframe now that CDN is updated
+				SendToUser(projectID, "deployed")
 			}
 
 		}()
-
-		err = database.UpdateProjectStatus(projectID, "idle")
-		if err != nil {
-			database.CreateLog("projects", project.ID, err.Error())
-			return nil
-		}
-
-		SendToUser(projectID, "idle")
 
 	default:
 		log.Println("Unknown type:", payload.Type)

@@ -48,12 +48,15 @@ export default function Projects() {
               <Card className="@container/card hover:border hover:border-muted-foreground/30 transition-all duration-200 ease-in-out">
                 <CardHeader>
                   <CardTitle className="pb-[10px]">{p.name}</CardTitle>
-                  <div className="hidden xl:block relative overflow-hidden w-full h-48 rounded-md">
-                    <iframe
-                      src={`https://${p.domain}`}
-                      className="absolute top-0 left-0 w-[1280px] h-[800px] scale-[0.25] origin-top-left pointer-events-none"
-                    />
-                  </div>
+                  {p.domain && (
+                    <div className="hidden xl:block relative overflow-hidden w-full h-48 rounded-md bg-muted">
+                      <img
+                        src={`https://${p.domain}/screenshot.png`}
+                        alt={p.name}
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </div>
+                  )}
                 </CardHeader>
               </Card>
             </Link>

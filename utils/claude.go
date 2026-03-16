@@ -8,15 +8,16 @@ import (
 	"os"
 )
 
-func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID, endpoint, projectID string) error {
+func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID, endpoint, projectID, storageZonePassword string) error {
 	payload := map[string]string{
-		"work_dir":    path,
-		"prompt":      prompt,
-		"model":       model,
-		"webhook_url": webhookURL,
-		"session_id":  sessionID,
-		"jwt":         os.Getenv("ADMIN_JWT"),
-		"project_id":  projectID,
+		"work_dir":               path,
+		"prompt":                 prompt,
+		"model":                  model,
+		"webhook_url":            webhookURL,
+		"session_id":             sessionID,
+		"jwt":                    os.Getenv("ADMIN_JWT"),
+		"project_id":             projectID,
+		"storage_zone_password":  storageZonePassword,
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -45,14 +46,15 @@ func ResumeClaudeProject(prompt, model, webhookURL, path, sessionID, endpoint, p
 	return nil
 }
 
-func CreateClaudeProject(prompt, model, webhookURL, path, endpoint, projectID string) error {
+func CreateClaudeProject(prompt, model, webhookURL, path, endpoint, projectID, storageZonePassword string) error {
 	payload := map[string]string{
-		"work_dir":    path,
-		"prompt":      prompt,
-		"model":       model,
-		"webhook_url": webhookURL,
-		"jwt":         os.Getenv("ADMIN_JWT"),
-		"project_id":  projectID,
+		"work_dir":               path,
+		"prompt":                 prompt,
+		"model":                  model,
+		"webhook_url":            webhookURL,
+		"jwt":                    os.Getenv("ADMIN_JWT"),
+		"project_id":             projectID,
+		"storage_zone_password":  storageZonePassword,
 	}
 
 	jsonData, err := json.Marshal(payload)

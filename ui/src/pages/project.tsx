@@ -11,18 +11,30 @@ import Spinner from "@/components/spinner";
 import { getProjectByID } from "@/api/projects";
 import Stars from "@/components/stars";
 import axios from "axios";
-import { CloudOffIcon } from "lucide-react";
-import { useState } from "react";
+import { AlertCircleIcon, CloudOffIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Project() {
   const { projectID } = useParams();
   const [iframeIsLoading, setIsLoading] = useState(true);
 
-  const { data, isLoading, isError, dataUpdatedAt } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["project", projectID],
     queryFn: () => getProjectByID(projectID!),
     refetchOnWindowFocus: false,
   });
+
+  const { data: iframeReloadCount = 0 } = useQuery<number>({
+    queryKey: ["iframe-reload", projectID],
+    queryFn: () => 0,
+    initialData: 0,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+
+  useEffect(() => {
+    setIsLoading(true);
+  }, [iframeReloadCount]);
 
   const { isError: isErrorIframe } = useQuery({
     queryKey: ["iframe-status", data?.fly_hostname],
@@ -63,22 +75,39 @@ export default function Project() {
               </div>
             )}
 
-            {iframeIsLoading && (
-              <div className="relative z-10 flex items-center justify-center h-full">
-                <div className="text-xl flex items-center gap-2 text-muted-foreground py-[30px]">
-                  <Spinner />
+            {data?.error_msg != null && data?.error_msg != "" &&
+              data?.status !== "new_pending" && data?.status !== "new_error" && (
+              <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
+                <AlertCircleIcon className="text-destructive h-10 w-10" />
+                <div>
+                  <p className="font-semibold">Deployment failed</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Click "Try to fix" in the chat to ask n83 to fix the error.
+                  </p>
                 </div>
               </div>
             )}
 
-            {data?.domain && (
-              <iframe
-                key={dataUpdatedAt}
-                onLoad={() => setIsLoading(false)}
-                style={{ display: iframeIsLoading ? "none" : "block" }}
-                className="w-full h-full block"
-                src={`https://${data.domain}?_t=${dataUpdatedAt}`}
-              />
+            {!data?.error_msg && data?.status !== "new_internal_error" && (
+              <>
+                {iframeIsLoading && (
+                  <div className="relative z-10 flex items-center justify-center h-full">
+                    <div className="text-xl flex items-center gap-2 text-muted-foreground py-[30px]">
+                      <Spinner />
+                    </div>
+                  </div>
+                )}
+
+                {data?.domain && (
+                  <iframe
+                    key={iframeReloadCount}
+                    onLoad={() => setIsLoading(false)}
+                    style={{ display: iframeIsLoading ? "none" : "block" }}
+                    className="w-full h-full block"
+                    src={`https://${data.domain}?_t=${iframeReloadCount}`}
+                  />
+                )}
+              </>
             )}
 
             {data?.status == "new_internal_error" && (
