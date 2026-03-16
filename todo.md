@@ -1,10 +1,17 @@
-- [ ] show images on landing
+- [x] show images on landing
+- [ ] fix error image not correct
+- [ ] generate buffer of fly apps & machines so the projects are generated much faster
 - [ ] supabase
+
+- [ ] upload images to claude-code
+- [ ] not allowed new messages if ai is generating
+
+- [ ] add github version control
 - [ ] list of commit history
 - [ ] rollback to commit
+
+- [ ] visual edits
+
 - [ ] add own api key
 - [ ] add opencode
-- [ ] upload images
-- [ ] block new messages if ai is coding
-- [ ] Create buffer of machines for fast code generation at first prompt(also, give claude some context of the project)
-- [ ] visual edits
+

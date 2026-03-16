@@ -65,35 +65,6 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		SendToUser(projectID, id)
 
-		// start image
-		var base64Image string
-
-		// Handle both "data:application/zip;base64,XXXX" and raw base64
-		if strings.Contains(payload.File, "data:") {
-			parts := strings.SplitN(payload.File, ",", 2)
-			if len(parts) < 2 {
-				fmt.Println("image err.")
-			}
-			base64Image = parts[1]
-		} else {
-			base64Image = payload.Image
-		}
-
-		// Decode base64
-		imageData, err := base64.StdEncoding.DecodeString(base64Image)
-		if err != nil {
-			fmt.Println("image err: ", err.Error())
-		}
-
-		// Create temp zip file
-		tempImageDataPath := filepath.Join("/tmp", "screenshot.png")
-		err = os.WriteFile(tempImageDataPath, imageData, 0644)
-		if err != nil {
-			fmt.Println("image err: ", err.Error())
-		}
-		defer os.Remove(tempImageDataPath) // Clean up after
-		// end image
-
 		// Update status to idle immediately so the UI stops showing "Thinking"
 		err = database.UpdateProjectStatus(projectID, "idle")
 		if err != nil {

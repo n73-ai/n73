@@ -40,7 +40,7 @@ fly volumes create go_data --size 5 --region arn --app n73-app
 
 create the fly token:
 ```bash
-fly tokens create org --name "x73" --expiry 720h
+fly tokens create org --name "n83" --expiry 720h
 ```
 
 add the require enviroment variables
@@ -60,7 +60,8 @@ fly secrets set DOMAIN=***** --app n73-app
 
 fly secrets set FLY_API_TOKEN="****" --app x73-app
 
-fly secrets set FLY_API_TOKEN="****" --app x73-app
+fly secrets set FLY_API_TOKEN="****" --app n73-app
+
 # dont need cf anymore
 fly secrets set CLOUDFLARE_API_TOKEN="****" --app n73-app
 fly secrets set GH_TOKEN="****" --app n73-app

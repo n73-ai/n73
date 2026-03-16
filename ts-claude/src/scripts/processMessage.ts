@@ -17,6 +17,22 @@ async function waitForServer(url: string, timeoutMs = 30000): Promise<void> {
   throw new Error(`Server at ${url} did not start within ${timeoutMs}ms`);
 }
 
+async function takeScreenshot(): Promise<void> {
+  const staticServer = spawn(
+    "npx",
+    ["vite", "preview", "--host", "0.0.0.0", "--port", "5173"],
+    { cwd: "/app/ui-only", stdio: "pipe" }
+  );
+  try {
+    await waitForServer("http://0.0.0.0:5173");
+    execSync("/app/src/scripts/screenshot http://0.0.0.0:5173", { stdio: "pipe" });
+  } catch (e) {
+    console.error("screenshot failed:", e);
+  } finally {
+    staticServer.kill();
+  }
+}
+
 interface ResultMessage {
   type: "result";
   duration_ms: number;
@@ -59,29 +75,12 @@ export async function processMessage(
   } else if (message.type === "result") {
     const result = message as ResultMessage;
 
-    const devServer = spawn(
-      "npm",
-      ["run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"],
-      { cwd: "/app/ui-only", stdio: "pipe" }
-    );
-
-    let isBuildError = false;
-    let buildErrorMsg: string | null = null;
-
-    try {
-      await waitForServer("http://0.0.0.0:5173");
-      execSync("/app/src/scripts/screenshot http://0.0.0.0:5173", {
-        stdio: "pipe",
-      });
-    } catch (e) {
-      console.error("screenshot failed:", e);
-    } finally {
-      devServer.kill();
-    }
-
     if (npmInstallPromise) {
       await npmInstallPromise;
     }
+
+    let isBuildError = false;
+    let buildErrorMsg: string | null = null;
 
     try {
       execSync("npm run build", { cwd: "/app/ui-only", stdio: "pipe" });
@@ -90,14 +89,18 @@ export async function processMessage(
       buildErrorMsg = String(e);
     }
 
+    if (!isBuildError) {
+      await takeScreenshot();
+    }
+
     let zipData: string | null = null;
     if (!isBuildError) {
-      copyFileSync("/app/screenshot.png", "/app/ui-only/dist/screenshot.png");
+      if (existsSync("/app/screenshot.png")) {
+        copyFileSync("/app/screenshot.png", "/app/ui-only/dist/screenshot.png");
+      }
       await zipDir("/app/ui-only", "/app/project.zip");
       zipData = readFileSync("/app/project.zip").toString("base64");
     }
-
-    const imageBase64 = readFileSync("/app/screenshot.png").toString("base64");
 
     await postJson(
       targetUrl,
@@ -109,7 +112,6 @@ export async function processMessage(
         duration: result.duration_ms,
         session_id: result.session_id,
         total_cost_usd: result.total_cost_usd,
-        image: imageBase64,
       },
       jwt
     );
