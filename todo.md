@@ -1,17 +1,11 @@
-- [x] show images on landing
-- [ ] fix error image not correct
-- [ ] generate buffer of fly apps & machines so the projects are generated much faster
-- [ ] supabase
+- [ ] in chat-feed, the link should have ?_t={iframe_key} so the web page is updated on the real domain
 
+- [ ] generate buffer of fly apps to generate the projects faster
+- [ ] supabase
 - [ ] upload images to claude-code
-- [ ] not allowed new messages if ai is generating
 
 - [ ] add github version control
 - [ ] list of commit history
 - [ ] rollback to commit
 
 - [ ] visual edits
-
-- [ ] add own api key
-- [ ] add opencode
-

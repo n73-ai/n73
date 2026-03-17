@@ -12,14 +12,3 @@ All pending items (bugs, features, and tasks) are tracked in the TODO.md file.
 
 > Questions, feedback, or just interested? Hit me up at my email 
 **[hej@agustfricke.com](mailto:hej@agustfricke.com)** your input is always appreciated.
-
-<a href="https://github.com/n73">Deployment</a>
-
-#### Claude
-```bash
-claude  
-```
-long life token:
-```bash
-claude setup-token 
-```
