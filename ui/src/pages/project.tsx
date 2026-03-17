@@ -12,11 +12,14 @@ import { getProjectByID } from "@/api/projects";
 import Stars from "@/components/stars";
 import axios from "axios";
 import { AlertCircleIcon, CloudOffIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function Project() {
   const { projectID } = useParams();
   const [iframeIsLoading, setIsLoading] = useState(true);
+  const [iframeKey, setIframeKey] = useState(0);
+  const prevStatusRef = useRef<string | undefined>(undefined);
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["project", projectID],
@@ -24,17 +27,31 @@ export default function Project() {
     refetchOnWindowFocus: false,
   });
 
-  const { data: iframeReloadCount = 0 } = useQuery<number>({
-    queryKey: ["iframe-reload", projectID],
-    queryFn: () => 0,
-    initialData: 0,
-    staleTime: Infinity,
-    gcTime: Infinity,
-  });
-
-  useEffect(() => {
+  const reloadIframe = useCallback(() => {
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
     setIsLoading(true);
-  }, [iframeReloadCount]);
+    setIframeKey((k) => k + 1);
+  }, []);
+
+  // Primary: "deployed" WS message triggers reloadIframe via ChatFeed callback.
+  // Fallback: if "deployed" is missed (WS disconnect, crash), reload after 15s
+  // once status transitions to "idle". The delay gives the CDN time to propagate.
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    const curr = data?.status;
+    prevStatusRef.current = curr;
+
+    const wasWorking = prev === "pending" || prev === "new_pending" || prev === "new_error";
+    if (wasWorking && curr === "idle" && !data?.error_msg) {
+      fallbackTimerRef.current = setTimeout(reloadIframe, 15000);
+      return () => {
+        if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+      };
+    }
+  }, [data?.status, data?.error_msg, reloadIframe]);
 
   const { isError: isErrorIframe } = useQuery({
     queryKey: ["iframe-status", data?.fly_hostname],
@@ -58,12 +75,13 @@ export default function Project() {
                 <Spinner /> Loading chat
               </div>
             )}
-            {data && <ChatFeed p={data} />}
+            {data && <ChatFeed p={data} onDeployed={reloadIframe} iframeKey={iframeKey} />}
           </ResizablePanel>
           <ResizableHandle />
 
           <ResizablePanel className="hidden lg:block">
-            {(data?.status == "new_pending" || data?.status == "new_error") && (
+            {(data?.status == "new_pending" || data?.status == "new_error" ||
+              (data?.status == "pending" && !data?.built)) && (
               <div className="relative w-full h-full">
                 <Stars />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -75,8 +93,9 @@ export default function Project() {
               </div>
             )}
 
-            {data?.error_msg != null && data?.error_msg != "" &&
-              data?.status !== "new_pending" && data?.status !== "new_error" && (
+            {data?.error_msg != null && data?.error_msg != "" && data?.built &&
+              data?.status !== "new_pending" && data?.status !== "new_error" &&
+              data?.status !== "pending" && (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
                 <AlertCircleIcon className="text-destructive h-10 w-10" />
                 <div>
@@ -88,7 +107,7 @@ export default function Project() {
               </div>
             )}
 
-            {!data?.error_msg && data?.status !== "new_internal_error" && (
+            {!data?.error_msg && data?.built && data?.status !== "new_internal_error" && (
               <>
                 {iframeIsLoading && (
                   <div className="relative z-10 flex items-center justify-center h-full">
@@ -100,11 +119,11 @@ export default function Project() {
 
                 {data?.domain && (
                   <iframe
-                    key={iframeReloadCount}
+                    key={iframeKey}
                     onLoad={() => setIsLoading(false)}
                     style={{ display: iframeIsLoading ? "none" : "block" }}
                     className="w-full h-full block"
-                    src={`https://${data.domain}?_t=${iframeReloadCount}`}
+                    src={`https://${data.domain}?_t=${iframeKey}`}
                   />
                 )}
               </>

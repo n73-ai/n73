@@ -36,6 +36,8 @@ CREATE TABLE projects (
     bunny_asia BOOLEAN DEFAULT false,
     bunny_sa BOOLEAN DEFAULT false,
     bunny_af BOOLEAN DEFAULT false,
+
+    built BOOLEAN DEFAULT false,  -- true once the first successful build completes
     -- end new
     
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

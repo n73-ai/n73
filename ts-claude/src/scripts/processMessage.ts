@@ -83,10 +83,13 @@ export async function processMessage(
     let buildErrorMsg: string | null = null;
 
     try {
+      execSync("npm install", { cwd: "/app/ui-only", stdio: "pipe" });
       execSync("npm run build", { cwd: "/app/ui-only", stdio: "pipe" });
-    } catch (e) {
+    } catch (e: any) {
       isBuildError = true;
-      buildErrorMsg = String(e);
+      const stderr = e.stderr?.toString().trim() || "";
+      const stdout = e.stdout?.toString().trim() || "";
+      buildErrorMsg = [stderr, stdout].filter(Boolean).join("\n") || String(e);
     }
 
     if (!isBuildError) {
@@ -117,7 +120,12 @@ export async function processMessage(
     );
 
     if (!isBuildError && storageZonePassword) {
-      await deploy2bunny(storageZonePassword, projectId, "/app/ui-only/dist");
+      try {
+        await deploy2bunny(storageZonePassword, projectId, "/app/ui-only/dist");
+      } catch (e) {
+        console.error("deploy2bunny failed:", e);
+      }
+      await postJson(targetUrl, { type: "deployed" }, jwt);
     }
 
     if (existsSync("/app/project.zip")) unlinkSync("/app/project.zip");

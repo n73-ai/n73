@@ -65,6 +65,16 @@ func WebhookMessage(c *fiber.Ctx) error {
 
 		SendToUser(projectID, id)
 
+		// Clear error_msg on successful build so the iframe shows again
+		if !payload.BuildError {
+			if err := database.UpdateProjectErrorMsg(projectID, ""); err != nil {
+				database.CreateLog("projects", projectID, err.Error())
+			}
+			if err := database.UpdateProjectBuilt(projectID); err != nil {
+				database.CreateLog("projects", projectID, err.Error())
+			}
+		}
+
 		// Update status to idle immediately so the UI stops showing "Thinking"
 		err = database.UpdateProjectStatus(projectID, "idle")
 		if err != nil {
@@ -140,11 +150,13 @@ func WebhookMessage(c *fiber.Ctx) error {
 					}
 				}
 
-				// Signal the frontend to reload the iframe now that CDN is updated
-				SendToUser(projectID, "deployed")
 			}
 
 		}()
+
+	case "deployed":
+		// Sent by ts-claude after deploy2bunny completes — CDN is ready
+		SendToUser(projectID, "deployed")
 
 	default:
 		log.Println("Unknown type:", payload.Type)

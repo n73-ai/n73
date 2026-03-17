@@ -42,7 +42,7 @@ const models = [
   { name: "Claude Haiku 4.5", apiName: "claude-haiku-4-5-20251001" },
 ];
 
-export default function ChatFeed({ p }: { p: any }) {
+export default function ChatFeed({ p, onDeployed, iframeKey }: { p: any; onDeployed?: () => void; iframeKey?: number }) {
   const { projectID } = useParams();
   const socketRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -65,12 +65,13 @@ export default function ChatFeed({ p }: { p: any }) {
   const resumeProjectMutation = useMutation({
     mutationFn: (promptOverride?: string) =>
       resumeProject(promptOverride ?? prompt, selectedModel.apiName, projectID!),
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["project"] });
+      const sentPrompt = variables ?? prompt;
       setPrompt("");
       addItemManually({
         role: "user",
-        content: prompt,
+        content: sentPrompt,
         total_cost_usd: 0,
         duration: 0,
         model: "",
@@ -165,6 +166,7 @@ export default function ChatFeed({ p }: { p: any }) {
 
       socket.onopen = () => {
         console.log("connected");
+        queryClient.invalidateQueries({ queryKey: ["project"] });
       };
 
       socket.onmessage = (event) => {
@@ -174,10 +176,7 @@ export default function ChatFeed({ p }: { p: any }) {
             return;
           }
           if (event.data === "deployed") {
-            queryClient.setQueryData(
-              ["iframe-reload", projectID],
-              (old: number = 0) => old + 1
-            );
+            onDeployed?.();
             return;
           }
           getMessageByIDMutation.mutate(event.data);
@@ -363,7 +362,7 @@ export default function ChatFeed({ p }: { p: any }) {
 
               {p?.domain != "" && (
                 <a
-                  href={`https://${p.domain}`}
+                  href={`https://${p.domain}?_t=${iframeKey ?? 0}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className=""

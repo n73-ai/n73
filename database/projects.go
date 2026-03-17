@@ -29,6 +29,8 @@ type Project struct {
 	BunnySA             bool   `json:"bunny_sa"`
 	BunnyAF             bool   `json:"bunny_af"`
 
+	Built bool `json:"built"`
+
 	CreatedAt string `json:"created_at"`
 }
 
@@ -196,14 +198,14 @@ func GetProjectsByUserID(userID string) ([]Project, error) {
 
 func GetProjectByID(id string) (Project, error) {
 	var p Project
-	row := DB.QueryRow(`SELECT 
-    id, 
-    user_id, 
-    session_id, 
-    name, 
+	row := DB.QueryRow(`SELECT
+    id,
+    user_id,
+    session_id,
+    name,
     slug,
-    domain, 
-    status, 
+    domain,
+    status,
     gh_repo,
     error_msg,
     created_at,
@@ -212,7 +214,8 @@ func GetProjectByID(id string) (Project, error) {
     storage_zone_id,
     storage_zone_region,
     storage_zone_password,
-    pullzone_id
+    pullzone_id,
+    built
     FROM projects WHERE id = $1`, id)
 
 	if err := row.Scan(&p.ID, &p.UserID, &p.SessionID, &p.Name, &p.Slug,
@@ -220,6 +223,7 @@ func GetProjectByID(id string) (Project, error) {
 		&p.ErrorMsg, &p.CreatedAt, &p.FlyHostname,
 		&p.BunnyStatus,
 		&p.StorageZoneID, &p.StorageZoneRegion, &p.StorageZonePassword, &p.PullZoneID,
+		&p.Built,
 	); err != nil {
 		if err == sql.ErrNoRows {
 			return p, fmt.Errorf("No project found with the id: %s", id)
@@ -227,6 +231,21 @@ func GetProjectByID(id string) (Project, error) {
 		return p, err
 	}
 	return p, nil
+}
+
+func UpdateProjectBuilt(projectID string) error {
+	result, err := DB.Exec(`UPDATE projects SET built = true WHERE id = $1;`, projectID)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("No project found with the id %v", projectID)
+	}
+	return nil
 }
 
 func UpdateProjectErrorMsg(projectID, msg string) error {
