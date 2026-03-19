@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import Spinner from "@/components/spinner";
 import { getProjectByID } from "@/api/projects";
 import Stars from "@/components/stars";
-import axios from "axios";
+// import axios from "axios";
 import { AlertCircleIcon, CloudOffIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -53,6 +53,7 @@ export default function Project() {
     }
   }, [data?.status, data?.error_msg, reloadIframe]);
 
+  /*
   const { isError: isErrorIframe } = useQuery({
     queryKey: ["iframe-status", data?.fly_hostname],
     queryFn: async () => {
@@ -61,6 +62,7 @@ export default function Project() {
     },
     retry: false,
   });
+  */
 
   return (
     <div className="h-[100dvh] flex flex-col">

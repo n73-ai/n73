@@ -34,7 +34,6 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-import { Separator } from "./ui/separator";
 
 const models = [
   { name: "Claude Sonnet 4.5", apiName: "claude-sonnet-4-5-20250929" },
@@ -87,7 +86,7 @@ export default function ChatFeed({ p, onDeployed, iframeKey }: { p: any; onDeplo
       toast.error("The prompt is required.");
       return;
     }
-    resumeProjectMutation.mutate();
+    resumeProjectMutation.mutate(undefined);
   };
 
   const handleSubmitResumeProject = (

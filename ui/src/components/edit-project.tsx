@@ -35,7 +35,7 @@ export default function EditProject() {
     },
   });
 
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey: ["project", projectID],
     queryFn: () => getProjectByID(projectID!),
   });
