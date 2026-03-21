@@ -8,6 +8,10 @@ applications using **natural language prompts**.
 **Version 1** is now available — try it here:
 [https://n73.agustfricke.com](https://n73.agustfricke.com)
 
+**New release version** is now available — try it here:
+[https://n73.agustfricke.workers.dev](https://n73.agustfricke.workers.dev)
+
+
 All pending items (bugs, features, and tasks) are tracked in the TODO.md file.
 
 > Questions, feedback, or just interested? Hit me up at my email 
