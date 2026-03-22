@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth";
 import { useModelStore } from "@/store/models";
+import { useFlyioStore } from "@/store/flyio";
 import LatestProjects from "@/components/latest_projects";
 import { usePromptStore } from "@/store/prompt";
 import {
@@ -44,6 +45,10 @@ export default function Landing() {
 
   const { isAuth } = useAuthStore();
   const { prompt, setPrompt } = usePromptStore();
+  const { incidents } = useFlyioStore();
+  const hasMajorIncident = incidents.some(
+    (i) => i.impact === "major" || i.impact === "critical"
+  );
 
   const createProjectMut = useMutation({
     mutationFn: () => createProject(prompt, name, selectedModel.apiName),
@@ -56,6 +61,12 @@ export default function Landing() {
   });
 
   const submitLogic = () => {
+    if (hasMajorIncident) {
+      toast.error(
+        "New projects can't be deployed right now due to a Fly.io incident. Check status.fly.io for updates."
+      );
+      return;
+    }
     if (prompt === "") {
       toast.error("The prompt is required.");
       return;
@@ -176,6 +187,12 @@ export default function Landing() {
                     className="rounded-md ml-auto"
                     size="icon-sm"
                     type="submit"
+                    disabled={hasMajorIncident}
+                    title={
+                      hasMajorIncident
+                        ? "Deployments unavailable due to Fly.io incident"
+                        : undefined
+                    }
                   >
                     <Send />
                     <span className="sr-only">Send</span>

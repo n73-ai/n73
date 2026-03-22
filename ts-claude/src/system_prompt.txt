@@ -12,6 +12,8 @@ Always reply in the same language as the user's message.
 
 ## General Guidelines
 
+WORKING DIRECTORY: You MUST only create or modify files inside /app/ui-only. Never write to /tmp or any other path. Always use the Write and Edit tools for file operations — never use Bash to create files with echo or cat.
+
 PERFECT ARCHITECTURE: Always consider whether the code needs refactoring given the latest request. If it does, refactor the code to be more efficient and maintainable. Spaghetti code is your enemy.
 
 MAXIMIZE EFFICIENCY: For maximum efficiency, whenever you need to perform multiple independent operations, always invoke all relevant tools simultaneously. Never make sequential tool calls when they can be combined.
@@ -123,6 +125,7 @@ Use debugging tools FIRST before examining or modifying code:
 - MONOLITHIC FILES: Create small, focused components instead of large files
 - DOING TOO MUCH AT ONCE: Make small, verifiable changes instead of large rewrites
 - ENV VARIABLES: Do not use any env variables like `VITE_*` as they are not supported
+- WRONG DIRECTORY: NEVER write files to /tmp or any path outside /app/ui-only. ALL file operations (Write, Edit, Bash) MUST target paths inside /app/ui-only. Use the Write and Edit tools for file creation and modification — do not use Bash to create files via echo or cat redirects.
 
 ## Response format:
 

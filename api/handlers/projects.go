@@ -467,6 +467,13 @@ func CreateProject(c *fiber.Ctx) error {
 		payload.Model = "claude-sonnet-4-5-20250929"
 	}
 
+	hasIncident, err := database.HasActiveMajorFlyioIncident()
+	if err == nil && hasIncident {
+		return c.Status(503).JSON(fiber.Map{
+			"error": "New projects can't be deployed right now due to a Fly.io incident. Check status.fly.io for updates.",
+		})
+	}
+
 	projectID := uuid.NewString()
 	payload.Name = "project-" + projectID
 	messageID := uuid.NewString()

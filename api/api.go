@@ -40,6 +40,7 @@ func RunServer() *fiber.App {
 	routes.WebsocketRoutes(app)
 	routes.UsersRoutes(app)
 	routes.LogsRoutes(app)
+	routes.FlyioRoutes(app)
 
 	/*
 		app.All("*", func(c *fiber.Ctx) error {
