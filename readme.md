@@ -22,12 +22,9 @@ n73 is an AI-powered platform that turns natural language prompts into fully fun
 
 - **Prompt to app** — describe your idea, get a working web app
 - **Live preview** — see changes in real time as you build
-- **One-click deploy** — ship directly from the platform
+- **Automatic deploy** — your app deploys itself, no button needed
 - **Iterative editing** — refine your app with follow-up prompts
-
-## Try it
-
-→ [n73.agustfricke.com](https://n73.agustfricke.com)
+- **Model selection** — choose between different AI models
 
 ---
 
