@@ -298,7 +298,7 @@ export default function ChatFeed({ p, onDeployed, iframeKey }: { p: any; onDeplo
               onKeyDown={handleKeyDown}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Ask n83..."
+              placeholder="Ask n73..."
             />
             <InputGroupAddon align="block-end">
               {/*
