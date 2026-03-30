@@ -1,18 +1,34 @@
-# n73
+<p align="center">
+  <img src="./logo.png" alt="n73 logo" width="80" />
+</p>
 
-## Build, Preview, and Ship with AI
+<h1 align="center">n73</h1>
 
-**n73** is an AI-powered app development platform that lets you create entire web 
-applications using **natural language prompts**.
+<p align="center">
+  Build, preview, and ship web apps with natural language.
+</p>
 
-**Version 1** is now available — try it here:
-[https://n73.agustfricke.com](https://n73.agustfricke.com)
+<p align="center">
+  <a href="https://n73.agustfricke.com">n73.agustfricke.com</a>
+</p>
 
-**New release version** is now available — try it here:
-[https://n73.agustfricke.workers.dev](https://n73.agustfricke.workers.dev)
+---
 
+## What is n73?
 
-All pending items (bugs, features, and tasks) are tracked in the TODO.md file.
+n73 is an AI-powered platform that turns natural language prompts into fully functional web applications — no boilerplate, no setup, just describe what you want and ship it.
 
-> Questions, feedback, or just interested? Hit me up at my email 
-**[hej@agustfricke.com](mailto:hej@agustfricke.com)** your input is always appreciated.
+## Features
+
+- **Prompt to app** — describe your idea, get a working web app
+- **Live preview** — see changes in real time as you build
+- **One-click deploy** — ship directly from the platform
+- **Iterative editing** — refine your app with follow-up prompts
+
+## Try it
+
+→ [n73.agustfricke.com](https://n73.agustfricke.com)
+
+---
+
+Questions or feedback? Reach me at [hej@agustfricke.com](mailto:hej@agustfricke.com)

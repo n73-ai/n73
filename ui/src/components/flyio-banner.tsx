@@ -3,8 +3,9 @@ import { AlertTriangle } from "lucide-react";
 
 export default function FlyioBanner() {
   const { incidents } = useFlyioStore();
+  const active = incidents.filter((i) => !i.resolved);
 
-  if (incidents.length === 0) return null;
+  if (active.length === 0) return null;
 
   const impactOrder: Record<string, number> = {
     critical: 4,
@@ -13,7 +14,7 @@ export default function FlyioBanner() {
     none: 1,
   };
 
-  const worst = incidents.reduce((prev, curr) =>
+  const worst = active.reduce((prev, curr) =>
     (impactOrder[curr.impact] ?? 0) > (impactOrder[prev.impact] ?? 0) ? curr : prev
   );
 
@@ -27,18 +28,40 @@ export default function FlyioBanner() {
           : "border-yellow-500/30 bg-yellow-500/10 text-yellow-400"
       }`}
     >
-      <AlertTriangle size={15} className="shrink-0" />
-      <span className="font-semibold">Fly.io incident:</span>
-      <span>{worst.name}</span>
-      <span className="opacity-60">({worst.status})</span>
+      <AlertTriangle size={14} className="shrink-0" />
+      <span className="font-semibold">Fly.io</span>
+      {active.length > 1 && (
+        <span
+          className={`rounded-full px-1.5 py-0.5 text-xs font-bold leading-none ${
+            isSevere
+              ? "bg-red-500/20 text-red-400"
+              : "bg-yellow-500/20 text-yellow-400"
+          }`}
+        >
+          {active.length}
+        </span>
+      )}
+      <span className="opacity-70">·</span>
+      <span className="truncate">{worst.name}</span>
+      <span
+        className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
+          isSevere
+            ? "bg-red-500/20 text-red-300"
+            : "bg-yellow-500/20 text-yellow-300"
+        }`}
+      >
+        {worst.status}
+      </span>
       {isSevere && (
-        <span className="opacity-70">— new deployments may be unavailable</span>
+        <span className="hidden shrink-0 opacity-60 sm:inline">
+          — deployments may be affected
+        </span>
       )}
       <a
         href="https://status.fly.io"
         target="_blank"
         rel="noopener noreferrer"
-        className="ml-auto shrink-0 text-xs underline opacity-60 hover:opacity-100"
+        className="ml-auto shrink-0 text-xs opacity-50 hover:opacity-90"
       >
         status.fly.io ↗
       </a>
