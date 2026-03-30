@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./logo.png" alt="n73 logo" width="80" />
+  <img src="./n73.png" alt="n73 logo" width="80" />
 </p>
 
 <h1 align="center">n73</h1>
