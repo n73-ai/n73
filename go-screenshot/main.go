@@ -1,11 +1,12 @@
 package main
 
 import (
-    "fmt"
-    "os"
-    
-    "github.com/go-rod/rod"
-    "github.com/go-rod/rod/lib/launcher"
+	"fmt"
+	"os"
+	"time"
+
+	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/launcher"
 )
 
 func main() {
@@ -34,6 +35,8 @@ func main() {
     page := browser.MustPage(url)
     page.MustWaitLoad()
     page.MustWaitIdle()
+		page.MustSetViewport(1920, 1080, 1, false)
+		time.Sleep(5 * time.Second)
     page.MustScreenshot("/app/screenshot.png")
     
     fmt.Println("✓ Screenshot guardado en screenshot.png")
